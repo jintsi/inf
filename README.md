@@ -1,1 +1,1 @@
-# inf
+# I was going to do it mathlibless but that's a pipe dream

@@ -4,3 +4,7 @@ defaultTargets = ["inf"]
 
 [[lean_lib]]
 name = "Inf"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
