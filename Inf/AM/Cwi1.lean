@@ -3,6 +3,8 @@ import Mathlib.Order.Monotone.Defs
 import Mathlib.Data.Int.Order.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Arctan
 
+namespace AM1.Cwi1
+
 /-- "Increasing" translates to mathlib as `StrictMono` -/
 theorem zad1_inc [Preorder α] [Preorder β] [Preorder γ] {f : α → β} {g : β → γ}
     (hf : StrictMono f) (hg : StrictMono g) : StrictMono (g ∘ f) :=
@@ -56,7 +58,7 @@ theorem zad5c : arccos 0 = π / 2 := arccos_zero
 theorem zad5d : arctan 0 = 0 := arctan_zero
 
 /-- For some reason arc cotangent isn't defined in mathlib -/
-noncomputable def Real.arccot (x : ℝ) : ℝ := π / 2 - arctan x
+noncomputable def _root_.Real.arccot (x : ℝ) : ℝ := π / 2 - arctan x
 
 theorem zad5e : arccot 0 = π / 2 := by simp [arccot]
 
