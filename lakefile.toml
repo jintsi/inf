@@ -1,6 +1,6 @@
 name = "inf"
-version = "0.1.0"
 defaultTargets = ["Inf"]
+reservoir = false
 
 [[lean_lib]]
 name = "Inf"

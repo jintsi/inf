@@ -36,8 +36,9 @@ theorem zad3_neg (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, x i ∈ Set.Ioo
     rw [← add_assoc, mul_add, mul_one]
     apply add_lt_add ih
     have h := Finset.prod_lt_prod
-      (fun i hi => add_neg_cancel (1 : ℝ) ▸ add_lt_add_left (hx i (Finset.mem_range.mp hi).step).left 1)
-      (fun i hi => (add_lt_add_left (hx i (Finset.mem_range.mp hi).step).right 1).le)
+      (fun i hi => add_neg_cancel (1 : ℝ) ▸
+        add_lt_add_right (hx i (Nat.lt_succ_of_lt <| Finset.mem_range.mp hi)).left 1)
+      (fun i hi => (add_lt_add_right (hx i (Nat.lt_succ_of_lt <| Finset.mem_range.mp hi)).right 1).le)
       ⟨0, by simp; omega, by simp; exact (hx 0 (by norm_num)).right⟩
     rw [add_zero, Finset.prod_const_one] at h
     exact lt_mul_of_lt_one_left (hx n n.lt_succ_self).right h
@@ -56,7 +57,7 @@ theorem zad3_pos (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, 0 < x i) :
     apply add_lt_add ih
     have h := Finset.prod_lt_prod
       (fun i hi => (by simp))
-      (fun i hi => (add_lt_add_left (hx i (Finset.mem_range.mp hi).step) 1).le)
+      (fun i hi => (add_lt_add_right (hx i (Nat.lt_succ_of_lt <| Finset.mem_range.mp hi)) 1).le)
       ⟨0, by simp; omega, by simp; exact (hx 0 (by norm_num))⟩
     rw [add_zero, Finset.prod_const_one] at h
     exact lt_mul_of_one_lt_left (hx n n.lt_succ_self) h
