@@ -39,7 +39,7 @@ lemma HasLim.const [AddLeftMono R] (a : R) : HasLim (fun _ => a) a := by
   intro e he; exists 0; intro n hn; convert he.lt; simp
 
 /-- **Th. 2.2.** A convergent sequence has only one limit. -/
-lemma HasLim.unique [IsOrderedRing R] (a : ℕ → R) : Subsingleton {g // HasLim a g} where
+instance HasLim.subsingleton [IsOrderedRing R] (a : ℕ → R) : Subsingleton {g // HasLim a g} where
   allEq := by
     simp [HasLim]
     intro g1 hg1 g2 hg2
@@ -53,6 +53,9 @@ lemma HasLim.unique [IsOrderedRing R] (a : ℕ → R) : Subsingleton {g // HasLi
     have h := add_lt_add hg1 hg2; revert h; simp
     convert abs_sub_le g1 (a n) g2 using 2
     exact abs_sub_comm (a n) g1
+
+lemma HasLim.eq [IsOrderedRing R] {a : ℕ → R} {g₁ g₂ : R} : HasLim a g₁ → HasLim a g₂ → g₁ = g₂ :=
+  fun h₁ h₂ => Subtype.val_inj.mpr ((subsingleton a).allEq ⟨g₁, h₁⟩ ⟨g₂, h₂⟩)
 
 /-- **Th. 2.3.** A convergent sequence is bounded. -/
 lemma HasLim.bddAbove [IsOrderedRing R] {a : ℕ → R} {g : R} (h : HasLim a g) :
