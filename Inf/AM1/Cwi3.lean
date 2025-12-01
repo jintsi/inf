@@ -73,7 +73,7 @@ theorem Zad5a : HasLim' (fun n => n ^ 2 / (sqrt (n + 1) - sqrt (n + 4))) ⊥ := 
 
 noncomputable def _root_.Real.cbrt := fun r : ℝ => r.rpow 3⁻¹
 
-theorem Zad5b : HasLim (fun n => n * (cbrt (n ^ 3 + n) - n)) 3⁻¹ := by
+theorem Zad5b : HasLim (fun n => n * (cbrt (n ^ 3 + n) - n)) (1 / 3) := by
   apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
     n * (cbrt (n ^ 3 + n) - n) = n * n / (cbrt (n ^ 3 + n) ^ 2 + cbrt (n ^ 3 + n) * n + n ^ 2) := by
       rw [mul_div_assoc]; simp; left
@@ -93,14 +93,14 @@ theorem Zad5b : HasLim (fun n => n * (cbrt (n ^ 3 + n) - n)) 3⁻¹ := by
         field_simp
       )
   ⟩
-  apply inv; case hg => simp
+  simp; apply inv; case hg => simp
   rw [show (3 : ℝ) = 1 + 1 + 1 by norm_num]; simp [cbrt]
   apply add_const; apply HasLim.add
-  · convert ((HasLim'.id.top_pow_const' zero_lt_two).inv_top.const_add.pow_const' ?_ (inv_nonneg.mpr zero_le_three)).pow_const' ?_ zero_le_two
+  · convert (((HasLim'.id.top_pow_const' zero_lt_two).inv_top.const_add _).pow_const' ?_ (inv_nonneg.mpr zero_le_three)).pow_const' ?_ zero_le_two
     · simp; rfl
     · simp
     all_goals intro n; positivity
-  · convert (HasLim'.id.top_pow_const' zero_lt_two).inv_top.const_add.pow_const' ?_ (inv_nonneg.mpr zero_le_three) <;> simp
+  · convert ((HasLim'.id.top_pow_const' zero_lt_two).inv_top.const_add _).pow_const' ?_ (inv_nonneg.mpr zero_le_three) <;> simp
     intro n; positivity
 
 theorem Zad5c : HasLim (fun n => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) 1 := by
@@ -122,4 +122,44 @@ theorem Zad5c : HasLim (fun n => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) 1 := by
       (hasLim_pow_inv.pow_const' (fun n => by positivity) zero_le_two)
     simp
 
-/-! TODO: the rest -/
+theorem Zad5d : HasLim (fun n => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ)) 7 := by
+  apply squeeze (a := fun n => (7 ^ (n - 1) : ℝ) ^ (n⁻¹ : ℝ)) (c := fun n => (7 ^ n + 7 ^ n : ℝ) ^ (n⁻¹ : ℝ))
+  · exact ⟨1, fun n hn => by
+      apply rpow_le_rpow
+      · simp
+      · rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]
+        · exact le_trans (pow_le_pow_right₀ (by simp) (show n - 1 ≤ n by simp)) (le_add_of_nonneg_right (by positivity))
+        · calc
+            (7 : ℝ) ^ (n - 1) + 3 ^ n = 7 ^ (n - 1) + 3 * 3 ^ (n - 1) := by simp; rw [mul_pow_sub_one]; positivity
+            _ ≤ 7 ^ (n - 1) + 6 * 7 ^ (n - 1) := by
+              simp; apply mul_le_mul <;> (try norm_num); apply pow_le_pow_left₀ <;> norm_num
+            _ = 7 ^ n := by simp [← one_add_mul]; norm_num; rw [mul_pow_sub_one]; positivity
+      · positivity⟩
+  · exact ⟨0, fun n hn => by
+      apply rpow_le_rpow
+      · rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]
+        · positivity
+        · apply pow_le_pow_left₀ <;> norm_num
+      · simp; rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]
+        · apply pow_le_pow_left₀ <;> norm_num
+        · exact le_trans (show -3 ^ n ≤ 0 by simp) (by positivity)
+      · simp⟩
+  · apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
+      ((7 : ℝ) ^ (n - 1)) ^ (n : ℝ)⁻¹ = (7 ^ n / 7) ^ (n : ℝ)⁻¹ := by congr; field_simp; rw [pow_sub_one_mul]; positivity
+      _ = 7 / 7 ^ (n : ℝ)⁻¹ := by rw [div_rpow, pow_rpow_inv_natCast] <;> positivity
+    ⟩
+    convert const_div 7 (hasLim_const_pow_inv (show 1 < 7 by norm_num)); simp
+  · apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
+      (7 ^ n + 7 ^ n : ℝ) ^ (n : ℝ)⁻¹ = (2 * 7 ^ n) ^ (n : ℝ)⁻¹ := by congr; symm; exact two_mul _
+      _ = 2 ^ (n : ℝ)⁻¹ * 7 := by rw [mul_rpow, pow_rpow_inv_natCast] <;> positivity
+    ⟩
+    convert mul_const 7 (hasLim_const_pow_inv (show 1 < 2 by norm_num)); simp
+
+theorem Zad6 {a : ℕ → ℤ} {g : ℝ} (h : HasLim (fun n => (a n : ℝ)) g) : ∃ n₀, ∀ n ≥ n₀, a n = g := by
+  have ⟨n₀, h1⟩ := hasLim_iff_isCauSeq.mp ⟨g, h⟩ 1 (by simp); exists n₀
+  have hc : ∀ n ≥ n₀, (a n₀ : ℝ) = a n := by
+    intro n hn; replace ⟨h1, h2⟩ := abs_sub_lt_iff.mp (h1 n hn)
+    rw [← Int.cast_one, ← Int.cast_sub, Int.cast_lt] at h1 h2
+    congr 1; omega
+  replace h := (HasLim.of_eventually_eq ⟨n₀, hc⟩ h).eq (const _)
+  intro n hn; specialize hc n hn; rw [← hc, ← h]

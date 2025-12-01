@@ -1,7 +1,6 @@
 import Inf.AM1.Limit
-import Mathlib.Algebra.Group.MinimalAxioms
 
-/-! # Some notes from `Mathlib/Algebra/Module/Defs.lean`
+/-! # Some notes from `Mathlib/Algebra/Module/Defs.lean`:
 
 in Mathlib, the way of saying that `V` is a vector space over `K` is:
 `[Field K] [AddCommGroup V] [Module K V]`.
@@ -82,12 +81,12 @@ theorem Zad5_D2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧
 theorem Zad5_D2b : IsSubmodule ℝ {f : ℕ → ℝ | ∃ g, HasLim f g} where
   zero_mem := ⟨0, HasLim.const 0⟩
   add_mem := by simp; intro a b ga ha gb hb; exact ⟨ga + gb, HasLim.add ha hb⟩
-  smul_mem := by simp [Pi.smul_def]; intro c a g h; exact ⟨c * g, HasLim.const_mul h⟩
+  smul_mem := by simp [Pi.smul_def]; intro c a g h; exact ⟨c * g, HasLim.const_mul c h⟩
 
 theorem Zad5_D2c : IsSubmodule ℝ {f : ℕ → ℝ | HasLim f 0} where
   zero_mem := HasLim.const 0
   add_mem := fun ha hb => by simpa using HasLim.add ha hb
-  smul_mem := fun c a h => by simpa using HasLim.const_mul h
+  smul_mem := fun c a h => by simpa using HasLim.const_mul c h
 
 theorem Zad5_D2d : ¬IsSubmodule ℝ {f : ℕ → ℝ | HasLim f 1} :=
   fun this => by simpa using HasLim.eq this.zero_mem (HasLim.const (0 : ℝ))

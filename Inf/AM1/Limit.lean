@@ -2,6 +2,7 @@ import Mathlib.Tactic
 import Mathlib.Algebra.Order.AbsoluteValue.Basic
 import Mathlib.GroupTheory.ArchimedeanDensely
 import Mathlib.Algebra.Order.Ring.WithTop
+import Mathlib.Topology.Sequences
 
 /-! # Roughly the content of lectures 2 & 3
 
@@ -96,10 +97,10 @@ lemma HasLim.add [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an
   rw [add_sub_add_comm]
   exact lt_of_le_of_lt (abs_add_le _ _) h
 
-lemma HasLim.add_const {a : ℕ → R} {g b : R} (h : HasLim a g) :
+lemma HasLim.add_const {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
     HasLim (fun n => a n + b) (g + b) := by simpa [HasLim]
 
-lemma HasLim.const_add (a : ℕ → R) {g b : R} (h : HasLim a g) :
+lemma HasLim.const_add {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
     HasLim (fun n => b + a n) (b + g) := by simpa [HasLim]
 
 lemma HasLim.mul [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an a) (hb : HasLim bn b) :
@@ -126,10 +127,10 @@ lemma HasLim.mul [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an
     (le_max_right (|a|+|b|) (1 + e))) at h
   grind; simp
 
-lemma HasLim.mul_const [IsOrderedRing R] {a : ℕ → R} {g b : R} (h : HasLim a g) :
+lemma HasLim.mul_const [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
     HasLim (fun n => a n * b) (g * b) := mul h (const b)
 
-lemma HasLim.const_mul [IsOrderedRing R] {a : ℕ → R} {g b : R} (h : HasLim a g) :
+lemma HasLim.const_mul [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
     HasLim (fun n => b * a n) (b * g) := mul (const b) h
 
 lemma HasLim.neg {a : ℕ → R} {g : R} (h : HasLim a g) :
@@ -140,10 +141,10 @@ lemma HasLim.sub [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an
     HasLim (fun n => an n - bn n) (a - b) := by
   convert add ha hb.neg using 1; funext; repeat ring
 
-lemma HasLim.sub_const {a : ℕ → R} {g b : R} (h : HasLim a g) :
+lemma HasLim.sub_const {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
     HasLim (fun n => a n - b) (g - b) := by simpa [HasLim]
 
-lemma HasLim.const_sub (a : ℕ → R) {g b : R} {h : HasLim a g} :
+lemma HasLim.const_sub {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
     HasLim (fun n => b - a n) (b - g) := by simp [HasLim, abs_sub_comm] at *; assumption
 
 lemma HasLim.inv [IsOrderedRing R] {a : ℕ → R} {g : R} (h : HasLim a g) (hg : g ≠ 0) :
@@ -178,11 +179,11 @@ lemma HasLim.div [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an
     (hne : b ≠ 0) : HasLim (fun n => an n / bn n) (a / b) := by
   convert mul ha (inv hb hne) using 1; funext; repeat field_simp
 
-lemma HasLim.div_const [IsOrderedRing R] {a : ℕ → R} {g b : R} (h : HasLim a g) :
+lemma HasLim.div_const [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
     HasLim (fun n => a n / b) (g / b) := by
   convert mul_const (b := b⁻¹) h using 1; funext; repeat field
 
-lemma HasLim.const_div [IsOrderedRing R] {a : ℕ → R} {g b : R} (h : HasLim a g) (hg : g ≠ 0) :
+lemma HasLim.const_div [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) (hg : g ≠ 0) :
     HasLim (fun n => b / a n) (b / g) := div (const _) h hg
 
 /-- **Th. 2.5.** (continuity of absolute value) -/
@@ -218,7 +219,7 @@ lemma HasLim.squeeze [IsOrderedRing R] {a b c : ℕ → R} {g : R} (hab : ∃ n�
     (hbc : ∃ n₀, ∀ n ≥ n₀, b n ≤ c n) (ha : HasLim a g) (hc : HasLim c g) : HasLim b g := by
   intro e he;
   let ⟨n, h⟩ := exists_forall_ge_and hab <| exists_forall_ge_and hbc <| exists_forall_ge_and (ha e he) (hc e he)
-  exists n; intro n hn; let ⟨hab, hbc, ha, hc⟩ := h n hn
+  exists n; intro n hn; replace ⟨hab, hbc, ha, hc⟩ := h n hn
   rw [abs_sub_lt_iff]; constructor
   · exact lt_of_le_of_lt (by simpa) (lt_of_abs_lt hc)
   · exact lt_of_le_of_lt (by linarith) (abs_sub_lt_iff.mp ha).right
@@ -489,3 +490,31 @@ theorem hasLim_pow_inv : HasLim (fun n => (n : ℝ) ^ (n⁻¹ : ℝ)) 1 := by
   rw [hasLim_iff_tendsto]
   convert tendsto_rpow_div.comp tendsto_natCast_atTop_atTop
   simp
+
+/-- **Th. 2.13.** Each subsequence of a convergent sequence converges to the same limit. -/
+theorem HasLim.subseq {a : ℕ → R} {g : R} (h : HasLim a g) {n : ℕ → ℕ} (hn : StrictMono n) :
+    HasLim (a ∘ n) g := by
+  have hnk : ∀ k, k ≤ n k := by
+    intro k; induction k
+    case zero => simp
+    case succ k ih => exact Nat.succ_le_of_lt (lt_of_le_of_lt ih (hn (Nat.lt_succ_self k)))
+  intro e he; replace ⟨n₀, h⟩ := h e he; exists n₀; intro k hk
+  exact h (n k) (le_trans hk (hnk k))
+
+/-- **Th. 2.14.** The Bolzano-Weierstrass theorem: every bounded sequence has a convergent subsequence. -/
+theorem hasLim_subseq_of_bounded {a : ℕ → ℝ} (ha : BddAbove (Set.range a)) (hb : BddBelow (Set.range a)) :
+    ∃ g, ∃ n : ℕ → ℕ, StrictMono n ∧ HasLim (a ∘ n) g := by
+  simp_rw [hasLim_iff_tendsto]
+  apply Exists.imp fun g => And.right
+  apply IsCompact.tendsto_subseq (s := Set.uIcc (iInf a) (iSup a)) isCompact_uIcc
+  intro n; rw [Set.mem_uIcc]; left; exact ⟨ciInf_le hb n, le_ciSup ha n⟩
+
+/-- **Th. 2.15.** Convergent sequences as exactly the Cauchy sequences. -/
+theorem hasLim_iff_isCauSeq {a : ℕ → ℝ} : (∃ g, HasLim a g) ↔ IsCauSeq abs a := by
+  constructor
+  · intro ⟨g, h⟩ e he; replace ⟨n, h⟩ := h (e / 2) (half_pos he); exists n; intro j hj
+    have hn := h n le_rfl; replace hj := h j hj; rw [abs_sub_comm] at hn
+    convert lt_of_le_of_lt (abs_sub_le (a j) g (a n)) (add_lt_add hj hn); norm_num
+  · intro h; exists CauSeq.lim ⟨a, h⟩; intro e he
+    replace ⟨n, h⟩ := CauSeq.equiv_def₃ (CauSeq.equiv_lim ⟨a, h⟩) he
+    exists n; intro n hn; exact h n hn n le_rfl
