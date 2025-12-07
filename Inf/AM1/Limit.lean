@@ -7,7 +7,7 @@ import Mathlib.Topology.Sequences
 /-! # Roughly the content of lectures 2 & 3
 
 Mathlib has its own definition for limits (`Filter.Tendsto`) involving filters,
-which I don't use here, opting to introduce the elementary definition `HasLim`.
+which I don't want to use here, opting to introduce the elementary definition `HasLim`.
 `hasLim_iff_tendsto` shows that the two definitions of a limit are equivalent,
 which is used solely for importing specific more advanced results from Mathlib.
 
@@ -461,17 +461,7 @@ lemma HasLim'.top_pow_const' {a : ℕ → ℝ} {r : ℝ} (hr : 0 < r) (h : HasLi
 
 /-- `HasLim` agrees with Mathlib's `Filter.Tendsto` on the reals. -/
 lemma hasLim_iff_tendsto {a : ℕ → ℝ} {g : ℝ} : HasLim a g ↔ Filter.Tendsto a Filter.atTop (nhds g) := by
-  rw [tendsto_iff_dist_tendsto_zero, tendsto_atTop_nhds, HasLim]; simp [Real.dist_eq]
-  constructor
-  · intro h U hz ho
-    have ⟨e, he, hs⟩ := exists_Ico_subset_of_mem_nhds (IsOpen.mem_nhds ho hz) ⟨1, zero_lt_one⟩
-    replace ⟨n, h⟩ := h e he; exists n; intro n hn; specialize h n hn
-    replace h := Set.mem_Ico.mpr ⟨abs_nonneg _, h⟩
-    exact Set.mem_of_mem_of_subset h hs
-  · intro h e he
-    replace ⟨n, h⟩ := h (Set.Ioo (-e) e) (Set.mem_Ioo.mpr ⟨neg_neg_of_pos he, he⟩) isOpen_Ioo
-    exists n; intro n hn; specialize h n hn
-    exact (Set.mem_Ioo.mp h).2
+  simp [HasLim, Metric.tendsto_atTop, Real.dist_eq]
 
 lemma hasLim'_top_iff_tendsto {a : ℕ → ℝ} : HasLim' a ⊤ ↔ Filter.Tendsto a Filter.atTop Filter.atTop := by
   simp [Filter.tendsto_atTop_atTop, HasLim']; constructor
