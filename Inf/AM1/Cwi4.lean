@@ -10,10 +10,10 @@ theorem Zad1 : ¬∃ g, HasRightLim (fun x => sin (x ^ 3)⁻¹) Set.univ 0 g := 
   · simp [Real.cbrt, WithBot.some, WithTop.some]; intro n; and_intros <;> positivity
   · simp [Real.cbrt, WithBot.some, WithTop.some]; intro n; and_intros <;> positivity
   · simp [Real.cbrt, HasLim']
-    convert ((HasLim'.id.top_add_const 1).inv_top.const_mul π⁻¹).pow_const'
+    convert ((HasLim'.id.top_add_const 1).inv_top.const_mul π⁻¹).rpow_const'
       (fun _ => by positivity) (show 0 ≤ 3⁻¹ by positivity); simp
   · simp [Real.cbrt, HasLim']
-    convert ((HasLim'.id.top_mul_pos (by positivity) (.const (2 * π))).const_add_top (π / 2)).inv_top.pow_const'
+    convert ((HasLim'.id.top_mul_pos (by positivity) (.const (2 * π))).const_add_top (π / 2)).inv_top.rpow_const'
       (fun _ => by positivity) (show 0 ≤ 3⁻¹ by positivity); simp
   · refine HasLim'.of_eq (b := fun _ => 0) (g := 0) ?_ (by exact HasLim.const 0)
     intro n; simp [Real.cbrt]; rw [← Nat.cast_ofNat, Real.rpow_inv_natCast_pow] <;> try positivity
