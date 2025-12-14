@@ -33,7 +33,7 @@ lemma Set.accPt_univ [IsOrderedRing R] [FloorSemiring R] {a : WithBot (WithTop R
   · exists (↑); simp; exact HasLim'.id
   exists fun n => a + 1 / (n + 1); simp [HasLim']; and_intros
   · intro n; positivity
-  convert (HasLim'.id.top_add (HasLim.const 1).bddBelow).inv_top.const_add a; simp
+  convert (HasLim'.id.top_add_const 1).inv_top.const_add a; simp
 
 lemma Set.accPt_subset {d D : Set R} {a : WithBot (WithTop R)} (hss: d ⊆ D) (ha : d.AccPt a) : D.AccPt a := by
   replace ⟨x, hx, ha⟩ := ha; exists x; and_intros; intro n; and_intros
@@ -48,7 +48,7 @@ lemma Set.accPt_Ioo_left [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h 
   · simp; apply add_lt_of_lt_sub_left; apply div_lt_self; simpa; linarith
   · simp [WithBot.some, WithTop.some, sub_eq_zero]; exact ⟨ne_of_gt h, by positivity⟩
   · simp [HasLim']
-    convert ((HasLim'.id.top_add (HasLim.const 2).bddBelow).inv_top.const_mul (b - a)).const_add a using 3
+    convert ((HasLim'.id.top_add_const 2).inv_top.const_mul (b - a)).const_add a using 3
     · simp [div_eq_mul_inv]
     · simp
 
@@ -59,7 +59,7 @@ lemma Set.accPt_Ioo_right [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h
   · simp; apply div_pos; simpa; positivity
   · simp [WithBot.some, WithTop.some, sub_eq_zero]; exact ⟨ne_of_gt h, by positivity⟩
   · simp [HasLim']
-    convert ((HasLim'.id.top_add (HasLim.const 2).bddBelow).inv_top.const_mul (b - a)).const_sub b using 3
+    convert ((HasLim'.id.top_add_const 2).inv_top.const_mul (b - a)).const_sub b using 3
     · simp [div_eq_mul_inv]
     · simp
 
@@ -76,10 +76,17 @@ def HasLimAt (f : R → S) (D : Set R := Set.univ) (a : WithBot (WithTop R)) (g 
 /-- **Th. 4.1.** If a limit exists, it's unique. -/
 lemma HasLimAt.eq [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)}
     {g₁ g₂ : WithBot (WithTop S)} (ha : D.AccPt a) : HasLimAt f D a g₁ → HasLimAt f D a g₂ → g₁ = g₂ := by
-  replace ⟨x, hx, ha⟩ := ha; intro h1 h2; specialize h1 x hx ha; specialize h2 x hx ha
-  apply le_antisymm
-  · exact HasLim'.le ⟨0, fun _ _ => le_rfl⟩ h1 h2
-  · exact HasLim'.le ⟨0, fun _ _ => le_rfl⟩ h2 h1
+  replace ⟨x, hx, ha⟩ := ha; intro h1 h2; specialize h1 x hx ha; specialize h2 x hx ha; exact h1.eq h2
+
+/-- If the images of two sequences as above do not converge to the same value,
+the limit does not exist. -/
+lemma not_hasLimAt_of_ne [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)}
+    {x₁ x₂ : ℕ → R} {g₁ g₂ : WithBot (WithTop S)} :
+    (∀ n, x₁ n ∈ D ∧ some (some (x₁ n)) ≠ a) → (∀ n, x₂ n ∈ D ∧ some (some (x₂ n)) ≠ a) →
+    HasLim' x₁ a → HasLim' x₂ a → HasLim' (f ∘ x₁) g₁ → HasLim' (f ∘ x₂) g₂ → g₁ ≠ g₂ → ¬∃ g, HasLimAt f D a g := by
+  intro hx1 hx2 h1 h2 hf1 hf2 hne ⟨g, hg⟩; revert hne; simp
+  apply hg x₁ hx1 at h1; apply hg x₂ hx2 at h2
+  exact (hf1.eq h1).trans (h2.eq hf2)
 
 /-- **Th. 4.2.** Cauchy's (epsilon-delta) definition is equivalent (finite-finite case). -/
 lemma HasLimAt.def [IsOrderedRing R] [FloorSemiring R] {f : R → S} {D : Set R} {a : R} {g : S} :
@@ -219,11 +226,23 @@ lemma HasLimAt.def_bot_bot [IsOrderedRing R] [FloorSemiring R] {f : R → S} {D 
     simp at hx
     exact h (x n) hx hb
 
+lemma HasLimAt.of_eq {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : WithBot (WithTop S)}
+    (heq : ∀ x ∈ D, ↑x ≠ a → f x = h x) (hh : HasLimAt h D a g) : HasLimAt f D a g :=
+  fun x hx ha => HasLim'.of_eq (fun n => heq (x n) (hx n).left (hx n).right) (hh x hx ha)
+
 lemma HasLimAt.subset {f : R → S} {d D : Set R} {a : WithBot (WithTop R)} {g : WithBot (WithTop S)}
     (hd : d ⊆ D) : HasLimAt f D a g → HasLimAt f d a g :=
   fun h x hx => h x fun n => ⟨Set.mem_of_subset_of_mem hd (hx n).1, (hx n).2⟩
 
-lemma hasLimAt_id {D : Set R} (a : WithBot (WithTop R)) : HasLimAt id D a a := fun _ _ => id
+lemma HasLimAt.of_eq' [IsOrderedRing R] {f h : R → S} {D : Set R} {a lb ub : R} {g : WithBot (WithTop S)}
+    (hin : a ∈ Set.Ioo lb ub) (heq : ∀ x ∈ D ∩ Set.Ioo lb ub, ↑x ≠ a → f x = h x) (hh : HasLimAt h D a g) :
+    HasLimAt f D a g := by
+  intro x hx ha; refine HasLim'.of_eventually_eq (b := h ∘ x) ?_ (hh x hx ha)
+  have ⟨n, h⟩ := exists_forall_ge_and (ha.eventually_gt hin.left) (ha.eventually_lt hin.right)
+  exists n; intro n hn; specialize h n hn; simp [WithBot.some, WithTop.some] at hx
+  exact heq (x n) ⟨(hx n).left, h⟩ (hx n).right
+
+lemma hasLimAt_id {D : Set R} (a : WithBot (WithTop R)) : HasLimAt (fun x => x) D a a := fun _ _ => id
 
 lemma hasLimAt_const [AddLeftMono S] {D : Set R} (a : WithBot (WithTop R)) (c : S) :
     HasLimAt (fun _ => c) D a c := fun _ _ _ => HasLim.const c
@@ -454,6 +473,25 @@ lemma HasLimAt.div_bot [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBo
     (hf : HasLimAt f D a g) (hh : HasLimAt h D a ⊥) : HasLimAt (fun x => f x / h x) D a 0 := by
   simp [div_eq_mul_inv]; convert hf.mul hh.inv_bot; simp
 
+lemma HasLimAt.pow_const [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
+    (n : ℕ) (h : HasLimAt f D a g) : HasLimAt (fun x => (f x) ^ n) D a (g ^ n) := by
+  induction n
+  case zero => simp; exact hasLimAt_const a 1
+  case succ n ih => simp [pow_succ]; exact mul ih h
+
+lemma HasLimAt.rpow_const [IsOrderedRing R] {f : R → ℝ} {D : Set R} {a lb ub : R} {g r : ℝ}
+    (hin : a ∈ Set.Ioo lb ub) (hnn : ∀ x ∈ D ∩ Set.Ioo lb ub, x ≠ a → 0 ≤ f x) (hr : 0 ≤ r)
+    (h : HasLimAt f D a g) : HasLimAt (fun x => (f x) ^ r) D a (g ^ r : ℝ) := by
+  intro x hx ha; refine HasLim'.rpow_const ?_ hr (h x hx ha)
+  have ⟨n, h⟩ := exists_forall_ge_and (ha.eventually_gt hin.left) (ha.eventually_lt hin.right)
+  exists n; intro n hn; simp [WithBot.some, WithTop.some] at hx
+  exact hnn (x n) ⟨(hx n).left, h n hn⟩ (hx n).right
+
+lemma HasLimAt.rpow_const' [IsOrderedRing R] {f : R → ℝ} {D : Set R} {a : R} {g r : ℝ}
+    (hnn : ∀ x ∈ D, x ≠ a → 0 ≤ f x) (hr : 0 ≤ r) (h : HasLimAt f D a g) :
+    HasLimAt (fun x => (f x) ^ r) D a (g ^ r : ℝ) :=
+  rpow_const ⟨sub_one_lt a, lt_add_one a⟩ (fun x ⟨hd, _⟩ => hnn x hd) hr h
+
 abbrev HasLeftLim (f : R → S) (D : Set R := Set.univ) (a : R) (g : WithBot (WithTop S)) :=
   HasLimAt f (D ∩ Set.Iio a) a g
 
@@ -541,7 +579,7 @@ lemma hasLimAt_iff_left_and_right [IsOrderedRing R] [FloorSemiring R] {f : R →
       case inr h => exact hr x hx h (lt_min_iff.mp (abs_lt.mp hd).2).2
 
 /-- **Th. 5.3.** Limit doesn't exist if the left and right limits disagree. -/
-lemma hasLimAt_of_left_ne_right [IsOrderedRing R] [FloorSemiring R] [IsOrderedRing S] {f : R → S} {D : Set R} {a : R}
+lemma not_hasLimAt_of_left_ne_right [IsOrderedRing R] [FloorSemiring R] [IsOrderedRing S] {f : R → S} {D : Set R} {a : R}
     {g₁ g₂ : WithBot (WithTop S)} (hal : (D ∩ Set.Iio a).AccPt a) (har : (D ∩ Set.Ioi a).AccPt a)
     (hl : HasLeftLim f D a g₁) (hr : HasRightLim f D a g₂) (hne : g₁ ≠ g₂) : ¬∃ g, HasLimAt f D a g := by
   by_contra!; replace ⟨g, this⟩ := this
