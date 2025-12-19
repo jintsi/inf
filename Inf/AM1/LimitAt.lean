@@ -41,8 +41,8 @@ lemma Set.accPt_subset {d D : Set R} {a : WithBot (WithTop R)} (hss: d ⊆ D) (h
   · exact (hx n).2
   · exact ha
 
-@[simp]
-lemma Set.accPt_Ioo_left [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h : a < b) : (Set.Ioo a b).AccPt a := by
+lemma Set.accPt_Ioo_left [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h : a < b) :
+    (Set.Ioo a b).AccPt a := by
   exists fun n => a + (b - a) / (n + 2); and_intros; intro n; and_intros
   · simp; apply div_pos; simpa; positivity
   · simp; apply add_lt_of_lt_sub_left; apply div_lt_self; simpa; linarith
@@ -52,8 +52,8 @@ lemma Set.accPt_Ioo_left [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h 
     · simp [div_eq_mul_inv]
     · simp
 
-@[simp]
-lemma Set.accPt_Ioo_right [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h : a < b) : (Set.Ioo a b).AccPt b := by
+lemma Set.accPt_Ioo_right [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h : a < b) :
+    (Set.Ioo a b).AccPt b := by
   exists fun n => b - (b - a) / (n + 2); and_intros; intro n; and_intros
   · simp; rw [lt_sub_comm]; apply div_lt_self; simpa; linarith
   · simp; apply div_pos; simpa; positivity
@@ -62,6 +62,82 @@ lemma Set.accPt_Ioo_right [IsStrictOrderedRing R] [FloorSemiring R] {a b : R} (h
     convert ((HasLim'.id.top_add_const 2).inv_top.const_mul (b - a)).const_sub b using 3
     · simp [div_eq_mul_inv]
     · simp
+
+@[simp]
+lemma Set.accPt_Ioo [IsStrictOrderedRing R] [FloorSemiring R] {a b c : R} (h : a < b) :
+    (Set.Ioo a b).AccPt c ↔ c ∈ Set.Icc a b := by
+  constructor
+  · intro ⟨x, hx, hc⟩; simp [HasLim'] at hc
+    exact ⟨hc.const_le ⟨0, fun n _ => (hx n).1.1.le⟩, hc.le_const ⟨0, fun n _ => (hx n).1.2.le⟩⟩
+  · intro ⟨ha, hb⟩; obtain ha | ha := lt_or_eq_of_le ha
+    · exact accPt_subset (Ioo_subset_Ioo_right hb) (accPt_Ioo_right ha)
+    · subst ha; exact accPt_Ioo_left h
+
+@[simp]
+lemma Set.accPt_Icc [IsStrictOrderedRing R] [FloorSemiring R] {a b c : R} (h : a < b) :
+    (Set.Icc a b).AccPt c ↔ c ∈ Set.Icc a b := by
+  constructor
+  · intro ⟨x, hx, hc⟩; simp [HasLim'] at hc
+    exact ⟨hc.const_le ⟨0, fun n _ => (hx n).1.1⟩, hc.le_const ⟨0, fun n _ => (hx n).1.2⟩⟩
+  · rw [← accPt_Ioo h]; exact accPt_subset Ioo_subset_Icc_self
+
+@[simp]
+lemma Set.accPt_Ico [IsStrictOrderedRing R] [FloorSemiring R] {a b c : R} (h : a < b) :
+    (Set.Ico a b).AccPt c ↔ c ∈ Set.Icc a b :=
+  ⟨(accPt_Icc h).mp.comp (accPt_subset Ico_subset_Icc_self),
+    (accPt_subset Ioo_subset_Ico_self).comp (accPt_Ioo h).mpr⟩
+
+@[simp]
+lemma Set.accPt_Ioc [IsStrictOrderedRing R] [FloorSemiring R] {a b c : R} (h : a < b) :
+    (Set.Ioc a b).AccPt c ↔ c ∈ Set.Icc a b :=
+  ⟨(accPt_Icc h).mp.comp (accPt_subset Ioc_subset_Icc_self),
+    (accPt_subset Ioo_subset_Ioc_self).comp (accPt_Ioo h).mpr⟩
+
+@[simp]
+lemma Set.accPt_Iio [IsStrictOrderedRing R] [FloorSemiring R] {a : R} {b : WithBot (WithTop R)} :
+    (Set.Iio a).AccPt b ↔ b ≤ a := by
+  constructor; · intro ⟨x, hx, hb⟩; exact hb.le_const ⟨0, fun n _ => (hx n).1.le⟩
+  match b with
+  | (b : R) =>
+    simp; intro h; apply accPt_subset (Ioo_subset_Iio_self (a := b - 1)); rw [accPt_Ioo]; simpa; grw [h]; simp
+  | ⊤ => contrapose!; intro; simp [Top.top]; apply WithTop.coe_lt_top
+  | ⊥ =>
+    intro _; exists fun n => a - 1 + (-n); simp; and_intros
+    · intro n; ring_nf; apply add_lt_of_neg_of_le <;> simp
+    · exact HasLim'.id.neg_top.const_add_bot (a - 1)
+
+@[simp]
+lemma Set.accPt_Iic [IsStrictOrderedRing R] [FloorSemiring R] {a : R} {b : WithBot (WithTop R)} :
+    (Set.Iic a).AccPt b ↔ b ≤ a := by
+  constructor; · intro ⟨x, hx, hb⟩; exact hb.le_const ⟨0, fun n _ => (hx n).1⟩
+  match b with
+  | (b : R) =>
+    simp; intro h; apply accPt_subset (Ioc_subset_Iic_self (a := b - 1)); rw [accPt_Ioc]; simpa; grw [h]; simp
+  | ⊤ => contrapose!; intro; simp [Top.top]; apply WithTop.coe_lt_top
+  | ⊥ => intro _; exists fun n => a + (-n); simp; exact HasLim'.id.neg_top.const_add_bot a
+
+@[simp]
+lemma Set.accPt_Ioi [IsStrictOrderedRing R] [FloorSemiring R] {a : R} {b : WithBot (WithTop R)} :
+    (Set.Ioi a).AccPt b ↔ ↑a ≤ b := by
+  constructor; · intro ⟨x, hx, hb⟩; exact hb.const_le ⟨0, fun n _ => (hx n).1.le⟩
+  match b with
+  | (b : R) =>
+    simp; intro h; apply accPt_subset (Ioo_subset_Ioi_self (b := b + 1)); rw [accPt_Ioo]; simpa; grw [h]; simp
+  | ⊤ =>
+    intro _; exists fun n => a + 1 + n; simp [Top.top, WithBot.some]; and_intros
+    · intro n; apply lt_add_of_lt_of_nonneg <;> simp
+    · exact HasLim'.id.const_add_top (a + 1)
+  | ⊥ => simp
+
+@[simp]
+lemma Set.accPt_Ici [IsStrictOrderedRing R] [FloorSemiring R] {a : R} {b : WithBot (WithTop R)} :
+    (Set.Ici a).AccPt b ↔ ↑a ≤ b := by
+  constructor; · intro ⟨x, hx, hb⟩; exact hb.const_le ⟨0, fun n _ => (hx n).1⟩
+  match b with
+  | (b : R) =>
+    simp; intro h; apply accPt_subset (Ico_subset_Ici_self (b := b + 1)); rw [accPt_Ico]; simpa; grw [h]; simp
+  | ⊤ => intro _; exists fun n => a + n; simp [Top.top, WithBot.some]; exact HasLim'.id.const_add_top a
+  | ⊥ => simp
 
 /-- Limit of a function (Heine's definition). `g` is a the limit of `f` at `a` if the image
 of any sequence converging to `a` converges to `g`.
@@ -242,6 +318,16 @@ lemma HasLimAt.of_eq' [IsOrderedRing R] {f h : R → S} {D : Set R} {a lb ub : R
   exists n; intro n hn; specialize h n hn; simp [WithBot.some, WithTop.some] at hx
   exact heq (x n) ⟨(hx n).left, h⟩ (hx n).right
 
+lemma HasLimAt.of_eq_top {f h : R → S} {D : Set R} {g : WithBot (WithTop S)} (a : R)
+    (heq : ∀ x ∈ D ∩ Set.Ioi a, f x = h x) (hh : HasLimAt h D ⊤ g) : HasLimAt f D ⊤ g := by
+  intro x hx ha; refine HasLim'.of_eventually_eq (b := h ∘ x) ?_ (hh x hx ha)
+  have ⟨n, h⟩ := ha a; exists n; intro n hn; exact heq (x n) ⟨(hx n).left, h n hn⟩
+
+lemma HasLimAt.of_eq_bot {f h : R → S} {D : Set R} {g : WithBot (WithTop S)} (a : R)
+    (heq : ∀ x ∈ D ∩ Set.Iio a, f x = h x) (hh : HasLimAt h D ⊥ g) : HasLimAt f D ⊥ g := by
+  intro x hx ha; refine HasLim'.of_eventually_eq (b := h ∘ x) ?_ (hh x hx ha)
+  have ⟨n, h⟩ := ha a; exists n; intro n hn; exact heq (x n) ⟨(hx n).left, h n hn⟩
+
 lemma hasLimAt_id {D : Set R} (a : WithBot (WithTop R)) : HasLimAt (fun x => x) D a a := fun _ _ => id
 
 lemma hasLimAt_const [AddLeftMono S] {D : Set R} (a : WithBot (WithTop R)) (c : S) :
@@ -379,7 +465,7 @@ lemma HasLimAt.sub [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (W
   fun x hx ha => (hf x hx ha).sub (hh x hx ha)
 
 lemma HasLimAt.sub_const [AddRightStrictMono S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)}
-    {g : WithBot (WithTop S)} (h : HasLimAt f D a g) (r : S) : HasLimAt (fun x => f x - r) D a (g + ↑(-r)) := by
+    {g : WithBot (WithTop S)} (r : S) (h : HasLimAt f D a g) : HasLimAt (fun x => f x - r) D a (g + ↑(-r)) := by
   convert h.add_const (-r) using 2; apply sub_eq_add_neg
 
 lemma HasLimAt.const_sub [AddRightStrictMono S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
@@ -408,33 +494,65 @@ lemma HasLimAt.top_mul_pos [IsOrderedRing S] {f h : R → S} {D : Set R} {a : Wi
     (hg : 0 < g) (hf : HasLimAt f D a ⊤) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x * h x) D a ⊤ :=
   fun x hx ha => (hf x hx ha).top_mul_pos hg (hh x hx ha)
 
+lemma HasLimAt.top_mul_const [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : 0 < r) (hf : HasLimAt f D a ⊤) : HasLimAt (fun x => f x * r) D a ⊤ :=
+  hf.top_mul_pos hr (hasLimAt_const a r)
+
 lemma HasLimAt.top_mul_neg [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : g < 0) (hf : HasLimAt f D a ⊤) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x * h x) D a ⊥ :=
   fun x hx ha => (hf x hx ha).top_mul_neg hg (hh x hx ha)
+
+lemma HasLimAt.top_mul_const' [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : r < 0) (hf : HasLimAt f D a ⊤) : HasLimAt (fun x => f x * r) D a ⊥ :=
+  hf.top_mul_neg hr (hasLimAt_const a r)
 
 lemma HasLimAt.pos_mul_top [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : 0 < g) (hf : HasLimAt f D a g) (hh : HasLimAt h D a ⊤) : HasLimAt (fun x => f x * h x) D a ⊤ :=
   fun x hx ha => (hh x hx ha).pos_mul_top hg (hf x hx ha)
 
+lemma HasLimAt.const_mul_top [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : 0 < r) (hf : HasLimAt f D a ⊤) : HasLimAt (fun x => r * f x) D a ⊤ :=
+  (hasLimAt_const a r).pos_mul_top hr hf
+
 lemma HasLimAt.neg_mul_top [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : g < 0) (hf : HasLimAt f D a g) (hh : HasLimAt h D a ⊤) : HasLimAt (fun x => f x * h x) D a ⊥ :=
   fun x hx ha => (hh x hx ha).neg_mul_top hg (hf x hx ha)
+
+lemma HasLimAt.const_mul_top' [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : r < 0) (hf : HasLimAt f D a ⊤) : HasLimAt (fun x => r * f x) D a ⊥ :=
+  (hasLimAt_const a r).neg_mul_top hr hf
 
 lemma HasLimAt.bot_mul_pos [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : 0 < g) (hf : HasLimAt f D a ⊥) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x * h x) D a ⊥ :=
   fun x hx ha => (hf x hx ha).bot_mul_pos hg (hh x hx ha)
 
+lemma HasLimAt.bot_mul_const [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : 0 < r) (hf : HasLimAt f D a ⊥) : HasLimAt (fun x => f x * r) D a ⊥ :=
+  hf.bot_mul_pos hr (hasLimAt_const a r)
+
 lemma HasLimAt.bot_mul_neg [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : g < 0) (hf : HasLimAt f D a ⊥) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x * h x) D a ⊤ :=
   fun x hx ha => (hf x hx ha).bot_mul_neg hg (hh x hx ha)
+
+lemma HasLimAt.bot_mul_const' [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : r < 0) (hf : HasLimAt f D a ⊥) : HasLimAt (fun x => f x * r) D a ⊤ :=
+  hf.bot_mul_neg hr (hasLimAt_const a r)
 
 lemma HasLimAt.pos_mul_bot [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : 0 < g) (hf : HasLimAt f D a g) (hh : HasLimAt h D a ⊥) : HasLimAt (fun x => f x * h x) D a ⊥ :=
   fun x hx ha => (hh x hx ha).pos_mul_bot hg (hf x hx ha)
 
+lemma HasLimAt.const_mul_bot [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : 0 < r) (hf : HasLimAt f D a ⊥) : HasLimAt (fun x => r * f x) D a ⊥ :=
+  (hasLimAt_const a r).pos_mul_bot hr hf
+
 lemma HasLimAt.neg_mul_bot [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : g < 0) (hf : HasLimAt f D a g) (hh : HasLimAt h D a ⊥) : HasLimAt (fun x => f x * h x) D a ⊤ :=
   fun x hx ha => (hh x hx ha).neg_mul_bot hg (hf x hx ha)
+
+lemma HasLimAt.const_mul_bot' [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : r < 0) (hf : HasLimAt f D a ⊥) : HasLimAt (fun x => r * f x) D a ⊤ :=
+  (hasLimAt_const a r).neg_mul_bot hr hf
 
 lemma HasLimAt.inv [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (h : HasLimAt f D a g) (hg : g ≠ 0) : HasLimAt (fun x => (f x)⁻¹) D a ↑g⁻¹ := fun x hx ha => (h x hx ha).inv hg
@@ -445,39 +563,95 @@ lemma HasLimAt.inv_top [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot 
 lemma HasLimAt.inv_bot [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)}
     (h : HasLimAt f D a ⊥) : HasLimAt (fun x => (f x)⁻¹) D a 0 := fun x hx ha => (h x hx ha).inv_bot
 
+lemma HasLimAt.inv_zero_pos [IsOrderedRing R] [FloorSemiring R] [IsOrderedRing S] {f : R → S} {D : Set R}
+    {a lb ub : R} (hin : a ∈ Set.Ioo lb ub) (hpos : ∀ x ∈ D ∩ Set.Ioo lb ub, x ≠ a → 0 < f x)
+    (h : HasLimAt f D a 0) : HasLimAt (fun x => (f x)⁻¹) D a ⊤ := by
+  rw [def_top']; apply def.mp at h
+  intro l; specialize h (max l 1)⁻¹ (inv_pos.mpr (lt_max_of_lt_right one_pos))
+  obtain ⟨d, hd, h⟩ := h; exists min d (min (a - lb) (ub - a)); simp; exists ⟨hd, hin⟩
+  intro x hx hne hb hlb hub; specialize h x hx hne hb; specialize hpos x ⟨hx, ?_, ?_⟩ hne
+  · apply neg_lt_of_abs_lt at hlb; simp at hlb; assumption
+  · apply lt_of_abs_lt at hub; simp at hub; assumption
+  rw [sub_zero, abs_of_pos hpos, lt_inv_comm₀ hpos (by simp)] at h
+  exact (max_lt_iff.mp h).left
+
+lemma HasLimAt.inv_zero_neg [IsOrderedRing R] [FloorSemiring R] [IsOrderedRing S] {f : R → S} {D : Set R}
+    {a lb ub : R} (hin : a ∈ Set.Ioo lb ub) (hneg : ∀ x ∈ D ∩ Set.Ioo lb ub, x ≠ a → f x < 0)
+    (h : HasLimAt f D a 0) : HasLimAt (fun x => (f x)⁻¹) D a ⊥ := by
+  apply of_eq fun x _ _ => show (f x)⁻¹ = -(-f x)⁻¹ by simp
+  apply neg_top; refine inv_zero_pos hin ?_ (by have := h.neg; simp at this; exact this)
+  simpa only [Left.neg_pos_iff]
+
 lemma HasLimAt.div [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g₁ g₂ : S}
     (hf : HasLimAt f D a g₁) (hh : HasLimAt h D a g₂) (hg : g₂ ≠ 0) : HasLimAt (fun x => f x / h x) D a (g₁ / g₂) := by
   simp [div_eq_mul_inv]; exact fun x hx ha => (hf x hx ha).mul ((hh x hx ha).inv hg)
+
+lemma HasLimAt.div_const [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
+    (r : S) (h : HasLimAt f D a g) : HasLimAt (fun x => f x / r) D a (g / r) := by
+  simp [div_eq_mul_inv]; exact fun x hx ha => (h x hx ha).mul_const r⁻¹
+
+lemma HasLimAt.const_div [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
+    (r : S) (h : HasLimAt f D a g) (hg : g ≠ 0) : HasLimAt (fun x => r / f x) D a (r / g) :=
+  (hasLimAt_const a r).div h hg
 
 lemma HasLimAt.top_div_pos [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : 0 < g) (hf : HasLimAt f D a ⊤) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x / h x) D a ⊤ := by
   simp [div_eq_mul_inv]; exact hf.top_mul_pos (inv_pos.mpr hg) (hh.inv hg.ne.symm)
 
+lemma HasLimAt.top_div_const [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : 0 < r) (hf : HasLimAt f D a ⊤) : HasLimAt (fun x => f x / r) D a ⊤ :=
+  hf.top_div_pos hr (hasLimAt_const a r)
+
 lemma HasLimAt.top_div_neg [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : g < 0) (hf : HasLimAt f D a ⊤) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x / h x) D a ⊥ := by
   simp [div_eq_mul_inv]; exact hf.top_mul_neg (inv_neg''.mpr hg) (hh.inv hg.ne)
+
+lemma HasLimAt.top_div_const' [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : r < 0) (hf : HasLimAt f D a ⊤) : HasLimAt (fun x => f x / r) D a ⊥ :=
+  hf.top_div_neg hr (hasLimAt_const a r)
 
 lemma HasLimAt.div_top [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hf : HasLimAt f D a g) (hh : HasLimAt h D a ⊤) : HasLimAt (fun x => f x / h x) D a 0 := by
   simp [div_eq_mul_inv]; convert hf.mul hh.inv_top; simp
 
+lemma HasLimAt.const_div_top [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)}
+    (r : S) (h : HasLimAt f D a ⊤) : HasLimAt (fun x => r / f x) D a 0 :=
+  (hasLimAt_const a r).div_top h
+
 lemma HasLimAt.bot_div_pos [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : 0 < g) (hf : HasLimAt f D a ⊥) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x / h x) D a ⊥ := by
   simp [div_eq_mul_inv]; exact hf.bot_mul_pos (inv_pos.mpr hg) (hh.inv hg.ne.symm)
+
+lemma HasLimAt.bot_div_const [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : 0 < r) (hf : HasLimAt f D a ⊥) : HasLimAt (fun x => f x / r) D a ⊥ :=
+  hf.bot_div_pos hr (hasLimAt_const a r)
 
 lemma HasLimAt.bot_div_neg [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hg : g < 0) (hf : HasLimAt f D a ⊥) (hh : HasLimAt h D a g) : HasLimAt (fun x => f x / h x) D a ⊤ := by
   simp [div_eq_mul_inv]; exact hf.bot_mul_neg (inv_neg''.mpr hg) (hh.inv hg.ne)
 
+lemma HasLimAt.bot_div_const' [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {r : S}
+    (hr : r < 0) (hf : HasLimAt f D a ⊥) : HasLimAt (fun x => f x / r) D a ⊤ :=
+  hf.bot_div_neg hr (hasLimAt_const a r)
+
 lemma HasLimAt.div_bot [IsOrderedRing S] {f h : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (hf : HasLimAt f D a g) (hh : HasLimAt h D a ⊥) : HasLimAt (fun x => f x / h x) D a 0 := by
   simp [div_eq_mul_inv]; convert hf.mul hh.inv_bot; simp
+
+lemma HasLimAt.const_div_bot [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)}
+    (r : S) (h : HasLimAt f D a ⊥) : HasLimAt (fun x => r / f x) D a 0 :=
+  (hasLimAt_const a r).div_bot h
 
 lemma HasLimAt.pow_const [IsOrderedRing S] {f : R → S} {D : Set R} {a : WithBot (WithTop R)} {g : S}
     (n : ℕ) (h : HasLimAt f D a g) : HasLimAt (fun x => (f x) ^ n) D a (g ^ n) := by
   induction n
   case zero => simp; exact hasLimAt_const a 1
   case succ n ih => simp [pow_succ]; exact mul ih h
+
+lemma HasLimAt.rpow_const' {f : R → ℝ} {D : Set R} {a : WithBot (WithTop R)} {g r : ℝ}
+    (hnn : ∀ x ∈ D, ↑x ≠ a → 0 ≤ f x) (hr : 0 ≤ r) (h : HasLimAt f D a g) :
+    HasLimAt (fun x => (f x) ^ r) D a (g ^ r : ℝ) :=
+  fun x hx ha => HasLim'.rpow_const ⟨0, fun n _ => hnn _ (hx n).left (hx n).right⟩ hr (h x hx ha)
 
 lemma HasLimAt.rpow_const [IsOrderedRing R] {f : R → ℝ} {D : Set R} {a lb ub : R} {g r : ℝ}
     (hin : a ∈ Set.Ioo lb ub) (hnn : ∀ x ∈ D ∩ Set.Ioo lb ub, x ≠ a → 0 ≤ f x) (hr : 0 ≤ r)
@@ -487,10 +661,15 @@ lemma HasLimAt.rpow_const [IsOrderedRing R] {f : R → ℝ} {D : Set R} {a lb ub
   exists n; intro n hn; simp [WithBot.some, WithTop.some] at hx
   exact hnn (x n) ⟨(hx n).left, h n hn⟩ (hx n).right
 
-lemma HasLimAt.rpow_const' [IsOrderedRing R] {f : R → ℝ} {D : Set R} {a : R} {g r : ℝ}
-    (hnn : ∀ x ∈ D, x ≠ a → 0 ≤ f x) (hr : 0 ≤ r) (h : HasLimAt f D a g) :
-    HasLimAt (fun x => (f x) ^ r) D a (g ^ r : ℝ) :=
-  rpow_const ⟨sub_one_lt a, lt_add_one a⟩ (fun x ⟨hd, _⟩ => hnn x hd) hr h
+lemma HasLimAt.rpow_const_top {f : R → ℝ} {D : Set R} {g r : ℝ} (a : R) (hnn : ∀ x ∈ D ∩ Set.Ioi a, 0 ≤ f x)
+    (hr : 0 ≤ r) (h : HasLimAt f D ⊤ g) : HasLimAt (fun x => (f x) ^ r) D ⊤ (g ^ r : ℝ) := by
+  intro x hx ha; refine HasLim'.rpow_const ?_ hr (h x hx ha); have ⟨n, h⟩ := ha a
+  exists n; intro n hn; exact hnn (x n) ⟨(hx n).left, h n hn⟩
+
+lemma HasLimAt.rpow_const_bot {f : R → ℝ} {D : Set R} {g r : ℝ} (a : R) (hnn : ∀ x ∈ D ∩ Set.Iio a, 0 ≤ f x)
+    (hr : 0 ≤ r) (h : HasLimAt f D ⊥ g) : HasLimAt (fun x => (f x) ^ r) D ⊥ (g ^ r : ℝ) := by
+  intro x hx ha; refine HasLim'.rpow_const ?_ hr (h x hx ha); have ⟨n, h⟩ := ha a
+  exists n; intro n hn; exact hnn (x n) ⟨(hx n).left, h n hn⟩
 
 abbrev HasLeftLim (f : R → S) (D : Set R := Set.univ) (a : R) (g : WithBot (WithTop S)) :=
   HasLimAt f (D ∩ Set.Iio a) a g
@@ -588,6 +767,26 @@ lemma not_hasLimAt_of_left_ne_right [IsOrderedRing R] [FloorSemiring R] [IsOrder
   replace hr := HasLimAt.eq har hr this.2
   revert hne; simp [hl, hr]
 
+lemma HasLimAt.comp [Field T] [LinearOrder T] [IsOrderedRing S] [FloorSemiring S] [AddLeftMono T]
+    {f : R → S} {h : S → T} {D₁ : Set R} {D₂ : Set S} (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : WithBot (WithTop R)}
+    {g : S} : HasLimAt f D₁ a g → HasLimAt h D₂ g (h g) → HasLimAt (h ∘ f) D₁ a (h g) := by
+  intro hf hh x hx ha; specialize hf x hx ha; rw [HasLimAt.def] at hh
+  intro e he; replace ⟨d, h_d, hh⟩ := hh e he; replace ⟨n, hf⟩ := hf d h_d
+  exists n; intro n hn; by_cases! f (x n) = g
+  case pos heq => simpa [heq]
+  case neg hne => exact hh _ (hd (x n) (hx n).left) hne (hf n hn)
+
+lemma HasLimAt.comp_top [Field T] [LinearOrder T]
+    {f : R → S} {h : S → T} {D₁ : Set R} {D₂ : Set S} (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : WithBot (WithTop R)}
+    {g : T} : HasLimAt f D₁ a ⊤ → HasLimAt h D₂ ⊤ g → HasLimAt (h ∘ f) D₁ a g :=
+  fun hf hh x hx ha => hh (f ∘ x)
+    (by simp [Top.top, WithBot.some]; intro n; exact hd (x n) (hx n).left) (hf x hx ha)
+
+lemma HasLimAt.comp_bot [Field T] [LinearOrder T]
+    {f : R → S} {h : S → T} {D₁ : Set R} {D₂ : Set S} (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : WithBot (WithTop R)}
+    {g : T} : HasLimAt f D₁ a ⊥ → HasLimAt h D₂ ⊥ g → HasLimAt (h ∘ f) D₁ a g :=
+  fun hf hh x hx ha => hh (f ∘ x) (by simp; intro n; exact hd (x n) (hx n).left) (hf x hx ha)
+
 /-- `HasLimAt` agrees with Mathlib's `Tendsto` on the reals. -/
 lemma hasLimAt_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} (a g : ℝ) :
     HasLimAt f D a g ↔ Filter.Tendsto f (nhdsWithin a (D \ {a})) (nhds g) := by
@@ -601,8 +800,8 @@ lemma hasLimAt_top'_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} (a : ℝ) :
   · intro h x ha n0 hx
     specialize h (fun n => x (max n n0)) (fun n => hx _ (by simp))
     specialize h (ha.congr' _)
-    · simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; exact (max_eq_left hn).symm
-    refine h.congr' ?_; simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; exact (max_eq_left hn)
+    · simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; simpa
+    refine h.congr' ?_; simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; simpa
   · intro h x hx ha; specialize h x ha 0; simp at h; exact h hx
 
 lemma hasLimAt_bot'_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} (a : ℝ) :
@@ -613,21 +812,6 @@ lemma hasLimAt_bot'_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} (a : ℝ) :
   · intro h x ha n0 hx
     specialize h (fun n => x (max n n0)) (fun n => hx _ (by simp))
     specialize h (ha.congr' _)
-    · simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; exact (max_eq_left hn).symm
-    refine h.congr' ?_; simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; exact (max_eq_left hn)
+    · simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; simpa
+    refine h.congr' ?_; simp [Filter.EventuallyEq]; exists n0; intro n hn; congr; simpa
   · intro h x hx ha; specialize h x ha 0; simp at h; exact h hx
-
-/-- **Th. 4.6.** Equivalent to `deriv Real.sin 0 = 1` -/
-theorem hasLimAt_sin_div : HasLimAt (fun x => Real.sin x / x) Set.univ 0 1 := by
-  apply hasLimAt_iff_left_and_right.mpr; rw [and_iff_right_of_imp]
-  · apply HasLimAt.squeeze_const (f := Real.cos)
-    · exists 1, zero_lt_one; simp; intro x h1 _ h2
-      rw [le_div_comm₀ (Real.cos_pos_of_le_one h2.le) h1, ← Real.tan_eq_sin_div_cos]
-      exact Real.le_tan h1.le (lt_of_lt_of_le (abs_lt.mp h2).2 Real.one_le_pi_div_two)
-    · exists 1, zero_lt_one; simp; intro x h _ _; exact (div_le_one h).mpr (Real.sin_le h.le)
-    · rw [hasLimAt_iff_tendsto] -- perhaps instead downstream this to Continuous.lean?
-      apply tendsto_nhdsWithin_of_tendsto_nhds
-      exact Real.continuous_cos.tendsto' 0 1 Real.cos_zero
-  · intro hr x hx ha; specialize hr (fun n => -x n); apply HasLim.neg at ha
-    simp [WithBot.some, WithTop.some, Function.comp_def] at hr hx ha
-    exact hr hx ha

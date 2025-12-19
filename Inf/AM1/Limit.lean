@@ -215,6 +215,12 @@ lemma HasLim.le [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (h : ∃ n₀, �
   replace hb := lt_of_abs_lt hb
   linarith
 
+lemma HasLim.le_const [IsOrderedRing R] {a : ℕ → R} {g b : R} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b)
+    (ha : HasLim a g) : g ≤ b := le h ha (const b)
+
+lemma HasLim.const_le [IsOrderedRing R] {b : ℕ → R} {a g : R} (h : ∃ n₀, ∀ n ≥ n₀, a ≤ b n)
+    (hb : HasLim b g) : a ≤ g := le h (const a) hb
+
 lemma HasLim.of_eq {a b : ℕ → R} {g : R} (heq : ∀ n, a n = b n) (h : HasLim b g) : HasLim a g :=
   funext heq ▸ h
 
@@ -283,6 +289,12 @@ lemma HasLim'.le [IsOrderedRing R] {an bn : ℕ → R} {a b : WithBot (WithTop R
     specialize ha (b + 1); specialize hb 1 (by simp)
     let ⟨n, h⟩ := exists_forall_ge_and h (exists_forall_ge_and ha hb)
     replace ⟨h, ha, hb⟩ := h n (le_refl n); apply lt_of_abs_lt at hb; grind
+
+lemma HasLim'.le_const [IsOrderedRing R] {a : ℕ → R} {b : R} {g : WithBot (WithTop R)}
+    (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b) (ha : HasLim' a g) : g ≤ b := le h ha (HasLim.const b)
+
+lemma HasLim'.const_le [IsOrderedRing R] {b : ℕ → R} {a : R} {g : WithBot (WithTop R)}
+    (h : ∃ n₀, ∀ n ≥ n₀, a ≤ b n) (hb : HasLim' b g) : ↑a ≤ g := le h (HasLim.const a) hb
 
 lemma HasLim'.eq [IsOrderedRing R] {a : ℕ → R} {g₁ g₂ : WithBot (WithTop R)} :
     HasLim' a g₁ → HasLim' a g₂ → g₁ = g₂ := by
