@@ -28,35 +28,35 @@ theorem Zad1b_above : ¬BddAbove (Set.range fun (n : ℕ) => 1 + (n : ℝ) ^ (3�
   rw [←Real.rpow_ofNat, Real.rpow_rpow_inv] <;> try simp
   grw [←Nat.le_ceil x]; simp
 
-theorem Zad2a : HasLim (fun n => (2 * n - 1) / (4 * n + 1) : ℕ → ℚ) (1 / 2) := by
+theorem Zad2a : HasLim (fun n => (2 * n - 1) / (4 * n + 1)) (1 / 2) := by
   intro e he; exists ⌊(3 / (8 * e)) - (1 / 4)⌋₊ + 1; intro n hn
   rw [abs_sub_comm, div_sub_div]; ring_nf; rw [abs_of_nonneg]
   replace hn := lt_of_lt_of_le (Nat.lt_floor_add_one ((3 / (8 * e)) - (1 / 4)))
-    (Nat.cast_one (R := ℚ) ▸ Nat.cast_add (R := ℚ) ⌊3 / (8 * e) - 1 / 4⌋₊ 1 ▸ Nat.cast_le.mpr hn)
+    (Nat.cast_one (R := ℝ) ▸ Nat.cast_add (R := ℝ) ⌊3 / (8 * e) - 1 / 4⌋₊ 1 ▸ Nat.cast_le.mpr hn)
   rw [sub_lt_iff_lt_add, ← div_div, div_lt_comm₀] at hn
   field_simp; field_simp at hn; grind
   repeat positivity
 
-theorem Zad2b : HasLim' (fun n => (3 : ℚ) - 2 * n) ⊥ := by
+theorem Zad2b : HasLim' (fun n => 3 - 2 * n) ⊥ := by
   intro D; exists ⌊(3 - D) / 2⌋₊ + 1; intro n hn
   replace hn := lt_of_lt_of_le (Nat.lt_floor_add_one ((3 - D) / 2))
-    (Nat.cast_one (R := ℚ) ▸ Nat.cast_add (R := ℚ) ⌊(3 - D) / 2⌋₊ 1 ▸ Nat.cast_le.mpr hn)
+    (Nat.cast_one (R := ℝ) ▸ Nat.cast_add (R := ℝ) ⌊(3 - D) / 2⌋₊ 1 ▸ Nat.cast_le.mpr hn)
   linarith
 
 open HasLim HasLim' Real
 
-theorem Zad3 : HasLim (fun n => 3 ^ n / n.factorial : ℕ → ℚ) 0 := by
-  refine const_squeeze ⟨0, fun n _ => by positivity⟩ ?_ (hasLim_const_pow (a := 3 / 4) (by norm_num))
+theorem Zad3 : HasLim (fun n => 3 ^ n / n.factorial) 0 := by
+  refine const_squeeze ⟨0, fun n _ => by positivity⟩ ?_ (hasLim_const_pow_zero (a := 3 / 4) (by norm_num))
   exists 9; intro n hn; induction hn
-  case refl => norm_num
+  case refl => simp [Nat.factorial]; norm_num
   case step n hn ih =>
-    suffices (3 : ℚ) ^ n / n.factorial * (3 / n.succ) ≤ (3 / 4) ^ n * (3 / 4) by
+    suffices (3 : ℝ) ^ n / n.factorial * (3 / n.succ) ≤ (3 / 4) ^ n * (3 / 4) by
       simp [Nat.factorial, pow_succ] at *; field_simp at *; assumption
     apply mul_le_mul ih <;> try positivity
     field_simp; simp at hn; norm_cast; omega
 
-theorem Zad4 {an : ℕ → ℝ} {a : ℝ} (hnn : ∀ n, 0 ≤ an n) (h : HasLim an a) :
-    HasLim (an ^ (3⁻¹ : ℝ)) (a ^ (3⁻¹ : ℝ)) := h.rpow_const' hnn (by simp)
+theorem Zad4 {an : ℕ → ℝ} {a : ℝ} (ha : a ≠ 0) (h : HasLim an a) :
+    HasLim (an ^ (3⁻¹ : ℝ)) (a ^ (3⁻¹ : ℝ)) := h.rpow_const (Or.inl ha)
 
 theorem Zad5a : HasLim' (fun n => n ^ 2 / (sqrt (n + 1) - sqrt (n + 4))) ⊥ := by
   apply HasLim'.of_eq (fun n => by calc
@@ -66,10 +66,11 @@ theorem Zad5a : HasLim' (fun n => n ^ 2 / (sqrt (n + 1) - sqrt (n + 4))) ⊥ := 
     _ = ((sqrt (n + 1) + sqrt (n + 4)) * n ^ 2) / -3 := by
       rw [← sq_sub_sq, Real.sq_sqrt, Real.sq_sqrt]; norm_num; repeat positivity
   )
-  have h1 := (HasLim'.id.top_add_const (1 : ℝ)).top_rpow_const (half_pos one_pos)
-  have h2 := (HasLim'.id.top_add_const (4 : ℝ)).top_rpow_const (half_pos one_pos)
-  convert ((h1.add h2).top_mul_top (top_rpow_const zero_lt_two id)).top_mul_neg (by simp) (const (-3)⁻¹) using 1
-  simp [div_eq_mul_inv, Real.sqrt_eq_rpow]
+  have h1 := (HasLim'.id.add_const (1 : ℝ)).top_rpow_const (half_pos one_pos)
+  have h2 := (HasLim'.id.add_const (4 : ℝ)).top_rpow_const (half_pos one_pos)
+  convert ((h1.add h2).mul (top_rpow_const zero_lt_two id)).div_const (show -3 ≠ 0 by simp) using 1
+  · simp [div_eq_mul_inv, Real.sqrt_eq_rpow]
+  · simp [EReal.top_div_of_neg_ne_bot]
 
 noncomputable def _root_.Real.cbrt := fun r : ℝ => r.rpow 3⁻¹
 
@@ -93,17 +94,15 @@ theorem Zad5b : HasLim (fun n => n * (cbrt (n ^ 3 + n) - n)) (1 / 3) := by
         field_simp
       )
   ⟩
-  simp; apply inv; case hg => simp
+  simp; apply HasLim.inv; case hg => simp
   rw [show (3 : ℝ) = 1 + 1 + 1 by norm_num]; simp [cbrt]
-  apply add_const; apply HasLim.add
-  · convert (((HasLim'.id.top_rpow_const zero_lt_two).inv_top.const_add _).rpow_const' ?_
-      (inv_nonneg.mpr zero_le_three)).rpow_const' ?_ zero_le_two
+  apply HasLim.add_const; apply HasLim.add
+  · convert (((HasLim'.id.top_rpow_const zero_lt_two).inv.const_add _).rpow_const
+      (Or.inr (inv_nonneg.mpr zero_le_three))).rpow_const (Or.inr zero_le_two)
     · simp; rfl
     · simp
-    all_goals intro n; positivity
-  · convert ((HasLim'.id.top_rpow_const zero_lt_two).inv_top.const_add _).rpow_const' ?_
-      (inv_nonneg.mpr zero_le_three) <;> simp
-    intro n; positivity
+  · convert ((HasLim'.id.top_rpow_const zero_lt_two).inv.const_add _).rpow_const
+      (Or.inr (inv_nonneg.mpr zero_le_three)) <;> simp
 
 theorem Zad5c : HasLim (fun n => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) 1 := by
   apply squeeze (a := fun n => (n ^ 2 : ℝ) ^ (n⁻¹ : ℝ)) (c := fun n => ((2 * n) ^ 2 : ℝ) ^ (n⁻¹ : ℝ))
@@ -114,14 +113,14 @@ theorem Zad5c : HasLim (fun n => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) 1 := by
       · gcongr; rw [ge_iff_le, ← sq_le_sq₀ zero_le_two n.zero_le] at hn; linarith
       · simp⟩
   · refine of_eq (fun n => (rpow_pow_comm n.cast_nonneg n⁻¹ 2).symm) ?_
-    rw [← one_pow 2]; convert hasLim_rpow_inv.rpow_const' (fun n => by positivity) zero_le_two <;> norm_num
+    rw [← one_pow 2]; convert hasLim_rpow_inv.rpow_const (Or.inr zero_le_two) <;> norm_num
   · apply HasLim.of_eq (fun n => by calc
       ((2 * n) ^ 2 : ℝ) ^ (n : ℝ)⁻¹ = ((2 * n) ^ (n : ℝ)⁻¹) ^ 2 := (rpow_pow_comm (by positivity) n⁻¹ 2).symm
       _ = (2 ^ (n⁻¹ : ℝ) * n ^ (n⁻¹ : ℝ)) ^ (2 : ℝ) := by simp; congr; exact mul_rpow zero_le_two (by simp)
       _ = (2 ^ (n⁻¹ : ℝ)) ^ (2 : ℝ) * (n ^ (n⁻¹ : ℝ)) ^ (2 : ℝ) := (mul_rpow (by positivity) (by positivity))
     )
-    convert ((hasLim_const_rpow_inv one_lt_two).rpow_const' (fun n => by positivity) zero_le_two).mul
-      (hasLim_rpow_inv.rpow_const' (fun n => by positivity) zero_le_two)
+    convert ((hasLim_const_rpow_inv two_pos).rpow_const (Or.inr zero_le_two)).mul
+      (hasLim_rpow_inv.rpow_const (Or.inr zero_le_two))
     simp
 
 theorem Zad5d : HasLim (fun n => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ)) 7 := by
@@ -150,12 +149,12 @@ theorem Zad5d : HasLim (fun n => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ)) 7 :=
       ((7 : ℝ) ^ (n - 1)) ^ (n : ℝ)⁻¹ = (7 ^ n / 7) ^ (n : ℝ)⁻¹ := by congr; field_simp; rw [pow_sub_one_mul]; positivity
       _ = 7 / 7 ^ (n : ℝ)⁻¹ := by rw [div_rpow, pow_rpow_inv_natCast] <;> positivity
     ⟩
-    convert const_div 7 (hasLim_const_rpow_inv (show 1 < 7 by norm_num)); simp
+    convert HasLim.const_div 7 (hasLim_const_rpow_inv (show 0 < 7 by norm_num)); simp
   · apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
       (7 ^ n + 7 ^ n : ℝ) ^ (n : ℝ)⁻¹ = (2 * 7 ^ n) ^ (n : ℝ)⁻¹ := by congr; symm; exact two_mul _
       _ = 2 ^ (n : ℝ)⁻¹ * 7 := by rw [mul_rpow, pow_rpow_inv_natCast] <;> positivity
     ⟩
-    convert mul_const 7 (hasLim_const_rpow_inv (show 1 < 2 by norm_num)); simp
+    convert mul_const 7 (hasLim_const_rpow_inv two_pos); simp
 
 theorem Zad6 {a : ℕ → ℤ} {g : ℝ} (h : HasLim (fun n => (a n : ℝ)) g) : ∃ n₀, ∀ n ≥ n₀, a n = g := by
   have ⟨n₀, h1⟩ := hasLim_iff_isCauSeq.mp ⟨g, h⟩ 1 (by simp); exists n₀
@@ -189,10 +188,9 @@ theorem Zad7_inf {a : ℕ → ℝ} (h : HasLim a 0) (hp : ∀ n, 0 < a n) : iInf
   refine ge_antisymm (le_ciInf fun n => (hp n).le) (Real.sInf_le_iff h.bddBelow (Set.range_nonempty a) |>.mpr ?_)
   simp [HasLim] at *; intro e he; replace ⟨n, h⟩ := h e he; exact ⟨n, lt_of_abs_lt (h n le_rfl)⟩
 
-theorem Zad15 [Field R] [LinearOrder R] [IsOrderedRing R] : ¬ ∀ a b : ℕ → R,
-    HasLim (a * b) 0 → (HasLim a 0 ∨ HasLim b 0) := by
+theorem Zad15 : ¬∀ a b : ℕ → ℝ, HasLim (a * b) 0 → (HasLim a 0 ∨ HasLim b 0) := by
   simp; exists (fun n => ↑(n % 2)), (fun n => ↑(1 - n % 2)); and_intros
-  · apply HasLim.of_eq fun n => show ↑(n % 2) * ↑(1 - n % 2) = (0 : R) by
+  · apply HasLim.of_eq fun n => show ↑(n % 2) * ↑(1 - n % 2) = 0 by
       by_cases h : n % 2 = 0
       · simp [h]
       · simp at h; simp [h]

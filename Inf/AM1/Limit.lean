@@ -1,8 +1,5 @@
-import Mathlib.Tactic
-import Mathlib.Algebra.Order.AbsoluteValue.Basic
-import Mathlib.GroupTheory.ArchimedeanDensely
-import Mathlib.Algebra.Order.Ring.WithTop
-import Mathlib.Topology.Sequences
+import Mathlib.Tactic.Peel
+import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! # Roughly the content of lectures 2 & 3
 
@@ -30,95 +27,91 @@ Notable results:
 Many of the theorems also have versions where one of the operands / bounds is a constant.
 -/
 
-variable [Field R] [LinearOrder R]
-
 /-- `g` is a limit of a sequence `a` iff the sequence is eventually bounded arbitrarily close to it. -/
-def HasLim (a : ℕ → R) (g : R) := ∀ ε > 0, ∃ n₀, ∀ n ≥ n₀, abs (a n - g) < ε
+def HasLim (a : ℕ → ℝ) (g : ℝ) := ∀ ε > 0, ∃ n₀, ∀ n ≥ n₀, abs (a n - g) < ε
 
 /-- **Th. 2.1.** A constant sequence is convergent. -/
-lemma HasLim.const [AddLeftMono R] (a : R) : HasLim (fun _ => a) a := by
+lemma HasLim.const (a : ℝ) : HasLim (fun _ => a) a := by
   intro e he; exists 0; intro n hn; convert he.lt; simp
 
 /-- **Th. 2.2.** A convergent sequence has only one limit. -/
-instance HasLim.subsingleton [IsOrderedRing R] (a : ℕ → R) : Subsingleton {g // HasLim a g} where
+instance HasLim.subsingleton (a : ℕ → ℝ) : Subsingleton {g // HasLim a g} where
   allEq := by
     simp [HasLim]
     intro g1 hg1 g2 hg2
     by_contra! h
-    have he : 0 < abs (g1 - g2) / 2 := by field_simp; simp; grind
-    have ⟨n1, hg1⟩ := hg1 _ he
-    have ⟨n2, hg2⟩ := hg2 _ he
+    have he : 0 < abs (g1 - g2) / 2 := by simp; grind
+    replace ⟨n1, hg1⟩ := hg1 _ he
+    replace ⟨n2, hg2⟩ := hg2 _ he
     let n := max n1 n2
-    have hg1 := hg1 n (by omega)
-    have hg2 := hg2 n (by omega)
+    replace hg1 := hg1 n (by omega)
+    replace hg2 := hg2 n (by omega)
     have h := add_lt_add hg1 hg2; revert h; simp
     convert abs_sub_le g1 (a n) g2 using 2
     exact abs_sub_comm (a n) g1
 
-lemma HasLim.eq [IsOrderedRing R] {a : ℕ → R} {g₁ g₂ : R} : HasLim a g₁ → HasLim a g₂ → g₁ = g₂ :=
+lemma HasLim.eq {a : ℕ → ℝ} {g₁ g₂ : ℝ} : HasLim a g₁ → HasLim a g₂ → g₁ = g₂ :=
   fun h₁ h₂ => Subtype.val_inj.mpr ((subsingleton a).allEq ⟨g₁, h₁⟩ ⟨g₂, h₂⟩)
 
 /-- **Th. 2.3.** A convergent sequence is bounded. -/
-lemma HasLim.bddAbove [IsOrderedRing R] {a : ℕ → R} {g : R} (h : HasLim a g) :
+lemma HasLim.bddAbove {a : ℕ → ℝ} {g : ℝ} (h : HasLim a g) :
     BddAbove (Set.range a) := by
   simp [HasLim, bddAbove_def] at *
-  have ⟨n, h⟩ := h 1 (by simp)
-  exists WithBot.unbot (↑(g + 1) ::ₘ (Multiset.range n).map ((↑) ∘ a)).sup ?H
-  · simp --mathlib pls give us Multiset.sup'
-  intro i; simp [WithBot.le_unbot_iff]
+  replace ⟨n, h⟩ := h 1 (by simp)
+  exists max (g + 1) ((Finset.range n.succ).sup' (by simp) a)
+  intro i; simp
   by_cases! hi : i < n
-  · right; apply Multiset.le_sup; apply Multiset.mem_map_of_mem; simpa
-  · left; rw [← WithBot.coe_one, ← WithBot.coe_add, WithBot.coe_le_coe]
-    have h := abs_lt.mp (h i hi)
-    grind
+  · right; exists i; grind
+  · left; have h := abs_lt.mp (h i hi); grind
 
 /-- **Th. 2.3.** A convergent sequence is bounded. -/
-lemma HasLim.bddBelow [IsOrderedRing R] {a : ℕ → R} {g : R} (h : HasLim a g) :
+lemma HasLim.bddBelow {a : ℕ → ℝ} {g : ℝ} (h : HasLim a g) :
     BddBelow (Set.range a) := by
   simp [HasLim, bddBelow_def] at *
   have ⟨n, h⟩ := h 1 (by simp)
-  exists WithTop.untop (↑(g - 1) ::ₘ (Multiset.range n).map ((↑) ∘ a)).inf ?H
-  · simp
-  intro i; simp [WithTop.untop_le_iff]
+  exists min (g - 1) ((Finset.range n.succ).inf' (by simp) a)
+  intro i; simp
   by_cases! hi : i < n
-  · right; apply Multiset.inf_le; apply Multiset.mem_map_of_mem; simpa
-  · left; rw [← WithTop.coe_one, ← WithTop.LinearOrderedAddCommGroup.coe_sub, WithTop.coe_le_coe] -- "shouldn't create diamonds" my ass
-    have h := abs_lt.mp (h i hi)
-    grind
+  · right; exists i; grind
+  · left; have h := abs_lt.mp (h i hi); grind
 
-lemma HasLim.eventually_lt [AddRightStrictMono R] {a : ℕ → R} {g b : R} (hb : g < b) (h : HasLim a g) :
+lemma HasLim.eventually_lt {a : ℕ → ℝ} {g b : ℝ} (hb : g < b) (h : HasLim a g) :
     ∃ n₀, ∀ n ≥ n₀, a n < b := by
-  replace ⟨n, h⟩ := h (b - g) (by simpa); exists n; intro n hn; specialize h n hn
-  apply lt_of_abs_lt at h; simp at h; exact h
+  replace h := h (b - g) (by simpa)
+  peel h with h
+  apply lt_of_abs_lt at h
+  simp at h; exact h
 
-lemma HasLim.eventually_gt [AddLeftStrictMono R] [AddRightStrictMono R] {a : ℕ → R} {g b : R}
-    (hb : b < g) (h : HasLim a g) : ∃ n₀, ∀ n ≥ n₀, b < a n := by
-  replace ⟨n, h⟩ := h (g - b) (by simpa); exists n; intro n hn; specialize h n hn
-  rw [abs_sub_comm] at h; apply lt_of_abs_lt at h; simp at h; exact h
+lemma HasLim.eventually_gt {a : ℕ → ℝ} {g b : ℝ} (hb : b < g) (h : HasLim a g) : ∃ n₀, ∀ n ≥ n₀, b < a n := by
+  replace h := h (g - b) (by simpa)
+  peel h with h
+  rw [abs_sub_comm] at h
+  apply lt_of_abs_lt at h
+  simp at h; exact h
 
 /-! **Th. 2.4.** Continuity of arithmetic operations: -/
 
-lemma HasLim.add [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an a) (hb : HasLim bn b) :
+lemma HasLim.add {an bn : ℕ → ℝ} {a b : ℝ} (ha : HasLim an a) (hb : HasLim bn b) :
     HasLim (fun n => an n + bn n) (a + b) := by
   intro e he
-  have ⟨n, hab⟩ := exists_forall_ge_and (ha (e / 2) (by positivity)) (hb (e / 2) (by positivity))
-  exists n; intro n hn;
-  have h := (hab n hn).elim add_lt_add; simp at h
+  have hab := exists_forall_ge_and (ha (e / 2) (by positivity)) (hb (e / 2) (by positivity))
+  peel hab with h
+  apply And.elim add_lt_add at h; simp at h
   rw [add_sub_add_comm]
   exact lt_of_le_of_lt (abs_add_le _ _) h
 
-lemma HasLim.add_const {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
+lemma HasLim.add_const {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) :
     HasLim (fun n => a n + b) (g + b) := by simpa [HasLim]
 
-lemma HasLim.const_add {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
+lemma HasLim.const_add {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) :
     HasLim (fun n => b + a n) (b + g) := by simpa [HasLim]
 
-lemma HasLim.mul [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an a) (hb : HasLim bn b) :
+lemma HasLim.mul {an bn : ℕ → ℝ} {a b : ℝ} (ha : HasLim an a) (hb : HasLim bn b) :
     HasLim (fun n => an n * bn n) (a * b) := by
   intro e he
-  have ⟨n, hab⟩ := exists_forall_ge_and (ha (e / 2 / max (|a| + |b|) (e + 1)) (by positivity))
+  have hab := exists_forall_ge_and (ha (e / 2 / max (|a| + |b|) (e + 1)) (by positivity))
     (hb (e / 2 / max (|a| + |b|) (e + 1)) (by positivity))
-  exists n; intro n hn; replace ⟨ha, hb⟩ := hab n hn
+  peel hab with hab; replace ⟨ha, hb⟩ := hab
   have hab1 := mul_lt_mul'' ha hb (by simp) (by simp); rw [← abs_mul, ← sq] at hab1
   replace ha := mul_le_mul_of_nonneg_left ha.le (abs_nonneg b)
   replace hb := mul_le_mul_of_nonneg_left hb.le (abs_nonneg a)
@@ -137,38 +130,35 @@ lemma HasLim.mul [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an
     (le_max_right (|a|+|b|) (1 + e))) at h
   grind; simp
 
-lemma HasLim.mul_const [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
+lemma HasLim.mul_const {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) :
     HasLim (fun n => a n * b) (g * b) := mul h (const b)
 
-lemma HasLim.const_mul [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
+lemma HasLim.const_mul {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) :
     HasLim (fun n => b * a n) (b * g) := mul (const b) h
 
-lemma HasLim.neg {a : ℕ → R} {g : R} (h : HasLim a g) :
-    HasLim (fun n => -(a n)) (-g) := by
+lemma HasLim.neg {a : ℕ → ℝ} {g : ℝ} (h : HasLim a g) : HasLim (fun n => -(a n)) (-g) := by
   simp [HasLim, abs_sub_comm, neg_add_eq_sub] at *; assumption
 
-lemma HasLim.sub [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an a) (hb : HasLim bn b) :
-    HasLim (fun n => an n - bn n) (a - b) := by
-  convert add ha hb.neg using 1; funext; repeat ring
+lemma HasLim.sub {an bn : ℕ → ℝ} {a b : ℝ} (ha : HasLim an a) (hb : HasLim bn b) :
+    HasLim (fun n => an n - bn n) (a - b) := add ha hb.neg
 
-lemma HasLim.sub_const {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
+lemma HasLim.sub_const {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) :
     HasLim (fun n => a n - b) (g - b) := by simpa [HasLim]
 
-lemma HasLim.const_sub {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
+lemma HasLim.const_sub {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) :
     HasLim (fun n => b - a n) (b - g) := by simp [HasLim, abs_sub_comm] at *; assumption
 
-lemma HasLim.inv [IsOrderedRing R] {a : ℕ → R} {g : R} (h : HasLim a g) (hg : g ≠ 0) :
-    HasLim (fun n => (a n)⁻¹) g⁻¹ := by
+lemma HasLim.inv {a : ℕ → ℝ} {g : ℝ} (h : HasLim a g) (hg : g ≠ 0) : HasLim (fun n => (a n)⁻¹) g⁻¹ := by
   wlog hg : 0 < g generalizing a g
   · have this := neg <| this h.neg (by simpa) (by grind); simpa
   simp [HasLim]
   intro e he
   wlog heg : e < g⁻¹ generalizing e
-  · have ⟨n, h⟩ := this (g⁻¹ / 2) (by positivity) (by simpa)
-    exists n; intro n hn; replace h := h n hn
+  · replace h := this (g⁻¹ / 2) (by positivity) (by simpa)
+    peel h with h
     simp at heg; exact lt_of_lt_of_le h (le_trans (half_le_self (by positivity)) heg)
-  have ⟨n, h⟩ := h (e / (g⁻¹ * (g⁻¹ + e))) (by positivity)
-  exists n; intro n hn; replace h := h n hn
+  replace h := h (e / (g⁻¹ * (g⁻¹ + e))) (by positivity)
+  peel h with _ n _ h
   rw (occs := .pos [1]) [← add_sub_cancel_left g⁻¹ e, ← inv_sub_inv, inv_inv] at h <;> try positivity
   have han : 0 < a n := sub_self g ▸ (sub_lt_comm.mp <| lt_of_abs_lt <|
     (abs_sub_comm (a n) g ▸ h).trans (sub_lt_self g (by positivity)))
@@ -185,27 +175,23 @@ lemma HasLim.inv [IsOrderedRing R] {a : ℕ → R} {g : R} (h : HasLim a g) (hg 
     case right.hb => exact add_pos he (he.trans heg)
     apply lt_of_lt_of_le (lt_of_abs_lt h); field_simp; simp; ring_nf; simp
 
-lemma HasLim.div [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (ha : HasLim an a) (hb : HasLim bn b)
-    (hne : b ≠ 0) : HasLim (fun n => an n / bn n) (a / b) := by
-  convert mul ha (inv hb hne) using 1; funext; repeat field_simp
+lemma HasLim.div {an bn : ℕ → ℝ} {a b : ℝ} (ha : HasLim an a) (hb : HasLim bn b) (hne : b ≠ 0) :
+    HasLim (fun n => an n / bn n) (a / b) := mul ha (inv hb hne)
 
-lemma HasLim.div_const [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) :
-    HasLim (fun n => a n / b) (g / b) := by
-  convert mul_const (b := b⁻¹) h using 1; funext; repeat field
+lemma HasLim.div_const {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) :
+    HasLim (fun n => a n / b) (g / b) := mul_const b⁻¹ h
 
-lemma HasLim.const_div [IsOrderedRing R] {a : ℕ → R} {g : R} (b : R) (h : HasLim a g) (hg : g ≠ 0) :
-    HasLim (fun n => b / a n) (b / g) := div (const _) h hg
+lemma HasLim.const_div {a : ℕ → ℝ} {g : ℝ} (b : ℝ) (h : HasLim a g) (hg : g ≠ 0) :
+    HasLim (fun n => b / a n) (b / g) := div (const b) h hg
 
 /-- **Th. 2.5.** (continuity of absolute value) -/
-lemma HasLim.abs [AddLeftMono R] {a : ℕ → R} {g : R} : HasLim a g → HasLim (fun n => |a n|) |g| :=
+lemma HasLim.abs {a : ℕ → ℝ} {g : ℝ} : HasLim a g → HasLim (fun n => |a n|) |g| :=
   forall₂_imp fun _ _ => Exists.imp fun _ => forall₂_imp fun _ _ => lt_of_le_of_lt <| abs_abs_sub_abs_le _ _
 
-lemma HasLim.abs_zero_iff [AddLeftMono R] {a : ℕ → R} : HasLim a 0 ↔ HasLim (fun n => |a n|) 0 where
-  mp := fun h => abs_zero (α := R) ▸ abs h
-  mpr := by simp [HasLim]
+lemma HasLim.abs_zero_iff {a : ℕ → ℝ} : HasLim a 0 ↔ HasLim (fun n => |a n|) 0 := by simp [HasLim]
 
 /-- **Th. 2.6.** If one sequence (eventually) dominates another, then the inequality goes over to their limits. -/
-lemma HasLim.le [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (h : ∃ n₀, ∀ n ≥ n₀, an n ≤ bn n)
+lemma HasLim.le {an bn : ℕ → ℝ} {a b : ℝ} (h : ∃ n₀, ∀ n ≥ n₀, an n ≤ bn n)
     (ha : HasLim an a) (hb : HasLim bn b) : a ≤ b := by
   by_contra!
   let ⟨n, hab⟩ := exists_forall_ge_and (ha ((a - b) / 2) (by simpa)) <|
@@ -215,297 +201,305 @@ lemma HasLim.le [IsOrderedRing R] {an bn : ℕ → R} {a b : R} (h : ∃ n₀, �
   replace hb := lt_of_abs_lt hb
   linarith
 
-lemma HasLim.le_const [IsOrderedRing R] {a : ℕ → R} {g b : R} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b)
-    (ha : HasLim a g) : g ≤ b := le h ha (const b)
+lemma HasLim.le_const {a : ℕ → ℝ} {g b : ℝ} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b) (ha : HasLim a g) : g ≤ b :=
+  le h ha (const b)
 
-lemma HasLim.const_le [IsOrderedRing R] {b : ℕ → R} {a g : R} (h : ∃ n₀, ∀ n ≥ n₀, a ≤ b n)
-    (hb : HasLim b g) : a ≤ g := le h (const a) hb
+lemma HasLim.const_le {b : ℕ → ℝ} {a g : ℝ} (h : ∃ n₀, ∀ n ≥ n₀, a ≤ b n) (hb : HasLim b g) : a ≤ g :=
+  le h (const a) hb
 
-lemma HasLim.of_eq {a b : ℕ → R} {g : R} (heq : ∀ n, a n = b n) (h : HasLim b g) : HasLim a g :=
+lemma HasLim.of_eq {a b : ℕ → ℝ} {g : ℝ} (heq : ∀ n, a n = b n) (h : HasLim b g) : HasLim a g :=
   funext heq ▸ h
 
-lemma HasLim.of_eventually_eq {a b : ℕ → R} {g : R} (heq : ∃ n₀, ∀ n ≥ n₀, a n = b n)
+lemma HasLim.of_eventually_eq {a b : ℕ → ℝ} {g : ℝ} (heq : ∃ n₀, ∀ n ≥ n₀, a n = b n)
     (h : HasLim b g) : HasLim a g := by
-  intro e he; replace ⟨n, h⟩ := exists_forall_ge_and heq (h e he)
-  exists n; intro n hn; replace ⟨heq, h⟩ := h n hn
-  rwa [heq]
+  peel 2 h with h
+  apply exists_forall_ge_and heq at h
+  peel h with h using h.left ▸ h.right
 
 /-- **Th.2.7.** The squeeze theorem. -/
-lemma HasLim.squeeze [IsOrderedRing R] {a b c : ℕ → R} {g : R} (hab : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
+lemma HasLim.squeeze {a b c : ℕ → ℝ} {g : ℝ} (hab : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
     (hbc : ∃ n₀, ∀ n ≥ n₀, b n ≤ c n) (ha : HasLim a g) (hc : HasLim c g) : HasLim b g := by
   intro e he;
-  let ⟨n, h⟩ := exists_forall_ge_and hab <| exists_forall_ge_and hbc <| exists_forall_ge_and (ha e he) (hc e he)
-  exists n; intro n hn; replace ⟨hab, hbc, ha, hc⟩ := h n hn
+  have h := exists_forall_ge_and hab <| exists_forall_ge_and hbc <| exists_forall_ge_and (ha e he) (hc e he)
+  peel h with h; replace ⟨hab, hbc, ha, hc⟩ := h
   rw [abs_sub_lt_iff]; constructor
   · exact lt_of_le_of_lt (by simpa) (lt_of_abs_lt hc)
   · exact lt_of_le_of_lt (by linarith) (abs_sub_lt_iff.mp ha).right
 
-lemma HasLim.squeeze_const [IsOrderedRing R] {a b : ℕ → R} {g : R} (hab : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
-    (hbg : ∃ n₀, ∀ n ≥ n₀, b n ≤ g) (ha : HasLim a g) : HasLim b g := squeeze hab hbg ha (const _)
+lemma HasLim.squeeze_const {a b : ℕ → ℝ} {g : ℝ} (hab : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
+    (hbg : ∃ n₀, ∀ n ≥ n₀, b n ≤ g) (ha : HasLim a g) : HasLim b g := squeeze hab hbg ha (const g)
 
-lemma HasLim.const_squeeze [IsOrderedRing R] {b c : ℕ → R} {g : R} (hgb : ∃ n₀, ∀ n ≥ n₀, g ≤ b n)
-    (hbc : ∃ n₀, ∀ n ≥ n₀, b n ≤ c n) (hc : HasLim c g) : HasLim b g := squeeze hgb hbc (const _) hc
+lemma HasLim.const_squeeze {b c : ℕ → ℝ} {g : ℝ} (hgb : ∃ n₀, ∀ n ≥ n₀, g ≤ b n)
+    (hbc : ∃ n₀, ∀ n ≥ n₀, b n ≤ c n) (hc : HasLim c g) : HasLim b g := squeeze hgb hbc (const g) hc
 
 /-- **Th. 2.8.** A monotone (nondecreasing), bounded sequence is convergent. -/
 lemma HasLim.of_monotone {a : ℕ → ℝ} (hm : Monotone a) (hb : BddAbove (Set.range a)) : HasLim a (iSup a) := by
   intro e he
-  have ⟨n₀, hn₀⟩ := (lt_ciSup_iff hb).mp (sub_lt_self _ he)
-  exists n₀; intro n hn
+  peel (lt_ciSup_iff hb).mp (sub_lt_self _ he) with hn₀
+  intro n hn
   rw [abs_sub_comm, abs_of_nonneg (sub_nonneg.mpr <| le_ciSup hb n)]
   exact lt_of_le_of_lt (sub_le_sub_left (hm hn) (iSup a)) (sub_lt_comm.mp hn₀)
 
 /-- **Th. 2.8.** An antitone (nonincreasing), bounded sequence is convergent. -/
 lemma HasLim.of_antitone {a : ℕ → ℝ} (hm : Antitone a) (hb : BddBelow (Set.range a)) : HasLim a (iInf a) := by
   intro e he
-  have ⟨n₀, hn₀⟩ := (ciInf_lt_iff hb).mp (lt_add_of_pos_right _ he)
-  exists n₀; intro n hn
+  peel (ciInf_lt_iff hb).mp (lt_add_of_pos_right _ he) with hn₀
+  intro n hn
   rw [abs_of_nonneg (sub_nonneg.mpr <| ciInf_le hb n)]
   exact lt_of_le_of_lt (sub_le_sub_right (hm hn) (iInf a)) (sub_left_lt_of_lt_add hn₀)
 
 /-- Diverging to infinity, expressed as "converging" to `⊤` or `⊥` -/
-def HasLim' (a : ℕ → R) : (g : WithBot (WithTop R)) → Prop
-  | some (some g) => HasLim a g
+def HasLim' (a : ℕ → ℝ) : (g : EReal) → Prop
+  | (g : ℝ) => HasLim a g
   | ⊤ => ∀ D, ∃ n₀, ∀ n ≥ n₀, a n > D
   | ⊥ => ∀ D, ∃ n₀, ∀ n ≥ n₀, a n < D
 
-lemma HasLim'.id [IsOrderedRing R] [FloorSemiring R] : HasLim' (fun n => (n : R)) ⊤ :=
+@[simp]
+lemma HasLim'.coe {a : ℕ → ℝ} {g : ℝ} : HasLim' a g ↔ HasLim a g := Iff.rfl
+
+lemma HasLim'.id : HasLim' (fun n => n) ⊤ :=
   fun D => ⟨⌊D⌋₊ + 1, fun n hn => lt_of_lt_of_le (Nat.lt_floor_add_one D) (by norm_cast; exact Nat.cast_le.mpr hn)⟩
 
-lemma HasLim'.le [IsOrderedRing R] {an bn : ℕ → R} {a b : WithBot (WithTop R)}
-    (h : ∃ n₀, ∀ n ≥ n₀, an n ≤ bn n) (ha : HasLim' an a) (hb : HasLim' bn b) : a ≤ b := by
+lemma HasLim'.le {an bn : ℕ → ℝ} {a b : EReal} (h : ∃ n₀, ∀ n ≥ n₀, an n ≤ bn n)
+    (ha : HasLim' an a) (hb : HasLim' bn b) : a ≤ b := by
   match a, b with
   | ⊥, _ => exact bot_le
   | _, ⊤ => exact le_top
   | ⊤, ⊥ =>
     let ⟨n, h⟩ := exists_forall_ge_and h (exists_forall_ge_and (ha 0) (hb 0))
     specialize h n le_rfl; order
-  | WithBot.some (WithTop.some a), WithBot.some (WithTop.some b) =>
-    simp; exact HasLim.le h ha hb
-  | WithBot.some (WithTop.some a), ⊥ =>
+  | (a : ℝ), (b : ℝ) => simp; exact HasLim.le h ha hb
+  | (a : ℝ), ⊥ =>
     specialize hb (a - 1); specialize ha 1 (by simp)
     let ⟨n, h⟩ := exists_forall_ge_and h (exists_forall_ge_and ha hb)
-    replace ⟨h, ha, hb⟩ := h n (le_refl n); apply neg_lt_of_abs_lt at ha; grind
-  | ⊤,  WithBot.some (WithTop.some b) =>
+    replace ⟨h, ha, hb⟩ := h n (le_refl n)
+    apply neg_lt_of_abs_lt at ha; grind
+  | ⊤,  (b : ℝ) =>
     specialize ha (b + 1); specialize hb 1 (by simp)
     let ⟨n, h⟩ := exists_forall_ge_and h (exists_forall_ge_and ha hb)
-    replace ⟨h, ha, hb⟩ := h n (le_refl n); apply lt_of_abs_lt at hb; grind
+    replace ⟨h, ha, hb⟩ := h n (le_refl n)
+    apply lt_of_abs_lt at hb; grind
 
-lemma HasLim'.le_const [IsOrderedRing R] {a : ℕ → R} {b : R} {g : WithBot (WithTop R)}
-    (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b) (ha : HasLim' a g) : g ≤ b := le h ha (HasLim.const b)
+lemma HasLim'.le_const {a : ℕ → ℝ} {b : ℝ} {g : EReal} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b) (ha : HasLim' a g) :
+    g ≤ b := le h ha (HasLim.const b)
 
-lemma HasLim'.const_le [IsOrderedRing R] {b : ℕ → R} {a : R} {g : WithBot (WithTop R)}
-    (h : ∃ n₀, ∀ n ≥ n₀, a ≤ b n) (hb : HasLim' b g) : ↑a ≤ g := le h (HasLim.const a) hb
+lemma HasLim'.const_le {b : ℕ → ℝ} {a : ℝ} {g : EReal} (h : ∃ n₀, ∀ n ≥ n₀, a ≤ b n) (hb : HasLim' b g) :
+    a ≤ g := le h (HasLim.const a) hb
 
-lemma HasLim'.eq [IsOrderedRing R] {a : ℕ → R} {g₁ g₂ : WithBot (WithTop R)} :
-    HasLim' a g₁ → HasLim' a g₂ → g₁ = g₂ := by
-  intro h1 h2; apply le_antisymm
-  · exact h1.le ⟨0, fun _ _ => le_rfl⟩ h2
-  · exact h2.le ⟨0, fun _ _ => le_rfl⟩ h1
+lemma HasLim'.eq {a : ℕ → ℝ} {g₁ g₂ : EReal} : HasLim' a g₁ → HasLim' a g₂ → g₁ = g₂ := by
+  intro h1 h2
+  apply le_antisymm
+  · exact h1.le ⟨0, by simp⟩ h2
+  · exact h2.le ⟨0, by simp⟩ h1
 
-lemma HasLim'.of_eq {a b : ℕ → R} {g : WithBot (WithTop R)} (heq : ∀ n, a n = b n)
-    (h : HasLim' b g) : HasLim' a g :=
+lemma HasLim'.of_eq {a b : ℕ → ℝ} {g : EReal} (heq : ∀ n, a n = b n) (h : HasLim' b g) : HasLim' a g :=
   funext heq ▸ h
 
-lemma HasLim'.of_eventually_eq {a b : ℕ → R} {g : WithBot (WithTop R)} (heq : ∃ n₀, ∀ n ≥ n₀, a n = b n)
+lemma HasLim'.of_eventually_eq {a b : ℕ → ℝ} {g : EReal} (heq : ∃ n₀, ∀ n ≥ n₀, a n = b n)
     (h : HasLim' b g) : HasLim' a g :=
   match g with
-  | some (some g) => HasLim.of_eventually_eq heq h
+  | (g : ℝ) => HasLim.of_eventually_eq heq h
   | ⊥ => by
-    intro D; replace ⟨n, h⟩ := exists_forall_ge_and heq (h D)
-    exists n; intro n hn; replace ⟨heq, h⟩ := h n hn; rwa [heq]
+    intro D
+    replace h := exists_forall_ge_and heq (h D)
+    peel h with h using h.left ▸ h.right
   | ⊤ => by
-    intro D; replace ⟨n, h⟩ := exists_forall_ge_and heq (h D)
-    exists n; intro n hn; replace ⟨heq, h⟩ := h n hn; rwa [heq]
+    intro D
+    replace h := exists_forall_ge_and heq (h D)
+    peel h with h using h.left ▸ h.right
 
 /-- **Th. 2.9.** Squeeze theorem for divergence to positive infinity (`⊤`). -/
-lemma HasLim'.squeeze_top {a b : ℕ → R} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
+lemma HasLim'.squeeze_top {a b : ℕ → ℝ} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
     (ha : HasLim' a ⊤) : HasLim' b ⊤ := by
-  intro D; specialize ha D; replace ⟨n, h⟩ := exists_forall_ge_and h ha
-  exists n; intro n hn; replace ⟨h, ha⟩ := h n hn; order
+  intro D
+  replace h := exists_forall_ge_and h (ha D)
+  peel h
+  order
 
 /-- **Th. 2.9.** Squeeze theorem for divergence to negative infinity (`⊥`). -/
-lemma HasLim'.bot_squeeze {a b : ℕ → R} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
+lemma HasLim'.bot_squeeze {a b : ℕ → ℝ} (h : ∃ n₀, ∀ n ≥ n₀, a n ≤ b n)
     (hb : HasLim' b ⊥) : HasLim' a ⊥ := by
-  intro D; specialize hb D; replace ⟨n, h⟩ := exists_forall_ge_and h hb
-  exists n; intro n hn; replace ⟨h, hb⟩ := h n hn; order
+  intro D
+  replace h := exists_forall_ge_and h (hb D)
+  peel h
+  order
 
-lemma HasLim'.neg_top [IsOrderedAddMonoid R] {a : ℕ → R} (h : HasLim' a ⊤) : HasLim' (fun n => -(a n)) ⊥ := by
-  intro D; replace ⟨n, h⟩ := h (-D); exists n; intro n hn; exact neg_lt.mp (h n hn)
+lemma HasLim'.neg {a : ℕ → ℝ} {g : EReal} (h : HasLim' a g) : HasLim' (fun n => -(a n)) (-g) :=
+  match g with
+  | (g : ℝ) => HasLim.neg h
+  | ⊤ => by intro D; specialize h (-D); peel h; simpa [neg_lt]
+  | ⊥ => by intro D; specialize h (-D); peel h; simpa [lt_neg]
 
-lemma HasLim'.neg_bot [IsOrderedAddMonoid R] {a : ℕ → R} (h : HasLim' a ⊥) : HasLim' (fun n => -(a n)) ⊤ := by
-  intro D; replace ⟨n, h⟩ := h (-D); exists n; intro n hn; exact lt_neg.mp (h n hn)
+lemma HasLim'.top_add {a b : ℕ → ℝ} (ha : HasLim' a ⊤) (hb : BddBelow (Set.range b)) :
+    HasLim' (fun n => a n + b n) ⊤ := by
+  intro D
+  replace ⟨lb, hb⟩ := bddBelow_def.mp hb
+  simp at *
+  peel ha (D - lb) with _ n _ ha
+  specialize hb n
+  linarith
 
-lemma HasLim'.inv_top [IsOrderedRing R] {a : ℕ → R} (h : HasLim' a ⊤) : HasLim (fun n => (a n)⁻¹) 0 := by
-  intro e he; replace ⟨n, h⟩ := h e⁻¹; exists n; intro n hn; specialize h n hn
-  rw [abs_of_pos] <;> simp
-  · exact inv_lt_of_inv_lt₀ he h
-  · exact lt_trans (inv_pos.mpr he) h
+lemma HasLim'.add_top {a b : ℕ → ℝ} (ha : BddBelow (Set.range a)) (hb : HasLim' b ⊤) :
+    HasLim' (fun n => a n + b n) ⊤ := by convert top_add hb ha using 2; ac_rfl
 
-lemma HasLim'.inv_bot [IsOrderedRing R] {a : ℕ → R} (h : HasLim' a ⊥) : HasLim (fun n => (a n)⁻¹) 0 := by
-  intro e he; replace ⟨n, h⟩ := h (-e⁻¹); exists n; intro n hn; specialize h n hn
-  have : a n < 0 := lt_trans h (by simpa)
-  rw [abs_of_neg] <;> (simp; try assumption)
-  rw [neg_lt]; rw [neg_inv] at h; rw [lt_inv_of_neg] <;> try assumption
-  simpa
+lemma HasLim'.bot_add {a b : ℕ → ℝ} (ha : HasLim' a ⊥) (hb : BddAbove (Set.range b)) :
+    HasLim' (fun n => a n + b n) ⊥ := by
+  have h := (ha.neg.add_top hb.range_neg).neg
+  simp at h; exact h
 
-lemma HasLim'.top_add [IsOrderedAddMonoid R] {a b : ℕ → R} (hb : BddBelow (Set.range b))
-    (ha : HasLim' a ⊤) : HasLim' (fun n => a n + b n) ⊤ := by
-  intro D; replace ⟨lb, hb⟩ := bddBelow_def.mp hb; simp at *
-  replace ⟨n, ha⟩ := ha (D - lb); exists n; intro n hn; specialize ha n hn; specialize hb n
-  grind
+lemma HasLim'.add_bot {a b : ℕ → ℝ} (ha : BddAbove (Set.range a)) (hb : HasLim' b ⊥) :
+    HasLim' (fun n => a n + b n) ⊥ := by convert bot_add hb ha using 2; ac_rfl
 
-lemma HasLim'.top_add_const [IsOrderedRing R] {a : ℕ → R} (b : R) (ha : HasLim' a ⊤) :
-    HasLim' (fun n => a n + b) ⊤ := ha.top_add (HasLim.const b).bddBelow
-
-lemma HasLim'.add_top [IsOrderedAddMonoid R] {a b : ℕ → R} (ha : BddBelow (Set.range a))
-    (hb : HasLim' b ⊤) : HasLim' (fun n => a n + b n) ⊤ := by convert top_add ha hb using 2; exact add_comm _ _
-
-lemma HasLim'.const_add_top [IsOrderedRing R] {b : ℕ → R} (a : R) (hb : HasLim' b ⊤) :
-    HasLim' (fun n => a + b n) ⊤ := hb.add_top (HasLim.const a).bddBelow
-
-lemma HasLim'.bot_add [IsOrderedAddMonoid R] {a b : ℕ → R} (hb : BddAbove (Set.range b))
-    (ha : HasLim' a ⊥) : HasLim' (fun n => a n + b n) ⊥ := by
-  rw [← Pi.add_def, ← neg_neg (a + b)]; apply neg_top; simp
-  exact add_top (Set.neg_range (f := b) ▸ hb.neg) ha.neg_bot
-
-lemma HasLim'.bot_add_const [IsOrderedRing R] {a : ℕ → R} (b : R) (ha : HasLim' a ⊥) :
-    HasLim' (fun n => a n + b) ⊥ := ha.bot_add (HasLim.const b).bddAbove
-
-lemma HasLim'.add_bot [IsOrderedAddMonoid R] {a b : ℕ → R} (ha : BddAbove (Set.range a))
-    (hb : HasLim' b ⊥) : HasLim' (fun n => a n + b n) ⊥ := by convert bot_add ha hb using 2; exact add_comm _ _
-
-lemma HasLim'.const_add_bot [IsOrderedRing R] {b : ℕ → R} (a : R) (hb : HasLim' b ⊥) :
-    HasLim' (fun n => a + b n) ⊥ := hb.add_bot (HasLim.const a).bddAbove
-
-lemma HasLim'.add [IsOrderedRing R] {an bn : ℕ → R} {a b : WithBot (WithTop R)} (ha : HasLim' an a) (hb : HasLim' bn b)
-    (hn : ¬(a = ⊤ ∧ b = ⊥) ∧ ¬(a = ⊥ ∧ b = ⊤) := by decide) : HasLim' (fun n => an n + bn n) (a + b) :=
+lemma HasLim'.add {an bn : ℕ → ℝ} {a b : EReal} (ha : HasLim' an a) (hb : HasLim' bn b)
+    (hn : ¬(a = ⊤ ∧ b = ⊥) ∧ ¬(a = ⊥ ∧ b = ⊤) := by simp [*]) : HasLim' (fun n => an n + bn n) (a + b) :=
   match a, b with
-  | some (some a), some (some b) => HasLim.add ha hb
-  | some (some a), ⊤ => hb.add_top ha.bddBelow
-  | some (some a), ⊥ => hb.add_bot ha.bddAbove
-  | ⊤, some (some b) => ha.top_add hb.bddBelow
+  | (a : ℝ), (b : ℝ) => HasLim.add ha hb
+  | (a : ℝ), ⊤ => hb.add_top ha.bddBelow
+  | (a : ℝ), ⊥ => hb.add_bot ha.bddAbove
+  | ⊤, (b : ℝ) => ha.top_add hb.bddBelow
+  | ⊥, (b : ℝ) => ha.bot_add hb.bddAbove
   | ⊤, ⊤ => by
-    intro D; have ⟨n, h⟩ := exists_forall_ge_and (ha (D / 2)) (hb (D / 2))
-    exists n; intro n hn; replace ⟨ha, hb⟩ := h n hn; replace h := add_lt_add ha hb; simp at *; exact h
-  | ⊤, ⊥ => by revert hn; tauto
-  | ⊥, some (some b) => ha.bot_add hb.bddAbove
-  | ⊥, ⊤ => by revert hn; tauto
+    intro D
+    peel exists_forall_ge_and (ha (D / 2)) (hb (D / 2)) with h
+    apply And.elim add_lt_add at h
+    simp at *; exact h
   | ⊥, ⊥ => by
-    intro D; have ⟨n, h⟩ := exists_forall_ge_and (ha (D / 2)) (hb (D / 2))
-    exists n; intro n hn; replace ⟨ha, hb⟩ := h n hn; replace h := add_lt_add ha hb; simp at *; exact h
+    intro D
+    peel exists_forall_ge_and (ha (D / 2)) (hb (D / 2)) with h
+    apply And.elim add_lt_add at h
+    simp at *; exact h
 
-lemma HasLim'.top_mul_pos [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : 0 < g)
-    (ha : HasLim' a ⊤) (hb : HasLim b g) : HasLim' (fun n => a n * b n) ⊤ := by
-  intro D; have ⟨n, h⟩ := exists_forall_ge_and (ha (max 0 (2 * D / g))) (hb (g / 2) (half_pos hg))
-  exists n; intro n hn; replace ⟨ha, hb⟩ := h n hn
-  rw [abs_sub_comm] at hb; apply lt_of_abs_lt at hb; rw [sub_lt_comm, sub_half] at hb
-  replace h := mul_lt_mul'' ha hb (le_max_left 0 _) (half_pos hg).le
-  replace h := lt_of_le_of_lt (mul_le_mul_of_nonneg_right (le_max_right 0 _) (half_pos hg).le) h
-  field_simp at h; exact h
+lemma HasLim'.add_const {a : ℕ → ℝ} {g : EReal} (b : ℝ) (h : HasLim' a g) :
+    HasLim' (fun n => a n + b) (g + b) := add h (HasLim.const b)
 
-lemma HasLim'.top_mul_neg [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : g < 0)
-    (ha : HasLim' a ⊤) (hb : HasLim b g) : HasLim' (fun n => a n * b n) ⊥ :=
-  Pi.mul_def a b ▸ neg_neg (a * b) ▸ mul_neg a b ▸ (ha.top_mul_pos (neg_pos.mpr hg) hb.neg).neg_top
+lemma HasLim'.const_add {b : ℕ → ℝ} {g : EReal} (a : ℝ) (h : HasLim' b g) :
+    HasLim' (fun n => a + b n) (a + g) := add (HasLim.const a) h
 
-lemma HasLim'.pos_mul_top [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : 0 < g)
-    (ha : HasLim a g) (hb : HasLim' b ⊤) : HasLim' (fun n => a n * b n) ⊤ :=
-  Pi.mul_def a b ▸ mul_comm a b ▸ top_mul_pos hg hb ha
+lemma HasLim'.sub {an bn : ℕ → ℝ} {a b : EReal} (ha : HasLim' an a) (hb : HasLim' bn b)
+    (hn : ¬(a = ⊤ ∧ b = ⊤) ∧ ¬(a = ⊥ ∧ b = ⊥) := by simp [*]) : HasLim' (fun n => an n - bn n) (a - b) :=
+  ha.add hb.neg
 
-lemma HasLim'.neg_mul_top [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : g < 0)
-    (ha : HasLim a g) (hb : HasLim' b ⊤) : HasLim' (fun n => a n * b n) ⊥ :=
-  Pi.mul_def a b ▸ mul_comm a b ▸ top_mul_neg hg hb ha
+lemma HasLim'.sub_const {a : ℕ → ℝ} {g : EReal} (b : ℝ) (h : HasLim' a g) :
+    HasLim' (fun n => a n - b) (g - b) := sub h (HasLim.const b)
 
-lemma HasLim'.bot_mul_pos [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : 0 < g)
-    (ha : HasLim' a ⊥) (hb : HasLim b g) : HasLim' (fun n => a n * b n) ⊥ :=
-  Pi.mul_def a b ▸ neg_mul_neg a b ▸ ha.neg_bot.top_mul_neg (neg_neg_iff_pos.mpr hg) hb.neg
+lemma HasLim'.const_sub {b : ℕ → ℝ} {g : EReal} (a : ℝ) (h : HasLim' b g) :
+    HasLim' (fun n => a - b n) (a - g) := sub (HasLim.const a) h
 
-lemma HasLim'.bot_mul_neg [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : g < 0)
-    (ha : HasLim' a ⊥) (hb : HasLim b g) : HasLim' (fun n => a n * b n) ⊤ :=
-  Pi.mul_def a b ▸ neg_mul_neg a b ▸ ha.neg_bot.top_mul_pos (neg_pos.mpr hg) hb.neg
+lemma HasLim'.mul {an bn : ℕ → ℝ} {a b : EReal} (ha : HasLim' an a) (hb : HasLim' bn b)
+    (hn : ¬(a = ⊤ ∧ b = 0) ∧ ¬(a = ⊥ ∧ b = 0) ∧ ¬(a = 0 ∧ b = ⊤) ∧ ¬(a = 0 ∧ b = ⊥) := by simp [*] <;> order) :
+    HasLim' (fun n => an n * bn n) (a * b) := by
+  induction a, b using EReal.induction₂_symm_neg generalizing an bn
+  case symm b a ih => convert ih hb ha (by tauto) using 1 <;> simp [mul_comm]
+  case neg_left a b ih =>
+    apply neg at ha; simp at ha
+    specialize ih ha hb (by simp [-not_and] at hn; tauto)
+    convert ih.neg using 1 <;> simp
+  case top_top =>
+    intro D
+    peel exists_forall_ge_and (ha √D) (hb √D) with h
+    apply And.elim mul_lt_mul'' at h
+    simp [← sq, Real.sq_sqrt'] at h
+    exact h.left
+  case top_pos g hg =>
+    rw [EReal.top_mul_coe_of_pos hg]
+    intro D; cases le_total D 0
+    case inl hnp =>
+      peel exists_forall_ge_and (ha 0) (hb (g / 2) (half_pos hg)) with h
+      grw [hnp]
+      simp [h.left]
+      rw [abs_sub_comm, abs_lt, sub_lt_comm, sub_half] at h
+      exact (half_pos hg).trans h.right.right
+    case inr hnn =>
+      peel exists_forall_ge_and (ha (2 * D / g)) (hb (g / 2) (half_pos hg)) with h
+      simp
+      rw [abs_sub_comm, abs_lt, sub_lt_comm, sub_half] at h
+      convert mul_lt_mul'' h.left h.right.right (by positivity) (by positivity)
+      field
+  case top_zero => simp at hn
+  case coe_coe => exact HasLim.mul ha hb
 
-lemma HasLim'.pos_mul_bot [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : 0 < g)
-    (ha : HasLim a g) (hb : HasLim' b ⊥) : HasLim' (fun n => a n * b n) ⊥ :=
-  Pi.mul_def a b ▸ mul_comm a b ▸ bot_mul_pos hg hb ha
+lemma HasLim'.mul_const {a : ℕ → ℝ} {g : EReal} {b : ℝ} (hb : b ≠ 0) (ha : HasLim' a g) :
+    HasLim' (fun n => a n * b) (g * b) := mul ha (HasLim.const b)
 
-lemma HasLim'.neg_mul_bot [IsOrderedRing R] {a b : ℕ → R} {g : R} (hg : g < 0)
-    (ha : HasLim a g) (hb : HasLim' b ⊥) : HasLim' (fun n => a n * b n) ⊤ :=
-  Pi.mul_def a b ▸ mul_comm a b ▸ bot_mul_neg hg hb ha
+lemma HasLim'.const_mul {b : ℕ → ℝ} {g : EReal} {a : ℝ} (ha : a ≠ 0) (hb : HasLim' b g) :
+    HasLim' (fun n => a * b n) (a * g) := mul (HasLim.const a) hb
 
-lemma HasLim'.top_mul_top {a b : ℕ → ℝ} (ha : HasLim' a ⊤) (hb : HasLim' b ⊤) : HasLim' (fun n => a n * b n) ⊤ := by
-  intro D; have ⟨n, h⟩ := exists_forall_ge_and (ha √D) (hb √D)
-  exists n; intro n hn; replace ⟨ha, hb⟩ := h n hn
-  replace h := mul_lt_mul'' ha hb D.sqrt_nonneg D.sqrt_nonneg
-  rw [← sq, Real.sq_sqrt'] at h
-  exact (max_lt_iff.mp h).1
+lemma HasLim'.inv {a : ℕ → ℝ} {g : EReal} (h : HasLim' a g) (hg : g ≠ 0 := by simp) :
+    HasLim' (fun n => (a n)⁻¹) g⁻¹ :=
+  match g with
+  | (g : ℝ) => HasLim.inv h (by norm_cast at hg)
+  | ⊤ => by
+    intro e he; specialize h e⁻¹; peel h with h
+    rw [abs_of_pos] <;> simp
+    · exact inv_lt_of_inv_lt₀ he h
+    · exact lt_trans (by simpa) h
+  | ⊥ => by
+    intro e he; specialize h (-e⁻¹); peel h with _ n _ h
+    have : a n < 0 := lt_trans h (by simpa)
+    simp
+    rw [abs_of_neg this]
+    exact inv_lt_of_inv_lt₀ he (lt_neg_of_lt_neg h)
 
-lemma HasLim'.top_mul_bot {a b : ℕ → ℝ} (ha : HasLim' a ⊤) (hb : HasLim' b ⊥) : HasLim' (fun n => a n * b n) ⊥ :=
-  Pi.mul_def a b ▸ neg_neg (a * b) ▸ mul_neg a b ▸ (ha.top_mul_top hb.neg_bot).neg_top
+lemma HasLim'.div {an bn : ℕ → ℝ} {a b : EReal} (ha : HasLim' an a) (hb : HasLim' bn b)
+  (hn0 : b ≠ 0) (hn : (a ≠ ⊤ ∧ a ≠ ⊥) ∨ (b ≠ ⊤ ∧ b ≠ ⊥) := by simp [*]) :
+  HasLim' (fun n => an n / bn n) (a / b) := by
+  simp [div_eq_mul_inv]
+  refine ha.mul (hb.inv hn0) ?_
+  cases a <;> cases b <;> simp [← EReal.coe_inv] at ⊢ hn hn0 <;> assumption
 
-lemma HasLim'.bot_mul_top {a b : ℕ → ℝ} (ha : HasLim' a ⊥) (hb : HasLim' b ⊤) : HasLim' (fun n => a n * b n) ⊥ :=
-  Pi.mul_def a b ▸ neg_neg (a * b) ▸ neg_mul a b ▸ (ha.neg_bot.top_mul_top hb).neg_top
+lemma HasLim'.div_const {a : ℕ → ℝ} {g : EReal} {b : ℝ} (ha : HasLim' a g) (hb : b ≠ 0) :
+    HasLim' (fun n => a n / b) (g / b) := div ha (HasLim.const b) (by simpa)
 
-lemma HasLim'.bot_mul_bot {a b : ℕ → ℝ} (ha : HasLim' a ⊥) (hb : HasLim' b ⊥) : HasLim' (fun n => a n * b n) ⊤ :=
-  Pi.mul_def a b ▸ neg_mul_neg a b ▸ ha.neg_bot.top_mul_top hb.neg_bot
+lemma HasLim'.const_div {b : ℕ → ℝ} {g : EReal} (a : ℝ) (hb : HasLim' b g) (hg : g ≠ 0) :
+    HasLim' (fun n => a / b n) (a / g) := div (HasLim.const a) hb (by simpa)
 
-lemma hasLim_const_pow [IsOrderedRing R] [Archimedean R] {a : R} (h : |a| < 1) : HasLim (fun n => a ^ n) 0 := by
-  by_cases ha : a = 0
-  · subst ha; intro _ _; simp; exists 1; intro n hn; rw [zero_pow]; simpa; omega
-  intro e he; simp
-  have ⟨b, hb⟩ := exists_pow_lt_of_lt_one he h
-  exists b; intro n hn
-  exact lt_of_le_of_lt ((pow_le_pow_iff_right_of_lt_one₀ (abs_pos.mpr ha) h).mpr hn) hb
+lemma HasLim'.pow_const {a : ℕ → ℝ} {g : EReal} (n : ℕ) (h : HasLim' a g) :
+    HasLim' (fun m => (a m) ^ n) (g ^ n) := by
+  induction n
+  case zero => simp; exact HasLim.const 1
+  case succ n ih =>
+    simp [pow_succ]; refine mul ih h ?_
+    cases g <;> simp
+    norm_cast; simp [-EReal.coe_pow]
 
-lemma hasLim_const_rpow_inv {a : ℝ} (h : 1 < a) : HasLim (fun n => a ^ (n⁻¹ : ℝ)) 1 := by
+lemma HasLim.pow_const {a : ℕ → ℝ} {g : ℝ} (n : ℕ) (h : HasLim a g) :
+    HasLim (fun m => (a m) ^ n) (g ^ n) := by
+  rw [← HasLim'.coe] at h
+  apply HasLim'.pow_const n at h
+  norm_cast at h
+
+lemma HasLim'.top_pow_const {a : ℕ → ℝ} {n : ℕ} (hn : n ≠ 0) (h : HasLim' a ⊤) :
+    HasLim' (fun m => (a m) ^ n) ⊤ := by
+  convert h.pow_const n
+  cases n <;> simp [pow_succ] at ⊢ hn
+  rw [EReal.mul_top_of_pos]
+  rename_i n; induction n
+  · simp
+  · simp [pow_succ]; exact EReal.mul_pos (by assumption) (by simp)
+
+/-- **Th. 2.11 (1)** Powers of a number within (-1, 1) converge to 0 -/
+lemma hasLim_const_pow_zero {a : ℝ} (h : |a| < 1) : HasLim (fun n => a ^ n) 0 := by
   intro e he
-  have ⟨b, hb⟩ := pow_unbounded_of_one_lt a (lt_add_of_pos_left 1 he)
-  exists b; intro n hn
+  simp
+  peel exists_pow_lt_of_lt_one he h with hb
+  intro n hn
+  exact lt_of_le_of_lt (pow_le_pow_of_le_one (by simp) h.le hn) hb
+
+/-- **Th. 2.11 (2)** Roots of a positive number converge to 1. -/
+lemma hasLim_const_rpow_inv {a : ℝ} (h : 0 < a) : HasLim (fun n => a ^ (n⁻¹ : ℝ)) 1 := by
+  wlog ha : 1 ≤ a
+  · simp at ha
+    replace this := (this (inv_pos.mpr h) ((one_le_inv₀ h).mpr ha.le)).inv
+    simp [Real.inv_rpow h.le] at this
+    assumption
+  intro e he
+  peel pow_unbounded_of_one_lt a (lt_add_of_pos_left 1 he) with hb
+  intro n hn
   by_cases hn0 : n = 0; · subst hn0; simpa
-  rw [abs_of_nonneg (by simp; apply Real.one_le_rpow h.le; positivity), sub_lt_iff_lt_add]
+  rw [abs_of_nonneg (by simp; apply Real.one_le_rpow ha; positivity), sub_lt_iff_lt_add]
   apply lt_of_pow_lt_pow_left₀ n (by positivity)
   rw [Real.rpow_inv_natCast_pow (by positivity) hn0]
   exact lt_of_lt_of_le hb (pow_le_pow_right₀ (lt_add_of_pos_left 1 he).le hn)
-
-lemma HasLim.rpow_const' {a : ℕ → ℝ} {g r : ℝ} (hnn : ∀ n, 0 ≤ a n) (hr : 0 ≤ r)
-    (h : HasLim a g) : HasLim (fun n => a n ^ r) (g ^ r) := by
-  intro e he
-  by_cases hr : r = 0; · subst hr; simp; exact ⟨0, fun _ _ => he⟩
-  rcases lt_trichotomy g 0 with hg | hg | hg
-  · replace ⟨n, h⟩ := h (-g) (by simpa); specialize h n le_rfl; specialize hnn n
-    apply lt_of_abs_lt at h; linarith
-  · subst hg; rw [Real.zero_rpow hr]
-    replace ⟨n, h⟩ := h (e ^ r⁻¹) (by positivity); exists n; intro n hn; specialize h n hn; simp at *
-    rw [abs_of_nonneg (hnn n)] at h; rw [abs_of_nonneg (Real.rpow_nonneg (hnn n) r)]
-    convert Real.rpow_lt_rpow (hnn n) h (show 0 < r by positivity)
-    symm; exact Real.rpow_inv_rpow he.le hr
-  let lb := (max 0 (g ^ r - e)) ^ r⁻¹
-  let ub := (g ^ r + e) ^ r⁻¹
-  replace ⟨n, h⟩ := h (min (g - lb) (ub - g)) (by
-    simp [lb, ub]; constructor
-    · nth_rw 2 [← Real.rpow_rpow_inv hg.le hr]
-      refine Real.rpow_lt_rpow (le_max_left 0 _) ?_ (by positivity); simp; constructor <;> positivity
-    · nth_rw 1 [← Real.rpow_rpow_inv hg.le hr]
-      refine Real.rpow_lt_rpow (by positivity) ?_ (by positivity); simpa)
-  exists n; intro n hn; specialize h n hn; rw [abs_lt]; constructor
-  · replace h := lt_of_abs_lt (abs_sub_comm (a n) g ▸ (lt_min_iff.mp h).1); simp [lb] at h
-    replace h := Real.rpow_lt_rpow (Real.rpow_nonneg (le_max_left 0 _) _) h (show 0 < r by positivity)
-    rw [Real.rpow_inv_rpow (le_max_left 0 _) hr] at h; replace h := (max_lt_iff.mp h).2
-    simp; linarith
-  · replace h := lt_of_abs_lt ((lt_min_iff.mp h).2); simp [ub] at h
-    replace h := Real.rpow_lt_rpow (hnn n) h (show 0 < r by positivity)
-    rw [Real.rpow_inv_rpow (by positivity) hr] at h; simp; linarith
-
-lemma HasLim'.rpow_const {a : ℕ → ℝ} {g r : ℝ} (hnn : ∃ n₀, ∀ n ≥ n₀, 0 ≤ a n) (hr : 0 ≤ r)
-    (h : HasLim a g) : HasLim (fun n => a n ^ r) (g ^ r) := by
-  let b := fun n => max 0 (a n)
-  replace h := h.of_eventually_eq (a := b) (by convert hnn using 4; simp [b])
-  replace h := h.rpow_const' (fun n => le_max_left _ _) hr
-  apply h.of_eventually_eq; revert hnn; apply Exists.imp
-  intro n; apply forall₂_imp; intro n hn h; rw [max_eq_right h]
-
-lemma HasLim'.top_rpow_const {a : ℕ → ℝ} {r : ℝ} (hr : 0 < r) (h : HasLim' a ⊤) : HasLim' (fun n => a n ^ r) ⊤ := by
-  intro D; replace ⟨n, h⟩ := h ((max 0 D) ^ r⁻¹); exists n; intro n hn; specialize h n hn
-  replace h := Real.rpow_lt_rpow (Real.rpow_nonneg (le_max_left 0 _) _) h hr
-  rw [Real.rpow_inv_rpow (le_max_left 0 _) hr.ne'] at h; exact (max_lt_iff.mp h).2
 
 /-- `HasLim` agrees with Mathlib's `Filter.Tendsto` on the reals. -/
 lemma hasLim_iff_tendsto {a : ℕ → ℝ} {g : ℝ} : HasLim a g ↔ Filter.Tendsto a Filter.atTop (nhds g) := by
@@ -529,14 +523,29 @@ theorem hasLim_rpow_inv : HasLim (fun n => (n : ℝ) ^ (n⁻¹ : ℝ)) 1 := by
   convert tendsto_rpow_div.comp tendsto_natCast_atTop_atTop
   simp
 
+theorem HasLim.rpow_const {a : ℕ → ℝ} {g r : ℝ} (h : HasLim a g) (hgr : g ≠ 0 ∨ 0 ≤ r) :
+    HasLim (fun n => a n ^ r) (g ^ r) := by
+  revert h
+  simp [hasLim_iff_tendsto]
+  exact fun h => h.rpow_const hgr
+
+lemma HasLim'.top_rpow_const {a : ℕ → ℝ} {r : ℝ} (hr : 0 < r) (h : HasLim' a ⊤) :
+    HasLim' (fun n => a n ^ r) ⊤ := by
+  intro D
+  peel h ((max 0 D) ^ r⁻¹) with h
+  replace h := Real.rpow_lt_rpow (Real.rpow_nonneg (le_max_left 0 _) _) h hr
+  rw [Real.rpow_inv_rpow (le_max_left 0 _) hr.ne'] at h
+  exact (max_lt_iff.mp h).2
+
 /-- **Th. 2.13.** Each subsequence of a convergent sequence converges to the same limit. -/
-theorem HasLim.subseq {a : ℕ → R} {g : R} (h : HasLim a g) {n : ℕ → ℕ} (hn : StrictMono n) :
+theorem HasLim.subseq {a : ℕ → ℝ} {g : ℝ} (h : HasLim a g) {n : ℕ → ℕ} (hn : StrictMono n) :
     HasLim (a ∘ n) g := by
   have hnk : ∀ k, k ≤ n k := by
-    intro k; induction k
-    case zero => simp
-    case succ k ih => exact Nat.succ_le_of_lt (lt_of_le_of_lt ih (hn (Nat.lt_succ_self k)))
-  intro e he; replace ⟨n₀, h⟩ := h e he; exists n₀; intro k hk
+    apply Nat.rec
+    · simp
+    · exact fun k ih => Nat.succ_le_of_lt (lt_of_le_of_lt ih (hn k.lt_succ_self))
+  peel 3 h with h
+  intro k hk
   exact h (n k) (le_trans hk (hnk k))
 
 /-- **Th. 2.14.** The Bolzano-Weierstrass theorem: every bounded sequence has a convergent subsequence. -/
@@ -545,14 +554,20 @@ theorem hasLim_subseq_of_bounded {a : ℕ → ℝ} (ha : BddAbove (Set.range a))
   simp_rw [hasLim_iff_tendsto]
   apply Exists.imp fun g => And.right
   apply IsCompact.tendsto_subseq (s := Set.uIcc (iInf a) (iSup a)) isCompact_uIcc
-  intro n; rw [Set.mem_uIcc]; left; exact ⟨ciInf_le hb n, le_ciSup ha n⟩
+  exact fun n => Set.mem_uIcc_of_le (ciInf_le hb n) (le_ciSup ha n)
 
 /-- **Th. 2.15.** Convergent sequences as exactly the Cauchy sequences. -/
 theorem hasLim_iff_isCauSeq {a : ℕ → ℝ} : (∃ g, HasLim a g) ↔ IsCauSeq abs a := by
   constructor
-  · intro ⟨g, h⟩ e he; replace ⟨n, h⟩ := h (e / 2) (half_pos he); exists n; intro j hj
-    have hn := h n le_rfl; replace hj := h j hj; rw [abs_sub_comm] at hn
+  · intro ⟨g, h⟩ e he
+    peel 1 h (e / 2) (half_pos he) with n h
+    intro j hj
+    replace hj := h j hj
+    have hn := h n le_rfl
+    rw [abs_sub_comm] at hn
     convert lt_of_le_of_lt (abs_sub_le (a j) g (a n)) (add_lt_add hj hn); norm_num
-  · intro h; exists CauSeq.lim ⟨a, h⟩; intro e he
-    replace ⟨n, h⟩ := CauSeq.equiv_def₃ (CauSeq.equiv_lim ⟨a, h⟩) he
-    exists n; intro n hn; exact h n hn n le_rfl
+  · intro h
+    exists CauSeq.lim ⟨a, h⟩
+    intro e he
+    peel CauSeq.equiv_def₃ (CauSeq.equiv_lim ⟨a, h⟩) he with h
+    exact h _ le_rfl

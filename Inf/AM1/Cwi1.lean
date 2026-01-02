@@ -76,7 +76,7 @@ theorem zad5g : arccot (tan (7 / 8 * π)) = (5 / 8) * π := by
   rw [arctan_tan] <;> (field_simp; norm_num)
 
 theorem zad5h : cos (2 * arcsin (4 / 5)) = -7 / 25 := by
-  rw [cos_two_mul, cos_arcsin, sub_eq_of_eq_add]
+  rw [cos_two_mul, cos_arcsin]
   ring_nf
 
 theorem zad5i : arccos (sin (15 / 7 * π)) = (5 / 14) * π := by

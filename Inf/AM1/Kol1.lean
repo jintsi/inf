@@ -52,11 +52,12 @@ theorem Zad3a : HasLim (fun n => (n - cbrt (n ^ 3 - 1)) * sqrt (n ^ 4 + 3 * n)) 
         simp; congr; simp [sqrt_eq_rpow, eq_rpow_inv, ← pow_mul]
       _ = √(1 - 3 / (n ^ 3 + 3)) := by field_simp; simp
     )
-    convert (HasLim'.id.top_pow_const' (show 0 < 3 by simp)).top_add (HasLim.const _).bddBelow
-      |>.inv_top.const_mul 3 |>.const_sub 1 |>.pow_const' ?_ (show 0 ≤ 1 / 2 by simp) using 1
-    · ext n; rw [Real.sqrt_eq_rpow]; congr 4; simp
+    have := (HasLim'.id.top_pow_const (show 3 ≠ 0 by simp)).add_const 3
+      |>.const_div 3 (by simp) |>.const_sub 1
+    simp at this
+    convert this.rpow_const (Or.inr <| show 0 ≤ 1 / 2 by simp) using 1
+    · ext n; rw [Real.sqrt_eq_rpow]
     · simp
-    · intro n; field_simp; simp
   · norm_num; apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
       n * cbrt (n ^ 3 - 1) / √(n ^ 4 + 3 * n) = (n ^ 6 * (n ^ 3 - 1) ^ 2 / (n ^ 4 + 3 * n) ^ 3) ^ (6 : ℝ)⁻¹ := by
         rw [div_rpow, mul_rpow] <;> first | positivity | congr
@@ -66,25 +67,22 @@ theorem Zad3a : HasLim (fun n => (n - cbrt (n ^ 3 - 1)) * sqrt (n ^ 4 + 3 * n)) 
         · nth_rw 2 [← rpow_natCast]; rw [← rpow_mul, sqrt_eq_rpow]; norm_num; positivity
     ⟩
     ring_nf; simp [← div_eq_mul_inv, div_mul_eq_mul_div]; rw [show (1 : ℝ) = (0 - 0 + 1) ^ (6 : ℝ)⁻¹ by simp]
-    apply HasLim.pow_const' <;> try positivity
-    · intro n; rw [← sub_div, ← add_div]; apply div_nonneg <;> try positivity
-      convert show 0 ≤ ((n : ℝ) ^ 6 - n ^ 3) ^ 2 by positivity
-      field
+    apply HasLim.rpow_const
+    case hgr => simp
     apply HasLim.add; apply HasLim.sub
     · apply HasLim.const_squeeze (c := fun n => (n : ℝ) ^ 6 / (n ^ 6 + n ^ 12))
       · exact ⟨0, fun n hn => by positivity⟩
       · exact ⟨1, fun n hn => by gcongr; simp [← sub_nonneg]; ring_nf; positivity⟩
       · simp_rw [show 12 = 6 + 6 by simp, pow_add, ← mul_one_add]
         apply HasLim.of_eventually_eq ⟨1, fun n hn => div_mul_cancel_left₀ (by positivity) _⟩
-        convert ((HasLim'.id.top_pow_const' (show 0 < 6 by simp)).add_top (HasLim.const 1).bddBelow).inv_top
-        simp
+        exact ((HasLim'.id.top_pow_const (show 6 ≠ 0 by simp)).const_add 1).inv (by simp [-EReal.coe_one])
     · apply HasLim.const_squeeze (c := fun n => (n : ℝ) ^ 9 * 2 / (n ^ 9 + n ^ 12))
       · exact ⟨0, fun n hn => by positivity⟩
       · exact ⟨1, fun n hn => by gcongr; simp [← sub_nonneg]; ring_nf; positivity⟩
       · simp_rw [show 12 = 9 + 3 by simp, pow_add, ← mul_one_add]
         apply HasLim.of_eventually_eq ⟨1, fun n hn => mul_div_mul_left _ _ (by positivity)⟩
-        convert ((HasLim'.id.top_pow_const' (show 0 < 3 by simp)).add_top (HasLim.const 1).bddBelow).inv_top.const_mul 2 using 2
-        simp [div_eq_mul_inv]; norm_num
+        convert ((HasLim'.id.top_pow_const (show 3 ≠ 0 by simp)).const_add 1).const_div 2 using 2
+        simp [-EReal.coe_one, HasLim']
     · rw [← inv_one]; convert HasLim.inv ?_ one_ne_zero using 1 <;> try exact inferInstance
       · ext n; symm; exact inv_div _ _
       apply HasLim.of_eventually_eq ⟨1, fun n hn => (div_add_one (by positivity)).symm⟩
@@ -92,8 +90,9 @@ theorem Zad3a : HasLim (fun n => (n - cbrt (n ^ 3 - 1)) * sqrt (n ^ 4 + 3 * n)) 
       apply HasLim.const_squeeze (c := fun n => (n ^ 9 * 27 + n ^ 9 * 27 + n ^ 9 * 9) / (n : ℝ) ^ 12)
       · exact ⟨0, fun n hn => by positivity⟩
       · exact ⟨1, fun n hn => by gcongr <;> simp <;> assumption⟩
-      · field_simp; norm_num; convert (HasLim'.id.top_pow_const' (show 0 < 3 by simp)).inv_top.const_mul 63 using 2
-        simp [div_eq_mul_inv]; norm_num
+      · field_simp; norm_num
+        convert (HasLim'.id.top_pow_const (show 3 ≠ 0 by simp)).const_div 63 using 2
+        simp [HasLim']
   · norm_num; apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
       cbrt (n ^ 3 - 1) ^ 2 / √(n ^ 4 + 3 * n) = ((n ^ 3 - 1) ^ 4 / (n ^ 4 + 3 * n) ^ 3) ^ (6 : ℝ)⁻¹ := by
         rw [div_rpow, cbrt, rpow_eq_pow, sqrt_eq_rpow] <;> first | positivity | congr 1
@@ -106,18 +105,16 @@ theorem Zad3a : HasLim (fun n => (n - cbrt (n ^ 3 - 1)) * sqrt (n ^ 4 + 3 * n)) 
       _ = ((n ^ 3 - 1) / n ^ 3 * ((n ^ 3 - 1) / (n ^ 3 + 3)) ^ 3) ^ (6 : ℝ)⁻¹ := by
         rw [div_pow]; congr 1; apply mul_div_mul_comm
     ⟩
-    nth_rw 3 [show (1 : ℝ) = 1 ^ (6 : ℝ)⁻¹ by simp]; apply HasLim.pow_const' <;> try positivity
-    · intro n; rw [div_pow, ← mul_div_mul_comm, ← pow_succ']; simp; positivity
+    nth_rw 3 [show (1 : ℝ) = 1 ^ (6 : ℝ)⁻¹ by simp]; apply HasLim.rpow_const <;> try simp
     nth_rw 3 [show (1 : ℝ) = 1 * 1 by simp]; apply HasLim.mul
     · apply HasLim.of_eventually_eq ⟨1, fun n hn => (one_sub_div (by positivity)).symm⟩
-      convert (HasLim'.id.top_pow_const' (show 0 < 3 by simp)).inv_top.const_sub 1 <;> try simp
-      ext x; simp
+      convert (HasLim'.id.top_pow_const (show 3 ≠ 0 by simp)).inv.const_sub 1; simp [HasLim']
     · nth_rw 2 [show (1 : ℝ) = 1 ^ 3 by simp]; simp_rw [pow_three]
       refine HasLim.mul ?h (HasLim.mul ?h ?h); simp [← pow_three]
       apply HasLim.of_eq fun n => show ((n : ℝ) ^ 3 - 1) / (n ^ 3 + 3) = 1 - 4 / (n ^ 3 + 3) by
         rw [one_sub_div]; ring; positivity
-      have H := ((HasLim'.id.top_pow_const' (show 0 < 3 by simp)).top_add (HasLim.const 3).bddBelow).inv_top
-      convert (H.const_mul 4).const_sub 1 using 3 <;> simp [div_eq_mul_inv]
+      have H := ((HasLim'.id.top_pow_const (show 3 ≠ 0 by simp)).add_const 3).const_div 4 (by simp)
+      simp at H; convert H.const_sub 1; simp [HasLim']
 
 theorem Zad3b : HasLim (fun n => ∑ k ∈ Finset.Icc 1 n, 1 / sqrt (n ^ 2 + k)) 1 := by
   apply HasLim.squeeze_const (a := fun n => ∑ k ∈ Finset.Icc 1 n, 1 / sqrt (n ^ 2 + 2 * n + 1))
@@ -131,4 +128,5 @@ theorem Zad3b : HasLim (fun n => ∑ k ∈ Finset.Icc 1 n, 1 / sqrt (n ^ 2 + k))
     apply Real.sqrt_le_sqrt; simp
   · simp; have h (r : ℕ) : √(r ^ 2 + 2 * r + 1) = r + 1 := by rw [Real.sqrt_eq_cases]; left; ring_nf; simp; positivity
     simp_rw [h]
-    convert (HasLim'.id.top_add (HasLim.const (1 : ℝ)).bddBelow).inv_top.const_sub 1 using 2 <;> field
+    convert (HasLim'.id.top_add (HasLim.const (1 : ℝ)).bddBelow).inv.const_sub 1 using 2
+    simp [HasLim']; convert Iff.rfl using 3; field
