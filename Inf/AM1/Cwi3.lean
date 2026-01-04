@@ -86,7 +86,7 @@ theorem Zad5b : HasLim (fun n => n * (cbrt (n ^ 3 + n) - n)) (1 / 3) := by
       simp [add_div]; congr 2
       · simp [← sq, ← div_pow]
       · rw [mul_div_mul_right]; positivity
-      · simp [sq]; rw [div_self]; positivity
+      · simp [sq]; positivity
     _ = (cbrt (1 + (n⁻¹ : ℝ) ^ 2) ^ 2 + cbrt (1 + (n⁻¹ : ℝ) ^ 2) + 1)⁻¹ := by
       congr; all_goals (
         nth_rw 3 [← pow_rpow_inv_natCast (show 0 ≤ (n : ℝ) by positivity) (show 3 ≠ 0 by simp)]

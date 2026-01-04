@@ -7,3 +7,4 @@ import Inf.ALG1.Cwi3
 import Inf.ALG1.Cwi4
 import Inf.ALG1.Cwi5
 import Inf.ALG1.Cwi6
+import Inf.ALG1.Cwi7

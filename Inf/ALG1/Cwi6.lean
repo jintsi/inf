@@ -68,7 +68,7 @@ theorem Zad6_3d (n : ℕ) : LinearIndependent ℝ fun (i : Fin n) (x : ℝ) => �
       intro k; simp [sub_ne_zero]; exact k.is_lt.ne.symm
     rename_i h
     cases n; simp
-    rename_i n; by_contra!; revert h; simp [funext_iff, Fin.forall_iff]; intro i hi
+    rename_i n; by_contra!; revert h; simp [funext_iff, Fin.forall_iff, -Order.lt_add_one_iff]; intro i hi
     induction i using Nat.strong_induction_on
     rename_i i ih; replace ih := fun m h => ih m h (h.trans hi); let i := Fin.mk i hi
     specialize this i; rw [Finset.prod_eq_zero (i := i) (by simp) (by simp)] at this

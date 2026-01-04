@@ -65,9 +65,7 @@ theorem zad5e : arccot 0 = π / 2 := by simp [arccot]
 theorem zad5f : arccot (-sqrt 3) = (5/6)*π := by
   simp [arccot]
   apply add_eq_of_eq_sub'
-  ring_nf; simp
-  apply arctan_eq_of_tan_eq tan_pi_div_three
-  simp; constructor <;> (field_simp; norm_num)
+  ring_nf
 
 theorem zad5g : arccot (tan (7 / 8 * π)) = (5 / 8) * π := by
   rw [arccot, ← tan_sub_pi, sub_eq_of_eq_add]

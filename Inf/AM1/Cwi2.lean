@@ -31,7 +31,7 @@ theorem zad3_neg (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, x i ∈ Set.Ioo
     ring_nf; simp
     exact mul_pos_of_neg_of_neg (hx 1 (by norm_num)).right (hx 0 (by norm_num)).right
   case step n hn ih =>
-    simp [Finset.Iio_eq_Ico, Finset.sum_range_succ, Finset.prod_range_succ] at *
+    simp [Finset.Iio_eq_Ico, Finset.sum_range_succ, Finset.prod_range_succ, -Order.lt_add_one_iff] at *
     have ih := ih <| (Nat.forall_lt_succ_right.mp hx).left
     rw [← add_assoc, mul_add, mul_one]
     apply add_lt_add ih
@@ -51,7 +51,7 @@ theorem zad3_pos (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, 0 < x i) :
     ring_nf; simp
     exact mul_pos (hx 1 (by norm_num)) (hx 0 (by norm_num))
   case step n hn ih =>
-    simp [Finset.Iio_eq_Ico, Finset.sum_range_succ, Finset.prod_range_succ] at *
+    simp [Finset.Iio_eq_Ico, Finset.sum_range_succ, Finset.prod_range_succ, -Order.lt_add_one_iff] at *
     have ih := ih <| (Nat.forall_lt_succ_right.mp hx).left
     rw [← add_assoc, mul_add, mul_one]
     apply add_lt_add ih
