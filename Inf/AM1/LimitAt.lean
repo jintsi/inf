@@ -162,6 +162,12 @@ abbrev Eventually (D : Set ℝ) (a : EReal) (p : ℝ → Prop) : Prop :=
 lemma eventually_coe {D : Set ℝ} {a : ℝ} {p : ℝ → Prop} :
     Eventually D a p ↔ ∃ δ > 0, ∀ x ∈ D, x ≠ a → |x - a| < δ → p x := Iff.rfl
 
+lemma eventually_true {D : Set ℝ} {a : EReal} {p : ℝ → Prop} : (∀ x ∈ D, p x) → Eventually D a p := by
+  cases a
+  · intro h; simp [Eventually]; use 0; tauto
+  · intro h; simp; use 1, zero_lt_one; tauto
+  · intro h; simp [Eventually]; use 0; tauto
+
 lemma eventually_iff_hasLim {D : Set ℝ} {a : EReal} {p : ℝ → Prop} :
     Eventually D a p ↔ ∀ x, (∀ n, x n ∈ D ∧ x n ≠ a) → HasLim' x a → ∃ n₀, ∀ n ≥ n₀, p (x n) := by
   constructor
@@ -439,6 +445,7 @@ lemma not_hasLimAt_of_left_ne_right {f : ℝ → ℝ} {D : Set ℝ} {a : ℝ} {g
   simp [hasLimAt_iff_left_and_right (D := D)]
   exact fun g hl' hr' => (hl.eq hal hl').trans (hr'.eq har hr)
 
+/-- Effectively the same statement as `HasLimAt.comp_continuousWithinAt` -/
 lemma HasLimAt.comp {f h : ℝ → ℝ} {D₁ D₂ : Set ℝ} (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : EReal}
     {g : ℝ} : HasLimAt f D₁ a g → HasLimAt h D₂ g (h g) → HasLimAt (h ∘ f) D₁ a (h g) := by
   intro hf hh x hx ha e he
@@ -455,6 +462,34 @@ lemma HasLimAt.comp_top {f h : ℝ → ℝ} {D₁ D₂ : Set ℝ} (hd : ∀ x �
 lemma HasLimAt.comp_bot {f h : ℝ → ℝ} {D₁ D₂ : Set ℝ} (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : EReal}
     {g : ℝ} : HasLimAt f D₁ a ⊥ → HasLimAt h D₂ ⊥ g → HasLimAt (h ∘ f) D₁ a g :=
   fun hf hh x hx ha => hh (f ∘ x) (by simp; intro n; exact hd (x n) (hx n).left) (hf x hx ha)
+
+lemma HasLimAt.comp_neg {f : ℝ → ℝ} {D : Set ℝ} {a g : EReal} :
+    HasLimAt f D a g ↔ HasLimAt (fun x => f (-x)) (-D) (-a) g := by
+  revert f D a; suffices ∀ f D a, HasLimAt f D a g → HasLimAt (fun x => f (-x)) (-D) (-a) g by
+    intro f D a; use this f D a; convert this (fun x => f (-x)) (-D) (-a) <;> simp
+  intro f D a hf x hx ha
+  exact hf (fun n => -x n) (by simp [← neg_eq_iff_eq_neg] at hx; exact hx)
+    (by convert ha.neg; simp)
+
+lemma eventually_def {D : Set ℝ} {a : ℝ} {p : ℝ → Prop} :
+    Eventually D a p ↔ ∀ᶠ x in (nhdsWithin a (D \ {a})), p x := by
+  simp [eventually_nhdsWithin_iff, Metric.eventually_nhds_iff, Real.dist_eq]; peel 3; tauto
+
+lemma eventually_bot_def {D : Set ℝ} {p : ℝ → Prop} :
+    Eventually D ⊥ p ↔ ∀ᶠ x in (Filter.atBot ⊓ Filter.principal D), p x := by
+  simp [Eventually, Filter.eventually_inf_principal, Filter.atBot_basis_Iio.eventually_iff]; peel 2; tauto
+
+lemma eventually_top_def {D : Set ℝ} {p : ℝ → Prop} :
+    Eventually D ⊤ p ↔ ∀ᶠ x in (Filter.atTop ⊓ Filter.principal D), p x := by
+  simp [Eventually, Filter.eventually_inf_principal, Filter.atTop_basis_Ioi.eventually_iff]; peel 2; tauto
+
+lemma eventually_left_def {D : Set ℝ} {a : ℝ} {p : ℝ → Prop} :
+    Eventually (D ∩ Set.Iio a) a p ↔ ∀ᶠ x in (nhdsWithin a (D ∩ Set.Iio a)), p x := by
+  simp [eventually_nhdsWithin_iff, Metric.eventually_nhds_iff, Real.dist_eq]; grind
+
+lemma eventually_right_def {D : Set ℝ} {a : ℝ} {p : ℝ → Prop} :
+    Eventually (D ∩ Set.Ioi a) a p ↔ ∀ᶠ x in (nhdsWithin a (D ∩ Set.Ioi a)), p x := by
+  simp [eventually_nhdsWithin_iff, Metric.eventually_nhds_iff, Real.dist_eq]; grind
 
 /-- `HasLimAt` agrees with Mathlib's `Tendsto` on the reals. -/
 lemma hasLimAt_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} {a g : ℝ} :
@@ -481,22 +516,22 @@ lemma hasLimAt_at_bot_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} {g : ℝ} :
   simp [HasLimAt.def_at_bot, (Filter.atBot_basis_Iio.inf_principal D).tendsto_iff (nhds_basis_abs_sub_lt g)]
   peel with e he G x; tauto
 
-lemma HasLimAt_top_top_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
+lemma hasLimAt_top_top_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
     HasLimAt f D ⊤ ⊤ ↔ Filter.Tendsto f (Filter.atTop ⊓ Filter.principal D) Filter.atTop := by
   simp [HasLimAt.def_top_top, (Filter.atTop_basis_Ioi.inf_principal D).tendsto_iff Filter.atTop_basis_Ioi]
   peel with L G x; tauto
 
-lemma HasLimAt_top_bot_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
+lemma hasLimAt_top_bot_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
     HasLimAt f D ⊤ ⊥ ↔ Filter.Tendsto f (Filter.atTop ⊓ Filter.principal D) Filter.atBot := by
   simp [HasLimAt.def_top_bot, (Filter.atTop_basis_Ioi.inf_principal D).tendsto_iff Filter.atBot_basis_Iio]
   peel with L G x; tauto
 
-lemma HasLimAt_bot_top_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
+lemma hasLimAt_bot_top_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
     HasLimAt f D ⊥ ⊤ ↔ Filter.Tendsto f (Filter.atBot ⊓ Filter.principal D) Filter.atTop := by
   simp [HasLimAt.def_bot_top, (Filter.atBot_basis_Iio.inf_principal D).tendsto_iff Filter.atTop_basis_Ioi]
   peel with L G x; tauto
 
-lemma HasLimAt_bot_bot_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
+lemma hasLimAt_bot_bot_iff_tendsto {f : ℝ → ℝ} {D : Set ℝ} :
     HasLimAt f D ⊥ ⊥ ↔ Filter.Tendsto f (Filter.atBot ⊓ Filter.principal D) Filter.atBot := by
   simp [HasLimAt.def_bot_bot, (Filter.atBot_basis_Iio.inf_principal D).tendsto_iff Filter.atBot_basis_Iio]
   peel with L G x; tauto

@@ -188,6 +188,22 @@ theorem Zad7_inf {a : ℕ → ℝ} (h : HasLim a 0) (hp : ∀ n, 0 < a n) : iInf
   refine ge_antisymm (le_ciInf fun n => (hp n).le) (Real.sInf_le_iff h.bddBelow (Set.range_nonempty a) |>.mpr ?_)
   simp [HasLim] at *; intro e he; replace ⟨n, h⟩ := h e he; exact ⟨n, lt_of_abs_lt (h n le_rfl)⟩
 
+theorem Zad13 : Antitone fun (n : PNat) => (1 + 1 / n : ℚ) ^ (n + 1 : ℕ) := by
+  suffices Antitone fun n => (1 + 1 / (n + 1 : ℕ) : ℚ) ^ (n + 1 + 1) by
+    intro a b hab; specialize @this a.natPred b.natPred; simp at *; exact this hab
+  apply antitone_nat_of_succ_le; intro n
+  rw [← one_le_div (by positivity), pow_succ _ (n + 1 + 1), ← div_div, ← div_pow,
+      one_add_div (by positivity)]; nth_rw 1 [one_add_div (by positivity)]
+  simp [add_assoc]; norm_num; rw [div_div_div_eq, one_le_div (by positivity)]
+  conv in _ / _ => ring_nf
+  rw [mul_right_comm, mul_comm _⁻¹, ← distrib_three_right, add_comm 3, add_right_comm _ 3]
+  nth_rw 2 [show (4 : ℚ) = 3 + 1 by norm_num]
+  rw [← add_assoc, ← div_eq_mul_inv, same_add_div (by positivity)]
+  grw [← one_add_mul_le_pow (by trans 0; simp; positivity)]
+  simp [← div_eq_mul_inv]; rw [le_div_comm₀ (by positivity) (by positivity), div_inv_eq_mul]
+  grind
+
+
 theorem Zad15 : ¬∀ a b : ℕ → ℝ, HasLim (a * b) 0 → (HasLim a 0 ∨ HasLim b 0) := by
   simp; exists (fun n => ↑(n % 2)), (fun n => ↑(1 - n % 2)); and_intros
   · apply HasLim.of_eq fun n => show ↑(n % 2) * ↑(1 - n % 2) = 0 by

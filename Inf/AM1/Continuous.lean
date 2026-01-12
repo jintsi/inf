@@ -1,7 +1,7 @@
 import Inf.AM1.LimitAt
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 
-/-! **End of lecture 5, lectures 6 & 7**
+/-! # End of lecture 5, lectures 6 & 7
 
 Mathlib already has predicates `Continuous`, `ContinuousOn`, `ContinuousAt`
 and `ContinuousWithinAt`, meaning this file here is mostly glue and restatements
@@ -79,6 +79,91 @@ lemma ContinuousOn.hasLimAt {f : ℝ → ℝ} {D : Set ℝ} (h : ContinuousOn f 
 lemma Continuous.hasLimAt {f : ℝ → ℝ} (h : Continuous f) (a : ℝ) : HasLimAt f Set.univ a (f a) :=
   continuous_iff_hasLimAt.mp h a
 
+section
+
+variable {X M : Type*} [TopologicalSpace X] [TopologicalSpace M] [Add M] [ContinuousAdd M]
+    {f : X → M} {D : Set X} {a : X} (y : M)
+
+lemma ContinuousWithinAt.add_const (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => f x + y) D a :=
+  h.add continuousWithinAt_const
+lemma ContinuousAt.add_const (h : ContinuousAt f a) : ContinuousAt (fun x => f x + y) a :=
+  h.add continuousAt_const
+lemma ContinuousOn.add_const (h : ContinuousOn f D) : ContinuousOn (fun x => f x + y) D :=
+  h.add continuousOn_const
+lemma Continuous.add_const (h : Continuous f) : Continuous fun x => f x + y := h.add continuous_const
+
+lemma ContinuousWithinAt.const_add (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => y + f x) D a :=
+  continuousWithinAt_const.add h
+lemma ContinuousAt.const_add (h : ContinuousAt f a) : ContinuousAt (fun x => y + f x) a :=
+  continuousAt_const.add h
+lemma ContinuousOn.const_add (h : ContinuousOn f D) : ContinuousOn (fun x => y + f x) D :=
+  continuousOn_const.add h
+lemma Continuous.const_add (h : Continuous f) : Continuous fun x => y + f x := continuous_const.add h
+
+end
+
+section
+
+variable {X G : Type*} [TopologicalSpace X] [TopologicalSpace G] [Sub G] [ContinuousSub G]
+    {f : X → G} {D : Set X} {a : X} (y : G)
+
+lemma ContinuousWithinAt.sub_const (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => f x - y) D a :=
+  h.sub continuousWithinAt_const
+lemma ContinuousAt.sub_const (h : ContinuousAt f a) : ContinuousAt (fun x => f x - y) a :=
+  h.sub continuousAt_const
+lemma ContinuousOn.sub_const (h : ContinuousOn f D) : ContinuousOn (fun x => f x - y) D :=
+  h.sub continuousOn_const
+lemma Continuous.sub_const (h : Continuous f) : Continuous fun x => f x - y := h.sub continuous_const
+
+lemma ContinuousWithinAt.const_sub (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => y - f x) D a :=
+  continuousWithinAt_const.sub h
+lemma ContinuousAt.const_sub (h : ContinuousAt f a) : ContinuousAt (fun x => y - f x) a :=
+  continuousAt_const.sub h
+lemma ContinuousOn.const_sub (h : ContinuousOn f D) : ContinuousOn (fun x => y - f x) D :=
+  continuousOn_const.sub h
+lemma Continuous.const_sub (h : Continuous f) : Continuous fun x => y - f x := continuous_const.sub h
+
+end
+
+section
+
+variable {X M : Type*} [TopologicalSpace X] [TopologicalSpace M] [Mul M] [ContinuousMul M]
+    {f : X → M} {D : Set X} {a : X} (y : M)
+
+lemma ContinuousWithinAt.mul_const (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => f x * y) D a :=
+  h.mul continuousWithinAt_const
+lemma ContinuousAt.mul_const (h : ContinuousAt f a) : ContinuousAt (fun x => f x * y) a :=
+  h.mul continuousAt_const
+lemma ContinuousOn.mul_const (h : ContinuousOn f D) : ContinuousOn (fun x => f x * y) D :=
+  h.mul continuousOn_const
+lemma Continuous.mul_const (h : Continuous f) : Continuous fun x => f x * y := h.mul continuous_const
+
+lemma ContinuousWithinAt.const_mul (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => y * f x) D a :=
+  continuousWithinAt_const.mul h
+lemma ContinuousAt.const_mul (h : ContinuousAt f a) : ContinuousAt (fun x => y * f x) a :=
+  continuousAt_const.mul h
+lemma ContinuousOn.const_mul (h : ContinuousOn f D) : ContinuousOn (fun x => y * f x) D :=
+  continuousOn_const.mul h
+lemma Continuous.const_mul (h : Continuous f) : Continuous fun x => y * f x := continuous_const.mul h
+
+end
+
+section
+
+variable {X G₀ : Type*} [TopologicalSpace X] [TopologicalSpace G₀] [GroupWithZero G₀] [ContinuousInv₀ G₀]
+    [ContinuousMul G₀] {f : X → G₀} {D : Set X} {a : X} (y : G₀)
+
+lemma ContinuousWithinAt.const_div (h : ContinuousWithinAt f D a) (hf : f a ≠ 0) :
+    ContinuousWithinAt (fun x => y / f x) D a := continuousWithinAt_const.div h hf
+lemma ContinuousAt.const_div (h : ContinuousAt f a) (hf : f a ≠ 0) :
+    ContinuousAt (fun x => y / f x) a := continuousAt_const.div h hf
+lemma ContinuousOn.const_div (h : ContinuousOn f D) (hf : ∀ x ∈ D, f x ≠ 0) :
+    ContinuousOn (fun x => y / f x) D := continuousOn_const.div h hf
+lemma Continuous.const_div (h : Continuous f) (hf : ∀ x, f x ≠ 0) :
+    Continuous fun x => y / f x := continuous_const.div h hf
+
+end
+
 lemma HasLimAt.comp_continuousWithinAt {f h : ℝ → ℝ} {D₁ D₂ : Set ℝ}
     (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : EReal} {g : ℝ} :
     HasLimAt f D₁ a g → ContinuousWithinAt h D₂ g → HasLimAt (h ∘ f) D₁ a (h g) :=
@@ -127,6 +212,15 @@ theorem hasLimAt_sin_div : HasLimAt (fun x => Real.sin x / x) Set.univ 0 1 := by
 lemma HasLimAt.rexp {f : ℝ → ℝ} {D : Set ℝ} {a : EReal} {g : ℝ} (h : HasLimAt f D a g) :
     HasLimAt (fun x => Real.exp (f x)) D a (Real.exp g) :=
   h.comp_continuous Real.continuous_exp
+
+lemma HasLimAt.rexp_top {f : ℝ → ℝ} {D : Set ℝ} {a : EReal} (h : HasLimAt f D a ⊤) :
+    HasLimAt (fun x => Real.exp (f x)) D a ⊤ :=
+  (h.add_const 1).squeeze_top (eventually_true fun x _ => Real.add_one_le_exp (f x))
+
+lemma HasLimAt.rexp_bot {f : ℝ → ℝ} {D : Set ℝ} {a : EReal} (h : HasLimAt f D a ⊥) :
+    HasLimAt (fun x => Real.exp (f x)) D a 0 := by
+  rw [← EReal.coe_zero]; apply h.comp_bot (h := Real.exp) (D₂ := Set.univ) (by simp)
+  apply hasLimAt_at_bot_iff_tendsto.mpr; simp [Real.tendsto_exp_atBot]
 
 lemma HasLimAt.const_rpow {f : ℝ → ℝ} {D : Set ℝ} {a : EReal} {g r : ℝ} (hr : r ≠ 0)
     (h : HasLimAt f D a g) : HasLimAt (fun x => r ^ f x) D a (r ^ g : ℝ) :=

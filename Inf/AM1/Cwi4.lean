@@ -1,6 +1,7 @@
 import Inf.AM1.Continuous
 import Inf.AM1.Cwi3
 import Mathlib.NumberTheory.Real.Irrational
+import Mathlib.Analysis.Complex.ExponentialBounds
 
 namespace AM1.Cwi4
 
@@ -76,8 +77,20 @@ theorem Zad2c : HasLimAt (fun x => (sin x + cos x) / cos (2 * x)) Set.univ (-π 
   rw [Ne, add_eq_zero_iff_eq_neg, ← cos_add_pi_div_two, ← Ne, ← sub_ne_zero, cos_sub_cos]
   simp; and_intros <;> rw [sin_eq_zero_iff_of_lt_of_lt] <;> bound
 
+theorem Zad4 {D : Set ℝ} (f : ℝ → ℝ) (m k : ℝ) : HasLimAt (fun x => f x - (m * x + k)) D ⊤ 0 ↔
+    HasLimAt (fun x => f x / x) D ⊤ m ∧ HasLimAt (fun x => f x - m * x) D ⊤ k := by
+  constructor
+  · intro h
+    apply HasLimAt.add_const k at h; simp [← sub_sub] at h
+    rw [and_iff_left (by assumption)]
+    replace h := (h.div (hasLimAt_id ⊤)).add_const m
+    simp [sub_div] at h
+    exact h.of_eventually_eq ⟨0, fun x _ hx => by simp [mul_div_cancel_right₀ m hx.ne']⟩
+  · intro ⟨_, h⟩
+    convert h.sub_const k using 2 <;> simp [sub_sub]
+
 open Classical in
-theorem Zad8 (x : ℝ) : ContinuousAt (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
+theorem Zad8 {x : ℝ} : ContinuousAt (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
   constructor
   · simp [continuousAt_iff_hasLim]; intro h
     let xq := fun (n : ℕ) => ⌊x * n⌋ / (n : ℝ)
@@ -95,12 +108,35 @@ theorem Zad8 (x : ℝ) : ContinuousAt (fun x => if Irrational x then 0 else x ^ 
         apply ite_cond_eq_false; simp [irrational_iff_ne_rational]; exists ⌊x * n⌋, n; and_intros
         positivity; rfl⟩
       simp [sq]; exact h1.mul h1
-    have h4 : HasLim ((fun x => if Irrational x then 0 else x ^ 2) ∘ xnq) 0 := by
-      apply HasLim.of_eventually_eq ⟨1, fun n hn => by
+    have h4 : HasLim ((fun x => if Irrational x then 0 else x ^ 2) ∘ xnq) 0 :=
+      HasLim.of_eventually_eq ⟨1, fun n hn => by
         apply ite_cond_eq_true; subst xnq; simp; rw [show xq n = (⌊x * n⌋ / n : ℚ) by simp; rfl]
-        simp [-Rat.cast_div, irrational_sqrt_two]; positivity⟩; exact HasLim.const 0
+        simp [-Rat.cast_div, irrational_sqrt_two]; positivity⟩ (HasLim.const 0)
     replace h1 := (h xq h1).eq h3; replace h2 := (h xnq h2).eq h4
     rw [h1, sq_eq_zero_iff] at h2; assumption
   · intro h; subst h; simp [Metric.continuousAt_iff]
     intro e he; exists sqrt e, (by simpa); intro x hb
     split <;> simpa [sq_lt, ← abs_lt]
+
+theorem Zad9 : ∃ x ∈ Set.Ioo 0 1, exp (-x) = sin (π * x / 2) := by
+  have h := intermediate_value_Ioo' zero_le_one ((Continuous.rexp continuous_neg).sub
+    (Real.continuous_sin.comp' ((continuous_mul_left π).div_const 2))).continuousOn
+  simp [Set.subset_def] at h
+  convert h 0 (by grw [exp_neg_one_lt_half]; norm_num) zero_lt_one using 3
+  exact sub_eq_zero.symm
+
+theorem Zad11 : UniformContinuous NNReal.sqrt ∧ ¬∃ K, LipschitzWith K NNReal.sqrt := by
+  and_intros
+  · simp [Metric.uniformContinuous_iff, NNReal.dist_eq]
+    intro e he; exists e ^ 2, sq_pos_of_pos he
+    intro ⟨a, ha⟩ ⟨b, hb⟩ h; simp at *
+    wlog hab : b ≤ a generalizing a b
+    · rw [abs_sub_comm]; rw [abs_sub_comm] at h; exact this b hb a ha h (le_of_not_ge hab)
+    rw [← abs_of_pos he, ← sq_lt_sq]; apply h.trans_le'
+    simp [sub_sq, abs_of_nonneg (sub_nonneg_of_le hab), *, sub_add, le_sub_iff_add_le, ← two_mul, mul_assoc]
+    grw [← Real.sqrt_le_sqrt hab]; simp [hb]
+  · simp [lipschitzWith_iff_dist_le_mul]
+    intro K; exists 0; simp [NNReal.dist_eq]
+    by_cases hK : K = 0
+    · exists 1; subst K; simp
+    · exists 1 / (2 * K) ^ 2; simp; field_simp; simp
