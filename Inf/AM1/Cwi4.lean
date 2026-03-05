@@ -42,9 +42,9 @@ theorem Zad2a : HasLimAt (fun x => (sqrt (5 - 2 * x) - sqrt (3 - x)) / (x ^ 3 - 
   have hx : HasLimAt (fun x => x) Set.univ 2 (2 : ℝ) := hasLimAt_id 2
   convert (((hx.pow_const 2).add (hx.mul_const 2) (by norm_cast)).add_const 4).neg.mul
     ((((hx.const_mul 2).const_sub 5).rpow_const (1 / 2)).add
-    ((hx.const_sub 3).rpow_const (1 / 2))) (by simp; norm_num; exact fun _ => EReal.coe_ne_top 2) using 1
+    ((hx.const_sub 3).rpow_const (1 / 2))) (by simp; norm_cast) using 1
   · ext; congr <;> apply Real.sqrt_eq_rpow
-  · simp [sq]; norm_cast; norm_num
+  · simp [sq]; norm_num; norm_cast; grind
 
 theorem Zad2b : HasLimAt (fun x => sqrt (x ^ 2 + π * x) + x) Set.univ ⊥ (-π / 2 : ℝ) := by
   apply HasLimAt.of_eventually_eq (a := ⊥) ⟨-π, fun x _ hx => by have : x < 0 := (by grw [hx]; simp [pi_pos]); calc
@@ -120,7 +120,7 @@ theorem Zad8 {x : ℝ} : ContinuousAt (fun x => if Irrational x then 0 else x ^ 
 
 theorem Zad9 : ∃ x ∈ Set.Ioo 0 1, exp (-x) = sin (π * x / 2) := by
   have h := intermediate_value_Ioo' zero_le_one ((Continuous.rexp continuous_neg).sub
-    (Real.continuous_sin.comp' ((continuous_mul_left π).div_const 2))).continuousOn
+    (Real.continuous_sin.comp' ((continuous_const_mul π).div_const 2))).continuousOn
   simp [Set.subset_def] at h
   convert h 0 (by grw [exp_neg_one_lt_half]; norm_num) zero_lt_one using 3
   exact sub_eq_zero.symm

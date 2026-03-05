@@ -445,7 +445,7 @@ lemma HasLim'.div {an bn : ℕ → ℝ} {a b : EReal} (ha : HasLim' an a) (hb : 
   HasLim' (fun n => an n / bn n) (a / b) := by
   simp [div_eq_mul_inv]
   refine ha.mul (hb.inv hn0) ?_
-  cases a <;> cases b <;> simp [← EReal.coe_inv] at ⊢ hn hn0 <;> assumption
+  cases a <;> cases b <;> simp [← EReal.coe_inv] at ⊢ hn hn0 <;> tauto
 
 lemma HasLim'.div_const {a : ℕ → ℝ} {g : EReal} {b : ℝ} (ha : HasLim' a g) (hb : b ≠ 0) :
     HasLim' (fun n => a n / b) (g / b) := div ha (HasLim.const b) (by simpa)

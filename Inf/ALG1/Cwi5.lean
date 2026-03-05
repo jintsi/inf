@@ -113,13 +113,14 @@ instance Zad5_D4_group {T : Type u} : AddCommGroup (Set T) where
   add_comm := symmDiff_comm
   add_assoc := symmDiff_assoc
   zero := ∅
-  zero_add := by simp [instHAdd]; rfl
-  add_zero := by simp [instHAdd]; rfl
+  zero_add := by simp [← Add.add_eq_hAdd]; rfl
+  add_zero := by simp [← Add.add_eq_hAdd]; rfl
   neg := id
-  neg_add_cancel := by simp [instHAdd]; rfl
+  neg_add_cancel := by simp [← Add.add_eq_hAdd]; rfl
   nsmul := @nsmulRec _ ⟨∅⟩ ⟨symmDiff⟩
   zsmul := @zsmulRec _ ⟨∅⟩ ⟨symmDiff⟩ ⟨id⟩ (@nsmulRec _ ⟨∅⟩ ⟨symmDiff⟩)
 
+set_option backward.isDefEq.respectTransparency false in
 instance Zad5_D4 {T : Type u} : Module (ZMod 2) (Set T) where
   smul a s := a.val • s
   smul_zero := fun a => smul_zero a.val
@@ -129,7 +130,7 @@ instance Zad5_D4 {T : Type u} : Module (ZMod 2) (Set T) where
     intro a b s
     fin_cases a <;> fin_cases b <;> norm_num <;> try exact zero_smul ℕ s
     nth_rw 6 [← Nat.cast_ofNat]; rw [ZMod.natCast_self 2]
-    simp [instHAdd, Add.add]; exact zero_smul ℕ s
+    simp [← Add.add_eq_hAdd, Add.add]; exact zero_smul ℕ s
   one_smul := one_smul ℕ
   mul_smul := by
     intro a b s

@@ -39,7 +39,7 @@ theorem Zad3_inv : Set.LeftInvOn (fun y : ℝ => 2 - (y + 3).sqrt)
   apply sub_eq_of_eq_add'; apply eq_add_of_sub_eq
   rw [← Real.sqrt_sq (x := 2 - x)]
   · grind
-  · simp; exact le_of_lt hx
+  · linarith
 
 open Real
 

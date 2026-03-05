@@ -81,29 +81,6 @@ lemma Continuous.hasLimAt {f : ℝ → ℝ} (h : Continuous f) (a : ℝ) : HasLi
 
 section
 
-variable {X M : Type*} [TopologicalSpace X] [TopologicalSpace M] [Add M] [ContinuousAdd M]
-    {f : X → M} {D : Set X} {a : X} (y : M)
-
-lemma ContinuousWithinAt.add_const (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => f x + y) D a :=
-  h.add continuousWithinAt_const
-lemma ContinuousAt.add_const (h : ContinuousAt f a) : ContinuousAt (fun x => f x + y) a :=
-  h.add continuousAt_const
-lemma ContinuousOn.add_const (h : ContinuousOn f D) : ContinuousOn (fun x => f x + y) D :=
-  h.add continuousOn_const
-lemma Continuous.add_const (h : Continuous f) : Continuous fun x => f x + y := h.add continuous_const
-
-lemma ContinuousWithinAt.const_add (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => y + f x) D a :=
-  continuousWithinAt_const.add h
-lemma ContinuousAt.const_add (h : ContinuousAt f a) : ContinuousAt (fun x => y + f x) a :=
-  continuousAt_const.add h
-lemma ContinuousOn.const_add (h : ContinuousOn f D) : ContinuousOn (fun x => y + f x) D :=
-  continuousOn_const.add h
-lemma Continuous.const_add (h : Continuous f) : Continuous fun x => y + f x := continuous_const.add h
-
-end
-
-section
-
 variable {X G : Type*} [TopologicalSpace X] [TopologicalSpace G] [Sub G] [ContinuousSub G]
     {f : X → G} {D : Set X} {a : X} (y : G)
 
@@ -127,29 +104,6 @@ end
 
 section
 
-variable {X M : Type*} [TopologicalSpace X] [TopologicalSpace M] [Mul M] [ContinuousMul M]
-    {f : X → M} {D : Set X} {a : X} (y : M)
-
-lemma ContinuousWithinAt.mul_const (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => f x * y) D a :=
-  h.mul continuousWithinAt_const
-lemma ContinuousAt.mul_const (h : ContinuousAt f a) : ContinuousAt (fun x => f x * y) a :=
-  h.mul continuousAt_const
-lemma ContinuousOn.mul_const (h : ContinuousOn f D) : ContinuousOn (fun x => f x * y) D :=
-  h.mul continuousOn_const
-lemma Continuous.mul_const (h : Continuous f) : Continuous fun x => f x * y := h.mul continuous_const
-
-lemma ContinuousWithinAt.const_mul (h : ContinuousWithinAt f D a) : ContinuousWithinAt (fun x => y * f x) D a :=
-  continuousWithinAt_const.mul h
-lemma ContinuousAt.const_mul (h : ContinuousAt f a) : ContinuousAt (fun x => y * f x) a :=
-  continuousAt_const.mul h
-lemma ContinuousOn.const_mul (h : ContinuousOn f D) : ContinuousOn (fun x => y * f x) D :=
-  continuousOn_const.mul h
-lemma Continuous.const_mul (h : Continuous f) : Continuous fun x => y * f x := continuous_const.mul h
-
-end
-
-section
-
 variable {X G₀ : Type*} [TopologicalSpace X] [TopologicalSpace G₀] [GroupWithZero G₀] [ContinuousInv₀ G₀]
     [ContinuousMul G₀] {f : X → G₀} {D : Set X} {a : X} (y : G₀)
 
@@ -166,21 +120,21 @@ end
 
 lemma HasLimAt.comp_continuousWithinAt {f h : ℝ → ℝ} {D₁ D₂ : Set ℝ}
     (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : EReal} {g : ℝ} :
-    HasLimAt f D₁ a g → ContinuousWithinAt h D₂ g → HasLimAt (h ∘ f) D₁ a (h g) :=
-  fun hf hh => hf.comp hd (continuousWithinAt_iff_hasLimAt.mp hh)
+    ContinuousWithinAt h D₂ g → HasLimAt f D₁ a g → HasLimAt (h ∘ f) D₁ a (h g) :=
+  fun hh hf => hf.comp hd (continuousWithinAt_iff_hasLimAt.mp hh)
 
 lemma HasLimAt.comp_continuousAt {f h : ℝ → ℝ} {D : Set ℝ} {a : EReal} {g : ℝ} :
-    HasLimAt f D a g → ContinuousAt h g → HasLimAt (h ∘ f) D a (h g) :=
-  fun hf hh => hf.comp (by simp) (continuousAt_iff_hasLimAt.mp hh)
+    ContinuousAt h g → HasLimAt f D a g → HasLimAt (h ∘ f) D a (h g) :=
+  fun hh hf => hf.comp (by simp) (continuousAt_iff_hasLimAt.mp hh)
 
 lemma HasLimAt.comp_continuousOn {f h : ℝ → ℝ} {D₁ D₂ : Set ℝ}
     (hd : ∀ x ∈ D₁, f x ∈ D₂) {a : EReal} {g : ℝ}
-    (hg : g ∈ D₂) : HasLimAt f D₁ a g → ContinuousOn h D₂ → HasLimAt (h ∘ f) D₁ a (h g) :=
-  fun hf hh => hf.comp hd (hh.hasLimAt hg)
+    (hg : g ∈ D₂) : ContinuousOn h D₂ → HasLimAt f D₁ a g → HasLimAt (h ∘ f) D₁ a (h g) :=
+  fun hh hf => hf.comp hd (hh.hasLimAt hg)
 
 lemma HasLimAt.comp_continuous {f h : ℝ → ℝ} {D : Set ℝ} {a : EReal} {g : ℝ} :
-    HasLimAt f D a g → Continuous h → HasLimAt (h ∘ f) D a (h g) :=
-  fun hf hh => hf.comp (by simp) (hh.hasLimAt g)
+    Continuous h → HasLimAt f D a g → HasLimAt (h ∘ f) D a (h g) :=
+  fun hh hf => hf.comp (by simp) (hh.hasLimAt g)
 
 lemma HasLimAt.sin {f : ℝ → ℝ} {D : Set ℝ} {a : EReal} {g : ℝ} (h : HasLimAt f D a g) :
     HasLimAt (fun x => Real.sin (f x)) D a (Real.sin g) :=

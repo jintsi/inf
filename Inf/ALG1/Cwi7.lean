@@ -7,6 +7,7 @@ namespace ALG1
 
 theorem Zad7_1a : Module.finrank ℂ (ℂ × ℂ) = 2 := by simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Zad7_1b : Module.finrank ℝ (ℂ × ℂ) = 4 := by simp
 
 theorem Zad7_2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
@@ -210,14 +211,17 @@ noncomputable def Zad7_5a.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
   apply Module.Basis.mk (v := ![⟨![1, 1, 1, 0], by simp [V1, Submodule.ofLinearComb]; norm_num⟩,
     ⟨![0, 3, 2, 1], by simp [V1, Submodule.ofLinearComb]; norm_num⟩])
   · simp [LinearIndependent.pair_iff']
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_pair, V1, Submodule.ofLinearComb]
+  · simp [Submodule.eq_top_iff', Submodule.mem_span_pair]
+    simp [V1, Submodule.ofLinearComb]
     intro x h1 h2; exists x 3, x 0; ext i; fin_cases i <;> simp <;> grind
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def Zad7_5a.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
   apply Module.Basis.mk (v := ![⟨![0, 1, 0, -3], by simp [V2, Submodule.ofLinearComb]⟩,
     ⟨![1, 0, 3 / 4, 7 / 4], by simp [V2, Submodule.ofLinearComb]; norm_num⟩])
   · simp [LinearIndependent.pair_iff']
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_pair, V2, Submodule.ofLinearComb]
+  · simp [Submodule.eq_top_iff', Submodule.mem_span_pair]
+    simp [V2, Submodule.ofLinearComb]
     intro x h1 h2; exists x 0, x 1; ext i; fin_cases i <;> simp <;> grind
 
 noncomputable def Zad7_5a.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
@@ -229,25 +233,29 @@ noncomputable def Zad7_5a.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
     · exists ![0, 3 / 2, 1, 1 / 2]; simp; norm_num; exists ![0, -1 / 2, 0, 3 / 2]; simp; norm_num
     · exists ![0, 3 / 2, 1, 1 / 2]; simp; norm_num; exists ![0, -3 / 2, 0, 9 / 2]; simp; norm_num
   · simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_triple, Submodule.mem_sup, V1, V2, Submodule.ofLinearComb]
+  · simp [Submodule.eq_top_iff', Submodule.mem_span_triple, Submodule.mem_sup]
+    simp [V1, V2, Submodule.ofLinearComb]
     intro v x h1 h2 y h3 h4 h; exists v 2 - v 1, v 1 - v 0, v 0; subst h
     ext i; fin_cases i <;> simp; grind
 
 noncomputable def Zad7_5a.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := by
   apply Module.Basis.mk (v := ![⟨![8, 5, 6, -1], by simp [V1, V2, Submodule.ofLinearComb]; norm_num⟩])
   · simp
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_singleton, V1, V2, Submodule.ofLinearComb]
+  · simp [Submodule.eq_top_iff', Submodule.mem_span_singleton]
+    simp [V1, V2, Submodule.ofLinearComb]
     intro v h1 h2 h3 h4; exists -v 3; ext i; fin_cases i <;> simp <;> grind
 
 abbrev Zad7_5b.V1 := Submodule.span ℚ {!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]}
 
 abbrev Zad7_5b.V2 := Submodule.span ℚ {!![(0 : ℚ), 1; 1, 1], !![-1, 2; 2, 1], !![2, 1; 1, 3]}
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def Zad7_5b.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
   let v := ![!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]]
-  convert Module.Basis.span (v := v) ?_ <;> simp [v, Set.pair_comm, linearIndependent_fin_succ, Fin.tail_def]
-  and_intros; apply Function.ne_iff.mpr; exists 0
-  simp [Submodule.mem_span_singleton]; grind
+  convert Module.Basis.span (v := v) ?_ <;> simp [v, Set.pair_comm]
+  rw [LinearIndependent.pair_iff']
+  · simp; grind
+  · apply Function.ne_iff.mpr; exists 0
 
 noncomputable def Zad7_5b.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
   apply Module.Basis.mk
@@ -260,6 +268,7 @@ noncomputable def Zad7_5b.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
   · simp [Submodule.eq_top_iff', Submodule.mem_span_pair, V2, Submodule.mem_span_triple]
     intro m x y z h; exists m 0 0, m 0 1; subst h; simp; ring
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def Zad7_5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
   let v : Fin 3 → Matrix _ _ ℚ := ![!![1, 1; 0, 1], !![0, 1; 1, 1], !![1, 0; 0, 1]]
   have : V1 + V2 = Submodule.span ℚ (Set.range v) := by
@@ -280,7 +289,7 @@ noncomputable def Zad7_5b.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) :=
     and_intros
     · exists 4 / 11, -1 / 11; norm_num
     · exists 2, -1, 0; norm_num
-  · simp [Matrix.eta_fin_two 0]
+  · set_option backward.isDefEq.respectTransparency false in simp [Matrix.eta_fin_two 0]
   · simp [Submodule.eq_top_iff', Submodule.mem_span_singleton,
       V1, V2, Submodule.mem_span_pair, Submodule.mem_span_triple]
     intro m a b h1 c d e h2; exists m 0 0

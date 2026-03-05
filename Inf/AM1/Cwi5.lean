@@ -17,7 +17,7 @@ theorem Zad1 : HasDerivAt (fun x => sqrt (5 - 2 * x)) (-1 / 3) (-2) := by
         grw [lt_of_abs_lt hb]; norm_num
       _ = -2 / (√(9 - 2 * x) + 3) := by field_simp; norm_num
   convert Continuous.hasLimAt ?_ 0; norm_num
-  apply (((continuous_mul_left 2).const_sub 9).sqrt.add_const 3).const_div (-2)
+  apply (((continuous_const_mul 2).const_sub 9).sqrt.add_const 3).const_div (-2)
   intro x; positivity
 
 open scoped Classical in

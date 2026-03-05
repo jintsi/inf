@@ -36,6 +36,7 @@ theorem Zad6_3a : LinearIndependent ℝ ![id, Real.sin, Real.cos] := by
     · subst_vars; exists Real.pi; simp; exact Real.pi_ne_zero.symm
     · exists 0; simpa
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Zad6_3b : LinearIndependent ℝ ![Real.sin, Real.cos, fun r => Real.sin (2 * r), fun r => Real.cos (2 * r)] := by
   simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair,
         Submodule.mem_span_triple, funext_iff, Real.sin_two_mul, Real.cos_two_mul]; and_intros
@@ -61,8 +62,8 @@ theorem Zad6_3d (n : ℕ) : LinearIndependent ℝ fun (i : Fin n) (x : ℝ) => �
   induction n
   case zero => simp
   case succ n ih =>
-    simp [linearIndependent_fin_succ', Fin.init_def, ih, Submodule.mem_span_range_iff_exists_fun, funext_iff]
-    intro c; by_cases c = 0
+    simp [linearIndependent_fin_succ', Fin.init_def, Submodule.mem_span_range_iff_exists_fun, funext_iff]
+    exists ih; intro c; by_cases c = 0
     case pos h =>
       exists n; simp [h]; apply Ne.symm; simp [Finset.prod_ne_zero_iff]
       intro k; simp [sub_ne_zero]; exact k.is_lt.ne.symm
@@ -145,7 +146,7 @@ theorem Zad6_D3a : ∀ v, v ∈ Submodule.span ℝ {![(1 : ℝ), 3, 5], ![2, 7, 
   simp [Submodule.mem_span_triple]; intro v
   let x := v 0; let y := v 1; let z := v 2
   exists -29 * x / 3 + 13 * y / 6 + 5 * z / 6, 11 * x / 3 - 2 * y / 3 - z / 3, 10 * x / 3 - 5 * y / 6 - z / 6
-  ring_nf; funext i; fin_cases i <;> simp [x, y, z]
+  funext i; fin_cases i <;> simp <;> ring
 
 theorem Zad6_D3b : ¬∀ v, v ∈ Submodule.span ℝ {![(1 : ℝ), 4, 5], ![3, 2, 1], ![5, 5, 4]} := by
   simp [Submodule.mem_span_triple]; exists ![1, 0, 0]; simp; grind
@@ -161,7 +162,7 @@ theorem Zad6_D4 : ![1, I, I] ∈ Submodule.span ℂ {![c, -1+I, 1+I], ![I, -1, -
       right; symm; exact h2
   · apply Or.rec <;> (intro hc; subst hc)
     · exists 0, -I; simp
-    · exists (3 - I) / 10, (-1 - 3 * I) / 5; ring_nf; norm_num
+    · exists (3 - I) / 10, (-1 - 3 * I) / 5; ring_nf; norm_num; grind
 
 open Complex in
 theorem Zad6_D5 {x₁ x₂ x₃ x₄ : ℂ} : ![x₁, x₂, x₃, x₄] ∈ Submodule.span ℂ
@@ -171,14 +172,14 @@ theorem Zad6_D5 {x₁ x₂ x₃ x₄ : ℂ} : ![x₁, x₂, x₃, x₄] ∈ Subm
 theorem Zad6_D6a : ∀ v, v ∈ Submodule.span ℚ {![(1 : ℚ), 1, 1, 1], ![1, 2, 1, 2], ![1, 0, 0, 0], ![0, 1, 0, 0]} := by
   simp [Submodule.mem_span_insert, Submodule.mem_span_singleton]; intro v
   let x := v 0; let y := v 1; let z := v 2; let w := v 3
-  exists 2 * z - w, w - z, x - z, y - w; ring_nf; funext i; fin_cases i <;> simp [x, y, z, w]
+  exists 2 * z - w, w - z, x - z, y - w; funext i; fin_cases i <;> simp <;> ring
 
 theorem Zad6_D6b : ∀ v, v ∈ Submodule.span ℚ
     {![(1 : ℚ), 1, 2, 1, 1], ![1, 2, 3, 1, 1], ![1, 2, 4, 2, 1], ![1, 1, 1, 1, 1], ![1, 0, 0, 0, 0]} := by
   simp [Submodule.mem_span_insert, Submodule.mem_span_singleton]; intro v
   let x := v 0; let y := v 1; let z := v 2; let w := v 3; let u := v 4
-  exists z - 2 * y - w + 2 * u, y - w, w - u, w + y - z, x - u; ring_nf
-  funext i; fin_cases i <;> simp [x, y, z, w, u]
+  exists z - 2 * y - w + 2 * u, y - w, w - u, w + y - z, x - u
+  funext i; fin_cases i <;> simp <;> ring
 
 theorem Zad6_D7 {s t : ℝ} : LinearIndependent ℝ ![![5, 7, s, 2], ![1, 3, 2, 1], ![2, 2, 4, t]] ↔
     (s ≠ 10 ∨ t ≠ 1 / 2) := by

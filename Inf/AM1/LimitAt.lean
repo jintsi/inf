@@ -122,7 +122,7 @@ lemma Set.accPt_Ioi {a : ℝ} {b : EReal} : (Set.Ioi a).AccPt b ↔ a ≤ b := b
   use fun ⟨x, hx, hb⟩ => hb.const_le ⟨0, fun n _ => (hx n).1.le⟩
   induction b <;> simp [not_bddAbove_Ioi]
   rename_i b; intro hb
-  apply accPt_subset (Ioo_subset_Ioi_self (b := b + 1))
+  apply accPt_subset (Ioo_subset_Ioi_self (a := b + 1))
   rw [accPt_Ioo] <;> grind
 
 @[simp]

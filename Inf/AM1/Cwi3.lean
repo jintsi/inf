@@ -1,12 +1,8 @@
 import Inf.AM1.Limit
-import Mathlib.Data.Nat.Factorial.Basic
+import Mathlib.Topology.Algebra.Order.Floor
 import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 
-theorem HasLim'.one_add_inv_rpow {a : ℕ → ℝ} (h : HasLim' a ⊤) :
-    HasLim (fun n => (1 + (a n)⁻¹) ^ (a n)) (Real.exp 1) := by
-  rw [hasLim_iff_tendsto]
-  convert (Real.tendsto_one_add_div_rpow_exp 1).comp (hasLim'_top_iff_tendsto.mp h)
-  simp
+open Topology Filter
 
 namespace AM1.Cwi3
 
@@ -28,36 +24,44 @@ theorem Zad1b_above : ¬BddAbove (Set.range fun (n : ℕ) => 1 + (n : ℝ) ^ (3�
   rw [←Real.rpow_ofNat, Real.rpow_rpow_inv] <;> try simp
   grw [←Nat.le_ceil x]; simp
 
-theorem Zad2a : HasLim (fun n => (2 * n - 1) / (4 * n + 1)) (1 / 2) := by
+/-- The definition of convergence we're working with is `Metric.tendsto_atTop` -/
+theorem Zad2a : Tendsto (fun n => (2 * n - 1) / (4 * n + 1) : ℕ → ℝ) atTop (𝓝 (1 /2)) := by
+  simp [Metric.tendsto_atTop, Real.dist_eq]
   intro e he; exists ⌊(3 / (8 * e)) - (1 / 4)⌋₊ + 1; intro n hn
-  rw [abs_sub_comm, div_sub_div]; ring_nf; rw [abs_of_nonneg]
+  field_simp; ring_nf; rw [abs_of_nonpos] <;> (simp; try positivity)
   replace hn := lt_of_lt_of_le (Nat.lt_floor_add_one ((3 / (8 * e)) - (1 / 4)))
     (Nat.cast_one (R := ℝ) ▸ Nat.cast_add (R := ℝ) ⌊3 / (8 * e) - 1 / 4⌋₊ 1 ▸ Nat.cast_le.mpr hn)
-  rw [sub_lt_iff_lt_add, ← div_div, div_lt_comm₀] at hn
+  rw [sub_lt_iff_lt_add, ← div_div, div_lt_comm₀] at hn <;> try positivity
   field_simp; field_simp at hn; grind
-  repeat positivity
 
-theorem Zad2b : HasLim' (fun n => 3 - 2 * n) ⊥ := by
+theorem Zad2b : Tendsto (fun n => 3 - 2 * n : ℕ → ℝ) atTop atBot := by
+  simp [tendsto_atTop_atBot]
   intro D; exists ⌊(3 - D) / 2⌋₊ + 1; intro n hn
   replace hn := lt_of_lt_of_le (Nat.lt_floor_add_one ((3 - D) / 2))
     (Nat.cast_one (R := ℝ) ▸ Nat.cast_add (R := ℝ) ⌊(3 - D) / 2⌋₊ 1 ▸ Nat.cast_le.mpr hn)
   linarith
 
+theorem Zad3 : Tendsto (fun n => 3 ^ n / n.factorial : ℕ → ℝ) atTop (𝓝 0) :=
+  FloorSemiring.tendsto_pow_div_factorial_atTop 3
+
+theorem Zad4 {a : ℕ → ℝ} {g : ℝ} (hg : g ≠ 0) (h : Tendsto a atTop (𝓝 g)) :
+    Tendsto (fun n => a n ^ (3⁻¹ : ℝ)) atTop (𝓝 (g ^ (3⁻¹ : ℝ))) := h.rpow_const (Or.inl hg)
+
+theorem Zad5a : Tendsto (fun (n : ℕ) => n ^ 2 / (√(n + 1) - √(n + 4))) atTop atBot := by
+  apply Tendsto.congr (fun n => by calc
+    ((√(n + 1) + √(n + 4)) * n ^ 2) / -3 =
+        ((√(n + 1) + √(n + 4)) * n ^ 2) / ((√(n + 1) + √(n + 4)) * (√(n + 1) - √(n + 4))) := by
+      rw [← sq_sub_sq, Real.sq_sqrt, Real.sq_sqrt]; norm_num; repeat positivity
+    _ = n ^ 2 / (√(n + 1) - √(n + 4)) := mul_div_mul_left _ _ (by positivity)
+  )
+  have h1 := Real.tendsto_sqrt_atTop.comp (tendsto_atTop_add_const_right _ (1 : ℝ) tendsto_id)
+  have h2 := Real.tendsto_sqrt_atTop.comp (tendsto_atTop_add_const_right _ (4 : ℝ) tendsto_id)
+  exact (h1.atTop_add_atTop h2).atTop_mul_atTop₀ (tendsto_pow_atTop two_ne_zero)
+    |>.atTop_div_const_of_neg (show -3 < (0 : ℝ) by simp) |>.comp tendsto_natCast_atTop_atTop
+
 open HasLim HasLim' Real
 
-theorem Zad3 : HasLim (fun n => 3 ^ n / n.factorial) 0 := by
-  refine const_squeeze ⟨0, fun n _ => by positivity⟩ ?_ (hasLim_const_pow_zero (a := 3 / 4) (by norm_num))
-  exists 9; intro n hn; induction hn
-  case refl => simp [Nat.factorial]; norm_num
-  case step n hn ih =>
-    suffices (3 : ℝ) ^ n / n.factorial * (3 / n.succ) ≤ (3 / 4) ^ n * (3 / 4) by
-      simp [Nat.factorial, pow_succ] at *; field_simp at *; assumption
-    apply mul_le_mul ih <;> try positivity
-    field_simp; simp at hn; norm_cast; omega
-
-theorem Zad4 {an : ℕ → ℝ} {a : ℝ} (ha : a ≠ 0) (h : HasLim an a) :
-    HasLim (an ^ (3⁻¹ : ℝ)) (a ^ (3⁻¹ : ℝ)) := h.rpow_const (Or.inl ha)
-
+/-
 theorem Zad5a : HasLim' (fun n => n ^ 2 / (sqrt (n + 1) - sqrt (n + 4))) ⊥ := by
   apply HasLim'.of_eq (fun n => by calc
     n ^ 2 / (sqrt (n + 1) - sqrt (n + 4)) =
@@ -71,6 +75,7 @@ theorem Zad5a : HasLim' (fun n => n ^ 2 / (sqrt (n + 1) - sqrt (n + 4))) ⊥ := 
   convert ((h1.add h2).mul (top_rpow_const zero_lt_two id)).div_const (show -3 ≠ 0 by simp) using 1
   · simp [div_eq_mul_inv, Real.sqrt_eq_rpow]
   · simp [EReal.top_div_of_neg_ne_bot]
+-/
 
 noncomputable def _root_.Real.cbrt := fun r : ℝ => r.rpow 3⁻¹
 
