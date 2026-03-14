@@ -1,4 +1,3 @@
-import Inf.AM1.Limit
 import Mathlib.Topology.Algebra.Order.Floor
 import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 
@@ -7,8 +6,8 @@ open Topology Filter
 namespace AM1.Cwi3
 
 /-- Here, it's significant that we're working with `PNat` and not `ℕ` -/
-theorem Zad1a : Antitone fun (n : PNat) => (4 ^ n.val : ℚ) / (n.val + 2).factorial := by
-  suffices Antitone fun n => (4 ^ (n + 1) : Rat) / (n + 1 + 2).factorial by
+theorem Zad1a : Antitone fun (n : ℕ+) => (4 ^ n.val : ℚ) / (n.val + 2).factorial := by
+  suffices Antitone fun n => (4 ^ (n + 1) : ℚ) / (n + 1 + 2).factorial by
     simp [Antitone] at *
     intro a b hab; specialize @this a.natPred b.natPred; simp at this; exact this hab
   apply antitone_nat_of_succ_le; intro n
@@ -29,8 +28,8 @@ theorem Zad2a : Tendsto (fun n => (2 * n - 1) / (4 * n + 1) : ℕ → ℝ) atTop
   simp [Metric.tendsto_atTop, Real.dist_eq]
   intro e he; exists ⌊(3 / (8 * e)) - (1 / 4)⌋₊ + 1; intro n hn
   field_simp; ring_nf; rw [abs_of_nonpos] <;> (simp; try positivity)
-  replace hn := lt_of_lt_of_le (Nat.lt_floor_add_one ((3 / (8 * e)) - (1 / 4)))
-    (Nat.cast_one (R := ℝ) ▸ Nat.cast_add (R := ℝ) ⌊3 / (8 * e) - 1 / 4⌋₊ 1 ▸ Nat.cast_le.mpr hn)
+  replace hn := (Nat.lt_floor_add_one ((3 / (8 * e)) - (1 / 4))).trans_le
+    (show _ ≤ (n : ℝ) by exact_mod_cast hn)
   rw [sub_lt_iff_lt_add, ← div_div, div_lt_comm₀] at hn <;> try positivity
   field_simp; field_simp at hn; grind
 
@@ -38,7 +37,7 @@ theorem Zad2b : Tendsto (fun n => 3 - 2 * n : ℕ → ℝ) atTop atBot := by
   simp [tendsto_atTop_atBot]
   intro D; exists ⌊(3 - D) / 2⌋₊ + 1; intro n hn
   replace hn := lt_of_lt_of_le (Nat.lt_floor_add_one ((3 - D) / 2))
-    (Nat.cast_one (R := ℝ) ▸ Nat.cast_add (R := ℝ) ⌊(3 - D) / 2⌋₊ 1 ▸ Nat.cast_le.mpr hn)
+    (show _ ≤ (n : ℝ) by exact_mod_cast hn)
   linarith
 
 theorem Zad3 : Tendsto (fun n => 3 ^ n / n.factorial : ℕ → ℝ) atTop (𝓝 0) :=
@@ -47,174 +46,115 @@ theorem Zad3 : Tendsto (fun n => 3 ^ n / n.factorial : ℕ → ℝ) atTop (𝓝 
 theorem Zad4 {a : ℕ → ℝ} {g : ℝ} (hg : g ≠ 0) (h : Tendsto a atTop (𝓝 g)) :
     Tendsto (fun n => a n ^ (3⁻¹ : ℝ)) atTop (𝓝 (g ^ (3⁻¹ : ℝ))) := h.rpow_const (Or.inl hg)
 
-theorem Zad5a : Tendsto (fun (n : ℕ) => n ^ 2 / (√(n + 1) - √(n + 4))) atTop atBot := by
-  apply Tendsto.congr (fun n => by calc
-    ((√(n + 1) + √(n + 4)) * n ^ 2) / -3 =
-        ((√(n + 1) + √(n + 4)) * n ^ 2) / ((√(n + 1) + √(n + 4)) * (√(n + 1) - √(n + 4))) := by
-      rw [← sq_sub_sq, Real.sq_sqrt, Real.sq_sqrt]; norm_num; repeat positivity
-    _ = n ^ 2 / (√(n + 1) - √(n + 4)) := mul_div_mul_left _ _ (by positivity)
+theorem Zad5a : Tendsto (fun n : ℕ => n ^ 2 / (√(n + 1) - √(n + 4))) atTop atBot := by
+  apply Tendsto.congr (fun n => by
+    rewrite [← mul_div_mul_left, ← sq_sub_sq, Real.sq_sqrt, Real.sq_sqrt]; norm_num; rfl
+    all_goals positivity
   )
   have h1 := Real.tendsto_sqrt_atTop.comp (tendsto_atTop_add_const_right _ (1 : ℝ) tendsto_id)
   have h2 := Real.tendsto_sqrt_atTop.comp (tendsto_atTop_add_const_right _ (4 : ℝ) tendsto_id)
   exact (h1.atTop_add_atTop h2).atTop_mul_atTop₀ (tendsto_pow_atTop two_ne_zero)
-    |>.atTop_div_const_of_neg (show -3 < (0 : ℝ) by simp) |>.comp tendsto_natCast_atTop_atTop
+    |>.atTop_div_const_of_neg (by simp) |>.comp tendsto_natCast_atTop_atTop
 
-open HasLim HasLim' Real
+noncomputable def Real.cbrt := fun r : ℝ => r ^ (3⁻¹ : ℝ)
 
-/-
-theorem Zad5a : HasLim' (fun n => n ^ 2 / (sqrt (n + 1) - sqrt (n + 4))) ⊥ := by
-  apply HasLim'.of_eq (fun n => by calc
-    n ^ 2 / (sqrt (n + 1) - sqrt (n + 4)) =
-        ((sqrt (n + 1) + sqrt (n + 4)) * n ^ 2) / ((sqrt (n + 1) + sqrt (n + 4)) * _) := by
-      symm; refine mul_div_mul_left _ _ ?_; positivity
-    _ = ((sqrt (n + 1) + sqrt (n + 4)) * n ^ 2) / -3 := by
-      rw [← sq_sub_sq, Real.sq_sqrt, Real.sq_sqrt]; norm_num; repeat positivity
-  )
-  have h1 := (HasLim'.id.add_const (1 : ℝ)).top_rpow_const (half_pos one_pos)
-  have h2 := (HasLim'.id.add_const (4 : ℝ)).top_rpow_const (half_pos one_pos)
-  convert ((h1.add h2).mul (top_rpow_const zero_lt_two id)).div_const (show -3 ≠ 0 by simp) using 1
-  · simp [div_eq_mul_inv, Real.sqrt_eq_rpow]
-  · simp [EReal.top_div_of_neg_ne_bot]
--/
+open Real
 
-noncomputable def _root_.Real.cbrt := fun r : ℝ => r.rpow 3⁻¹
+theorem Zad5b : Tendsto (fun n : ℕ => n * (cbrt (n ^ 3 + n) - n)) atTop (𝓝 (1 / 3)) := by
+  apply Tendsto.congr'; symm; simp [EventuallyEq]; use 1; intro n hn; calc
+    n * (cbrt (n ^ 3 + n) - n) = n * (n * (cbrt (1 + (↑n)⁻¹ ^ 2) - 1)) := by
+      congr; rw [mul_sub, mul_one, cbrt, cbrt]; congr
+      apply eq_mul_of_mul_inv_eq₀ (by positivity)
+      rw [← Real.inv_rpow, ← Real.mul_rpow]; field_simp; simp; apply Real.pow_rpow_inv_natCast
+      all_goals positivity
+    _ = (cbrt (1 + (↑n)⁻¹ ^ 2) ^ 2 + cbrt (1 + (↑n)⁻¹ ^ 2) + 1)⁻¹ := by
+      apply eq_inv_of_mul_eq_one_left; ring_nf
+      rw [cbrt, ← Nat.cast_ofNat (n := 3), Real.rpow_inv_natCast_pow]; field
+      all_goals positivity
+  have := by simpa using tendsto_natCast_atTop_atTop.inv_tendsto_atTop.pow 2
+    |>.const_add 1 |>.rpow_const (p := 3⁻¹) (by simp)
+  simp [cbrt, tendsto_inv_iff₀]; convert ((this.pow 2).add this).add_const 1; norm_num
 
-theorem Zad5b : HasLim (fun n => n * (cbrt (n ^ 3 + n) - n)) (1 / 3) := by
-  apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
-    n * (cbrt (n ^ 3 + n) - n) = n * n / (cbrt (n ^ 3 + n) ^ 2 + cbrt (n ^ 3 + n) * n + n ^ 2) := by
-      rw [mul_div_assoc]; simp; left
-      simp [cbrt]; apply eq_div_of_mul_eq (by positivity)
-      ring_nf; simp; rw [← Nat.cast_ofNat (R := ℝ)]
-      rw [rpow_inv_natCast_pow (by positivity) (by simp)]; simp
-    _ = ((cbrt (n ^ 3 + n) / n) ^ 2 + cbrt (n ^ 3 + n) / n + 1)⁻¹ := by
-      rw [← inv_div]; congr
-      simp [add_div]; congr 2
-      · simp [← sq, ← div_pow]
-      · rw [mul_div_mul_right]; positivity
-      · simp [sq]; positivity
-    _ = (cbrt (1 + (n⁻¹ : ℝ) ^ 2) ^ 2 + cbrt (1 + (n⁻¹ : ℝ) ^ 2) + 1)⁻¹ := by
-      congr; all_goals (
-        nth_rw 3 [← pow_rpow_inv_natCast (show 0 ≤ (n : ℝ) by positivity) (show 3 ≠ 0 by simp)]
-        simp [cbrt]; rw [← div_rpow] <;> try positivity
-        field_simp
-      )
-  ⟩
-  simp; apply HasLim.inv; case hg => simp
-  rw [show (3 : ℝ) = 1 + 1 + 1 by norm_num]; simp [cbrt]
-  apply HasLim.add_const; apply HasLim.add
-  · convert (((HasLim'.id.top_rpow_const zero_lt_two).inv.const_add _).rpow_const
-      (Or.inr (inv_nonneg.mpr zero_le_three))).rpow_const (Or.inr zero_le_two)
-    · simp; rfl
-    · simp
-  · convert ((HasLim'.id.top_rpow_const zero_lt_two).inv.const_add _).rpow_const
-      (Or.inr (inv_nonneg.mpr zero_le_three)) <;> simp
+theorem Zad5c : Tendsto (fun n : ℕ => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) atTop (𝓝 1) := by
+  apply (tendsto_rpow_div.comp tendsto_natCast_atTop_atTop).squeeze'
+    ((tendsto_rpow_div_mul_add 2 1 (-1) zero_ne_one).comp
+      (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop))
+  · simp; use 0; intro n hn; apply Real.rpow_le_rpow <;> try positivity
+    norm_cast; zify; grw [← Int.le_self_sq n]; simp
+  · simp [div_eq_mul_inv]; use 2; intro n hn
+    rw [Real.rpow_mul (by positivity)]; gcongr; norm_cast; linarith
 
-theorem Zad5c : HasLim (fun n => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) 1 := by
-  apply squeeze (a := fun n => (n ^ 2 : ℝ) ^ (n⁻¹ : ℝ)) (c := fun n => ((2 * n) ^ 2 : ℝ) ^ (n⁻¹ : ℝ))
-  · exact ⟨0, fun n hn => by apply rpow_le_rpow <;> simp⟩
-  · exact ⟨2, fun n hn => by
-      norm_cast; apply rpow_le_rpow
-      · positivity
-      · gcongr; rw [ge_iff_le, ← sq_le_sq₀ zero_le_two n.zero_le] at hn; linarith
-      · simp⟩
-  · refine of_eq (fun n => (rpow_pow_comm n.cast_nonneg n⁻¹ 2).symm) ?_
-    rw [← one_pow 2]; convert hasLim_rpow_inv.rpow_const (Or.inr zero_le_two) <;> norm_num
-  · apply HasLim.of_eq (fun n => by calc
-      ((2 * n) ^ 2 : ℝ) ^ (n : ℝ)⁻¹ = ((2 * n) ^ (n : ℝ)⁻¹) ^ 2 := (rpow_pow_comm (by positivity) n⁻¹ 2).symm
-      _ = (2 ^ (n⁻¹ : ℝ) * n ^ (n⁻¹ : ℝ)) ^ (2 : ℝ) := by simp; congr; exact mul_rpow zero_le_two (by simp)
-      _ = (2 ^ (n⁻¹ : ℝ)) ^ (2 : ℝ) * (n ^ (n⁻¹ : ℝ)) ^ (2 : ℝ) := (mul_rpow (by positivity) (by positivity))
-    )
-    convert ((hasLim_const_rpow_inv two_pos).rpow_const (Or.inr zero_le_two)).mul
-      (hasLim_rpow_inv.rpow_const (Or.inr zero_le_two))
-    simp
+theorem tendsto_const_rpow_inv (a : ℝ) (ha : 0 < a) : Tendsto (fun x : ℝ => a ^ x⁻¹) atTop (𝓝 1) := by
+  wlog! ha' : 1 ≤ a
+  · convert (this a⁻¹ (by simpa) (by bound)).inv₀ (by simp) using 2 <;> simp [Real.inv_rpow ha.le]
+  apply tendsto_const_nhds.squeeze' tendsto_rpow_div
+  · simpa using ⟨0, fun x hx => Real.one_le_rpow ha' (inv_nonneg.mpr hx)⟩
+  · simpa using ⟨a, fun x hx => Real.rpow_le_rpow ha.le hx (by bound)⟩
 
-theorem Zad5d : HasLim (fun n => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ)) 7 := by
-  apply squeeze (a := fun n => (7 ^ (n - 1) : ℝ) ^ (n⁻¹ : ℝ)) (c := fun n => (7 ^ n + 7 ^ n : ℝ) ^ (n⁻¹ : ℝ))
-  · exact ⟨1, fun n hn => by
-      apply rpow_le_rpow
-      · simp
-      · rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]
-        · exact le_trans (pow_le_pow_right₀ (by simp) (show n - 1 ≤ n by simp)) (le_add_of_nonneg_right (by positivity))
-        · calc
-            (7 : ℝ) ^ (n - 1) + 3 ^ n = 7 ^ (n - 1) + 3 * 3 ^ (n - 1) := by simp; rw [mul_pow_sub_one]; positivity
-            _ ≤ 7 ^ (n - 1) + 6 * 7 ^ (n - 1) := by
-              simp; apply mul_le_mul <;> (try norm_num); apply pow_le_pow_left₀ <;> norm_num
-            _ = 7 ^ n := by simp [← one_add_mul]; norm_num; rw [mul_pow_sub_one]; positivity
-      · positivity⟩
-  · exact ⟨0, fun n hn => by
-      apply rpow_le_rpow
-      · rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]
-        · positivity
-        · apply pow_le_pow_left₀ <;> norm_num
-      · simp; rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]
-        · apply pow_le_pow_left₀ <;> norm_num
-        · exact le_trans (show -3 ^ n ≤ 0 by simp) (by positivity)
-      · simp⟩
-  · apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
-      ((7 : ℝ) ^ (n - 1)) ^ (n : ℝ)⁻¹ = (7 ^ n / 7) ^ (n : ℝ)⁻¹ := by congr; field_simp; rw [pow_sub_one_mul]; positivity
-      _ = 7 / 7 ^ (n : ℝ)⁻¹ := by rw [div_rpow, pow_rpow_inv_natCast] <;> positivity
-    ⟩
-    convert HasLim.const_div 7 (hasLim_const_rpow_inv (show 0 < 7 by norm_num)); simp
-  · apply HasLim.of_eventually_eq ⟨1, fun n hn => by calc
-      (7 ^ n + 7 ^ n : ℝ) ^ (n : ℝ)⁻¹ = (2 * 7 ^ n) ^ (n : ℝ)⁻¹ := by congr; symm; exact two_mul _
-      _ = 2 ^ (n : ℝ)⁻¹ * 7 := by rw [mul_rpow, pow_rpow_inv_natCast] <;> positivity
-    ⟩
-    convert mul_const 7 (hasLim_const_rpow_inv two_pos); simp
+theorem Zad5d : Tendsto (fun n : ℕ => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ)) atTop (𝓝 7) := by
+  have := (isLittleO_pow_pow_of_abs_lt_left (show |-3| < |7| by norm_num)).right_isTheta_add'
+  have ⟨c₁, hc₁, h₁⟩ := Asymptotics.isBigO_iff''.mp this.isBigO
+  have ⟨c₂, hc₂, h₂⟩ := Asymptotics.isBigO_iff'.mp this.isBigO_symm
+  simp [-eventually_atTop] at h₁ h₂
+  suffices Tendsto (fun n : ℕ => |(7 ^ n + (-3) ^ n : ℝ)| ^ (n⁻¹ : ℝ)) atTop (𝓝 7) by
+    apply this.congr; intro n; congr; simp
+    rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]; positivity; bound
+  apply Tendsto.squeeze' (g := fun n : ℕ => c₁ ^ (n⁻¹ : ℝ) * 7) (h := fun n : ℕ => c₂ ^ (n⁻¹ : ℝ) * 7)
+  · simpa using ((tendsto_const_rpow_inv c₁ hc₁).comp tendsto_natCast_atTop_atTop).mul_const 7
+  · simpa using ((tendsto_const_rpow_inv c₂ hc₂).comp tendsto_natCast_atTop_atTop).mul_const 7
+  map_tacs [apply h₁.mp; apply h₂.mp]; all_goals
+  · simp; use 1; intro n hn this
+    convert Real.rpow_le_rpow (by bound) this (show 0 ≤ (n⁻¹ : ℝ) by simp) using 1
+    rw [Real.mul_rpow, Real.pow_rpow_inv_natCast] <;> bound
 
-theorem Zad6 {a : ℕ → ℤ} {g : ℝ} (h : HasLim (fun n => (a n : ℝ)) g) : ∃ n₀, ∀ n ≥ n₀, a n = g := by
-  have ⟨n₀, h1⟩ := hasLim_iff_isCauSeq.mp ⟨g, h⟩ 1 (by simp); exists n₀
-  have hc : ∀ n ≥ n₀, (a n₀ : ℝ) = a n := by
-    intro n hn; replace ⟨h1, h2⟩ := abs_sub_lt_iff.mp (h1 n hn)
-    rw [← Int.cast_one, ← Int.cast_sub, Int.cast_lt] at h1 h2
-    congr 1; omega
-  replace h := (HasLim.of_eventually_eq ⟨n₀, hc⟩ h).eq (const _)
-  intro n hn; specialize hc n hn; rw [← hc, ← h]
+theorem Zad6 {a : ℕ → ℤ} {g : ℤ} (h : Tendsto a atTop (𝓝 g)) : ∃ n₀, ∀ n ≥ n₀, a n = g := by
+  simp_all
 
-theorem Zad7_sup {a : ℕ → ℝ} (h : HasLim a 0) (hp : ∀ n, 0 < a n) : iSup a ∈ Set.range a := by
-  simp; have isup_pos := (lt_ciSup_iff h.bddAbove).mpr ⟨0, hp 0⟩
-  replace ⟨n₀, h₀⟩ := h (iSup a / 2) (half_pos isup_pos); simp at h₀
-  have hn₀ : n₀ ≠ 0 := by
-    by_contra!; subst this; simp at h₀
-    exact not_le_of_gt (half_lt_self isup_pos) (ciSup_le fun n => le_of_abs_le (h₀ n).le)
-  have ⟨n, hn, hs⟩ := Finset.exists_mem_eq_sup' (Finset.nonempty_range_iff.mpr hn₀) a
+theorem Zad7_sup {a : ℕ → ℝ} (h : Tendsto a atTop (𝓝 0))
+    (hp : ∀ n, 0 < a n) : iSup a ∈ Set.range a := by
+  simp only [Set.mem_range]
+  have isup_pos := (lt_ciSup_iff h.bddAbove_range).mpr ⟨0, hp 0⟩
+  have ⟨n₀, h₀⟩ : ∃ n₀, ∀ n ≥ n₀, a n ≤ iSup a / 2 := by
+    simpa using h.eventually_le_const (half_pos isup_pos)
+  have ⟨n', hn', h'⟩ : ∃ n' < n₀, ∀ n ≥ n₀, a n < a n' := by
+    by_contra!; refine not_le_of_gt (half_lt_self isup_pos) (ciSup_le fun n' => ?_)
+    by_cases! h : n' < n₀
+    · exact (this n' h).elim fun n ⟨hn, h⟩ => h.trans (h₀ n hn)
+    · exact h₀ n' h
+  have ⟨n, hn, hs⟩ := Finset.exists_mem_eq_sup'
+    (Finset.nonempty_range_iff.mpr (ne_zero_of_lt hn')) a
   exists n
-  refine ge_antisymm (ciSup_le ?bound) (le_ciSup h.bddAbove n)
-  intro x; rw [← hs]; by_cases! x < n₀
-  case pos hx => exact Finset.le_sup' a (by simpa)
-  case neg hx =>
-    by_contra!; replace this := lt_trans this (lt_of_abs_lt (h₀ x hx))
-    refine not_le_of_gt (half_lt_self isup_pos) (ciSup_le fun n => ?_)
-    by_cases! n < n₀
-    case pos hn => exact le_trans (Finset.le_sup' a (by simpa)) this.le
-    case neg hn => exact le_of_abs_le (h₀ n hn).le
+  refine ge_antisymm (ciSup_le ?bound) (le_ciSup h.bddAbove_range n)
+  intro x; rw [← hs]; simp only [Finset.le_sup'_iff, Finset.mem_range]
+  by_cases! hx : x < n₀
+  · exists x
+  · use n', hn', (h' x hx).le
 
-theorem Zad7_inf {a : ℕ → ℝ} (h : HasLim a 0) (hp : ∀ n, 0 < a n) : iInf a ∉ Set.range a := by
-  simp; suffices iInf a = 0 by rw [this]; exact fun n => ne_of_gt (hp n)
-  refine ge_antisymm (le_ciInf fun n => (hp n).le) (Real.sInf_le_iff h.bddBelow (Set.range_nonempty a) |>.mpr ?_)
-  simp [HasLim] at *; intro e he; replace ⟨n, h⟩ := h e he; exact ⟨n, lt_of_abs_lt (h n le_rfl)⟩
+theorem Zad7_inf {a : ℕ → ℝ} (h : Tendsto a atTop (𝓝 0))
+    (hp : ∀ n, 0 < a n) : iInf a ∉ Set.range a := by
+  suffices iInf a = 0 by simpa [this] using fun n => ne_of_gt (hp n)
+  exact IsGLB.ciInf_eq (IsGLB.range_of_tendsto (fun n => (hp n).le) h)
 
-theorem Zad13 : Antitone fun (n : PNat) => (1 + 1 / n : ℚ) ^ (n + 1 : ℕ) := by
+theorem Zad13 : Antitone fun (n : ℕ+) => (1 + 1 / n : ℚ) ^ (n + 1 : ℕ) := by
   suffices Antitone fun n => (1 + 1 / (n + 1 : ℕ) : ℚ) ^ (n + 1 + 1) by
-    intro a b hab; specialize @this a.natPred b.natPred; simp at *; exact this hab
+    intro a b hab; simpa using this (PNat.natPred_le_natPred.mpr hab)
   apply antitone_nat_of_succ_le; intro n
   rw [← one_le_div (by positivity), pow_succ _ (n + 1 + 1), ← div_div, ← div_pow,
       one_add_div (by positivity)]; nth_rw 1 [one_add_div (by positivity)]
-  simp [add_assoc]; norm_num; rw [div_div_div_eq, one_le_div (by positivity)]
-  conv in _ / _ => ring_nf
-  rw [mul_right_comm, mul_comm _⁻¹, ← distrib_three_right, add_comm 3, add_right_comm _ 3]
-  nth_rw 2 [show (4 : ℚ) = 3 + 1 by norm_num]
-  rw [← add_assoc, ← div_eq_mul_inv, same_add_div (by positivity)]
-  grw [← one_add_mul_le_pow (by trans 0; simp; positivity)]
-  simp [← div_eq_mul_inv]; rw [le_div_comm₀ (by positivity) (by positivity), div_inv_eq_mul]
-  grind
+  norm_cast; simp only [add_assoc]; norm_num; rw [one_le_div (by positivity)]
+  grw [show _ / _ = 1 + 1 / (↑n * 4 + ↑n ^ 2 + 3 : ℚ) by field,
+    ← one_add_mul_le_pow (by trans 0; simp; positivity)]
+  field_simp; grind
 
-
-theorem Zad15 : ¬∀ a b : ℕ → ℝ, HasLim (a * b) 0 → (HasLim a 0 ∨ HasLim b 0) := by
-  simp; exists (fun n => ↑(n % 2)), (fun n => ↑(1 - n % 2)); and_intros
-  · apply HasLim.of_eq fun n => show ↑(n % 2) * ↑(1 - n % 2) = 0 by
-      by_cases h : n % 2 = 0
-      · simp [h]
-      · simp at h; simp [h]
-    exact const 0
-  · simp [HasLim]; exists 1, (by positivity); intro n; exists 2 * n + 1, (by omega); simp
-  · simp [HasLim]; exists 1, (by positivity); intro n; exists 2 * n, (by omega); simp
+theorem Zad15 : ¬∀ a b : ℕ → ℝ, Tendsto (a * b) atTop (𝓝 0) →
+    Tendsto a atTop (𝓝 0) ∨ Tendsto b atTop (𝓝 0) := by
+  simp only [not_forall, exists_prop, not_or]
+  exists (fun n => ↑(n % 2)), (fun n => ↑(1 - n % 2)); and_intros
+  · convert tendsto_const_nhds with n; simp +contextual [Classical.or_iff_not_imp_left]
+  all_goals rw [tendsto_iff_seq_tendsto]; simp only [not_forall, exists_prop]
+  · exists fun n => 2 * n + 1
+    use (tendsto_id.const_mul_atTop' two_pos).atTop_add_nonneg fun n => zero_le_one
+    simp [Function.comp_def]
+  · exists fun n => 2 * n
+    use tendsto_id.const_mul_atTop' two_pos
+    simp [Function.comp_def]
