@@ -56,7 +56,7 @@ theorem Zad5a : Tendsto (fun n : ℕ => n ^ 2 / (√(n + 1) - √(n + 4))) atTop
   exact (h1.atTop_add_atTop h2).atTop_mul_atTop₀ (tendsto_pow_atTop two_ne_zero)
     |>.atTop_div_const_of_neg (by simp) |>.comp tendsto_natCast_atTop_atTop
 
-noncomputable def Real.cbrt := fun r : ℝ => r ^ (3⁻¹ : ℝ)
+noncomputable def _root_.Real.cbrt := fun r : ℝ => r ^ (3⁻¹ : ℝ)
 
 open Real
 
