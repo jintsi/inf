@@ -7,8 +7,9 @@ import Mathlib.Data.Nat.Choose.Vandermonde
 
 --TODO: Zad3
 
-theorem composition_length_card (n k : ℕ) [NeZero n] : Finset.card {c : Composition n | c.length = k + 1}
-    = (n - 1).choose k := by calc Finset.card {c : Composition n | c.length = k + 1}
+theorem composition_length_card (n k : ℕ) [NeZero n] :
+    Finset.card {c : Composition n | c.length = k + 1} = (n - 1).choose k :=
+  calc Finset.card {c : Composition n | c.length = k + 1}
   _ = Finset.card {c : CompositionAsSet n | c.length = k + 1} :=
     Finset.card_equiv (compositionEquiv n) fun c => by simp [compositionEquiv]
   _ = Finset.card {s : Finset (Fin (n - 1)) | s.card = k} :=
@@ -26,8 +27,8 @@ theorem composition_length_card (n k : ℕ) [NeZero n] : Finset.card {c : Compos
   _ = (n - 1).choose k := by simp
 
 theorem FinVec.composition_pos_card (n k : ℕ) [NeZero n] [NeZero k] :
-    {x : Fin k → ℕ | (∀ i, 0 < x i) ∧ FinVec.sum x = n}.ncard = (n - 1).choose (k - 1) := by calc
-  {x : Fin k → ℕ | (∀ i, 0 < x i) ∧ FinVec.sum x = n}.ncard
+    {x : Fin k → ℕ | (∀ i, 0 < x i) ∧ FinVec.sum x = n}.ncard = (n - 1).choose (k - 1) :=
+  calc {x : Fin k → ℕ | (∀ i, 0 < x i) ∧ FinVec.sum x = n}.ncard
   _ = {c : Composition n | c.length = k}.ncard := by
     apply Set.ncard_congr fun x hx => {
       blocks := List.ofFn x, blocks_pos := by simp [hx.left]
@@ -42,8 +43,8 @@ theorem FinVec.composition_pos_card (n k : ℕ) [NeZero n] [NeZero k] :
     convert composition_length_card n (k - 1); exact (Nat.sub_add_cancel NeZero.one_le).symm
 
 theorem FinVec.composition_card (n k : ℕ) [NeZero k] :
-    {x : Fin k → ℕ | FinVec.sum x = n}.ncard = (n + k - 1).choose (k - 1) := by calc
-  {x : Fin k → ℕ | FinVec.sum x = n}.ncard
+    {x : Fin k → ℕ | FinVec.sum x = n}.ncard = (n + k - 1).choose (k - 1) :=
+  calc {x : Fin k → ℕ | FinVec.sum x = n}.ncard
   _ = {x : Fin k → ℕ | (∀ i, 0 < x i) ∧ FinVec.sum x = n + k}.ncard := by
     apply Set.BijOn.ncard_eq (f := fun x i => x i + 1)
     simp [Set.BijOn, Set.MapsTo, ← Finset.sum_add_card_nsmul, Set.InjOn, funext_iff,
@@ -55,8 +56,8 @@ theorem FinVec.composition_card (n k : ℕ) [NeZero k] :
 
 namespace MD1.Cwi2
 
-theorem Zad4i : {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | x₁ + x₂ + x₃ + x₄ = 7}.ncard = 120 := by calc
-  {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | x₁ + x₂ + x₃ + x₄ = 7}.ncard
+theorem Zad4i : {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | x₁ + x₂ + x₃ + x₄ = 7}.ncard = 120 :=
+  calc {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | x₁ + x₂ + x₃ + x₄ = 7}.ncard
   _ = {x : Fin 4 → ℕ | FinVec.sum x = 7}.ncard := by
     apply Set.BijOn.ncard_eq (f := fun ⟨x, y, z, w⟩ => ![x, y, z, w])
     simp [Set.BijOn, Set.MapsTo, FinVec.sum, Set.SurjOn, Set.subset_def]
@@ -64,8 +65,8 @@ theorem Zad4i : {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | x₁ + x�
   _ = Nat.choose 10 3 := FinVec.composition_card _ _
 
 theorem Zad4ii : {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | 0 < x₁ ∧ 0 < x₂ ∧ 0 < x₃ ∧ 0 < x₄
-    ∧ x₁ + x₂ + x₃ + x₄ = 7}.ncard = 20 := by calc
-  {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | _}.ncard
+    ∧ x₁ + x₂ + x₃ + x₄ = 7}.ncard = 20 :=
+  calc {(x₁, x₂, x₃, x₄) : ℕ × ℕ × ℕ × ℕ | _}.ncard
   _ = {x : Fin 4 → ℕ | (∀ i, 0 < x i) ∧ FinVec.sum x = 7}.ncard := by
     apply Set.BijOn.ncard_eq (f := fun ⟨x, y, z, w⟩ => ![x, y, z, w])
     simp [Set.BijOn, Set.MapsTo, Fin.forall_fin_succ, FinVec.sum, Set.SurjOn, Set.subset_def]
@@ -82,8 +83,8 @@ theorem Zad7 (n k : ℕ) : ∑ j ∈ Finset.range (k + 1), (n + j).choose j = (n
   · congr; funext j; rw [add_comm, Nat.choose_symm_add]
   · rw [add_comm n]; exact Nat.choose_symm_of_eq_add (add_assoc _ _ _)
 
-theorem Zad8 (n : ℕ) : Finset.card {f : Fin n → Fin n | Monotone f} = (2 * n - 1).choose n := by calc
-  Finset.card {f : Fin n → Fin n | Monotone f}
+theorem Zad8 (n : ℕ) : Finset.card {f : Fin n → Fin n | Monotone f} = (2 * n - 1).choose n :=
+  calc Finset.card {f : Fin n → Fin n | Monotone f}
   _ = Finset.card {f : Fin n → Fin (2 * n - 1) | StrictMono f} := by
     apply Finset.card_nbij (fun f i => ((f i).addNat i).castLE (by lia))
       <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def, funext_iff]
@@ -108,7 +109,7 @@ theorem Zad8 (n : ℕ) : Finset.card {f : Fin n → Fin n | Monotone f} = (2 * n
 
 theorem Zad10 (n k : ℕ) : ∑ i ≤ k, n.choose i * (n - i).choose (k - i) = 2 ^ k * n.choose k := by
   let F : Finset (Finset (Fin n) × Finset (Fin n)) := {(s, t) : _ | s.card = k ∧ t ⊆ s}
-  have h1 := by calc F.card
+  have h1 := calc F.card
     _ = ∑ s ∈ .powersetCard k .univ, {st ∈ F | st.1 = s}.card :=
       Finset.card_eq_sum_card_fiberwise (by simp [Set.MapsTo, F]; tauto)
     _ = ∑ s ∈ .powersetCard k (.univ : Finset (Fin n)), s.powerset.card := by
@@ -117,7 +118,7 @@ theorem Zad10 (n k : ℕ) : ∑ i ≤ k, n.choose i * (n - i).choose (k - i) = 2
     _ = ∑ s ∈ .powersetCard k (.univ : Finset (Fin n)), 2 ^ k := by
       congr! with s hs; simp_all
     _ = 2 ^ k * n.choose k := by simp [mul_comm]
-  have h2 := by calc F.card
+  have h2 := calc F.card
     _ = ∑ i ≤ k, {st ∈ F | st.2.card = i}.card := Finset.card_eq_sum_card_fiberwise
       (by simp [Set.MapsTo, F]; intro s t hs ht; exact hs ▸ Finset.card_le_card ht)
     _ = ∑ i ≤ k, ∑ t ∈ .powersetCard i .univ, {st ∈ F | st.2 = t}.card := by
@@ -142,15 +143,15 @@ theorem Zad11a (n : ℕ) : ∑ k ≤ n, k * n.choose k = n * 2 ^ (n - 1) := by
   apply and_self_iff.mp; and_intros
   · let F : Finset (Finset (Fin n) × Fin n) := {(s, x) : _ | x ∈ s}
     have h1 := calc F.card
-      _ = ∑ k ≤ n, {sx ∈ F | sx.1.card = k}.card := Finset.card_eq_sum_card_fiberwise
-        (by simp [Set.MapsTo]; intro s _ _; grw [Finset.card_le_univ]; simp)
-      _ = ∑ k ≤ n, ∑ s ∈ Finset.univ.powersetCard k, s.card := by
-        congr! with k hk; rw [Finset.card_eq_sum_card_fiberwise (f := Prod.fst)]
-        · congr! with s hs; apply Finset.card_nbij Prod.snd
-            <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def] <;> grind
-        · simp [Set.MapsTo]
-      _ = ∑ k ≤ n, n.choose k * k := by congr! with k hk; convert Finset.sum_const_nat ?_ <;> simp
-      _ = ∑ k ≤ n, k * n.choose k := by grind
+      _ = ∑ s, {sx ∈ F | sx.1 = s}.card :=
+        Finset.card_eq_sum_card_fiberwise (by simp [Set.MapsTo])
+      _ = ∑ s : Finset (Fin n), s.card := by
+        congr with s; apply Finset.card_nbij Prod.snd
+          <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def, F] <;> grind only
+      _ = ∑ k ≤ n, n.choose k * k := by
+        convert Finset.sum_powerset_apply_card id using 2 with _ _ k hk
+          <;> simp [Nat.range_succ_eq_Iic]
+      _ = ∑ k ≤ n, k * n.choose k := by congr! 1; ring
     have h2 := calc F.card
       _ = ∑ x : Fin n, (Finset.univ \ {x}).powerset.card := by
         rw [Finset.card_eq_sum_card_fiberwise (f := Prod.snd)]
@@ -166,15 +167,14 @@ theorem Zad11b {n : ℕ} (hn : 1 < n) : ∑ k ≤ n, k ^ 2 * n.choose k = (n + n
   apply and_self_iff.mp; and_intros
   · let F : Finset (Finset (Fin n) × Fin n × Fin n) := {(s, x, y) : _ | x ∈ s ∧ y ∈ s}
     have h1 := calc F.card
-      _ = ∑ k ≤ n, {sxy ∈ F | sxy.1.card = k}.card := Finset.card_eq_sum_card_fiberwise
-        (by simp [Set.MapsTo]; intros; grw [Finset.card_le_univ]; simp)
-      _ = ∑ k ≤ n, ∑ s ∈ Finset.univ.powersetCard k, (s ×ˢ s).card := by
-        congr! with k hk; rw [Finset.card_eq_sum_card_fiberwise (f := Prod.fst)]
-        · congr! with s hs; apply Finset.card_nbij Prod.snd
-            <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def] <;> grind
-        · simp [Set.MapsTo]
+      _ = ∑ s, {sxy ∈ F | sxy.1 = s}.card :=
+        Finset.card_eq_sum_card_fiberwise (by simp [Set.MapsTo])
+      _ = ∑ s : Finset (Fin n), (s ×ˢ s).card := by
+        congr with s; apply Finset.card_nbij Prod.snd
+          <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def, F] <;> grind only
       _ = ∑ k ≤ n, n.choose k * k ^ 2 := by
-        congr! with k hk; convert Finset.sum_const_nat ?_ <;> simp; grind
+        convert Finset.sum_powerset_apply_card (· ^ 2) using 2 with _ _ k hk
+          <;> simp [sq, Nat.range_succ_eq_Iic]
       _ = ∑ k ≤ n, k ^ 2 * n.choose k := by grind
     have h2 := calc F.card
       _ = ∑ xy : Fin n × Fin n, (Finset.univ \ {xy.1, xy.2}).powerset.card := by
