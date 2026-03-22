@@ -44,7 +44,7 @@ theorem Zad2a : HasLimAt (fun x => (sqrt (5 - 2 * x) - sqrt (3 - x)) / (x ^ 3 - 
     ((((hx.const_mul 2).const_sub 5).rpow_const (1 / 2)).add
     ((hx.const_sub 3).rpow_const (1 / 2))) (by simp; norm_cast) using 1
   · ext; congr <;> apply Real.sqrt_eq_rpow
-  · simp [sq]; norm_num; norm_cast; grind
+  · simp [sq]; norm_cast; norm_num
 
 theorem Zad2b : HasLimAt (fun x => sqrt (x ^ 2 + π * x) + x) Set.univ ⊥ (-π / 2 : ℝ) := by
   apply HasLimAt.of_eventually_eq (a := ⊥) ⟨-π, fun x _ hx => by have : x < 0 := (by grw [hx]; simp [pi_pos]); calc

@@ -162,7 +162,7 @@ theorem Zad6_D4 : ![1, I, I] ∈ Submodule.span ℂ {![c, -1+I, 1+I], ![I, -1, -
       right; symm; exact h2
   · apply Or.rec <;> (intro hc; subst hc)
     · exists 0, -I; simp
-    · exists (3 - I) / 10, (-1 - 3 * I) / 5; ring_nf; norm_num; grind
+    · exists (3 - I) / 10, (-1 - 3 * I) / 5; ring_nf; norm_num
 
 open Complex in
 theorem Zad6_D5 {x₁ x₂ x₃ x₄ : ℂ} : ![x₁, x₂, x₃, x₄] ∈ Submodule.span ℂ
