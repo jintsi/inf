@@ -1,7 +1,9 @@
 import Mathlib.Combinatorics.Enumerative.Stirling
 import Mathlib.Combinatorics.Enumerative.Bell
 import Mathlib.Order.Partition.Finpartition
+import Mathlib.Combinatorics.Enumerative.Catalan
 
+@[simp]
 theorem Finpartition.card_of_parts [DecidableEq α] (s : Finset α) (k : ℕ) :
     Finset.card {P : Finpartition s | P.parts.card = k} = s.card.stirlingSecond k := by
   induction s using Finset.induction generalizing k
@@ -180,3 +182,35 @@ theorem Zad1 (h : 0 < n) : n.bell = ∑ i < n, (n - 1).choose i * i.bell := by
   rw [Nat.Iio_eq_range, show n = n - 1 + 1 by lia, Nat.add_one_sub_one,
     ← Finset.sum_flip, Nat.bell_succ, Fin.sum_univ_eq_sum_range fun i => (_ * Nat.bell _)]
   congr! 2 with i hi; exact (Nat.choose_symm (by simpa using hi)).symm
+
+
+/-- the Bell triangle a_n,k -/
+def _root_.Nat.bellTrig (n k : ℕ) : ℕ :=
+  match n, k with
+  | 0, k => 2 ^ k
+  | n + 1, 0 => n.bellTrig n
+  | n + 1, k + 1 => n.bellTrig k + (n + 1).bellTrig k
+
+lemma _root_.Nat.bellTrig_eq_sum_bell (n k : ℕ) :
+    n.bellTrig k = ∑ i ∈ Finset.range (k + 1), k.choose i * (n + i - k).bell := by
+  induction n generalizing k
+  case zero => calc
+    Nat.bellTrig 0 k = 2 ^ k := Nat.bellTrig.eq_1 k
+    _ = ∑ i ∈ Finset.range (k + 1), k.choose i := k.sum_range_choose.symm
+    _ = ∑ i ∈ Finset.range (k + 1), k.choose i * (0 + i - k).bell := by
+      congr! 1 with i hi; simp_all
+  induction k
+  case zero n ih => simp [Nat.bellTrig, ih, Zad1, Nat.Iio_eq_range]
+  case succ n ih₁ k ih₂ =>
+    rw [Nat.bellTrig, ih₁, ih₂]; symm; calc
+      ∑ i ∈ Finset.range (k + 2), (k + 1).choose i * (n + 1 + i - (k + 1)).bell
+      _ = ∑ i ∈ Finset.range (k + 2), (k + 1).choose i * (n + i - k).bell := by lia
+      _ = ∑ i ∈ Finset.range (k + 1), k.choose i * (n + i - k).bell
+        + ∑ i ∈ Finset.range (k + 1), k.choose i * (n + (i + 1) - k).bell :=
+        Finset.sum_choose_succ_mul (fun _ _ => _) _
+      _ = _ := by ac_rfl
+
+theorem Zad4 (n : ℕ) : n.bell = n.bellTrig 0 := by simp [Nat.bellTrig_eq_sum_bell]
+
+theorem Zad5 (n : ℕ) : (Tree.treesOfNumNodesEq n).card = catalan n :=
+  Tree.treesOfNumNodesEq_card_eq_catalan n
