@@ -162,6 +162,10 @@ abbrev Eventually (D : Set ℝ) (a : EReal) (p : ℝ → Prop) : Prop :=
 lemma eventually_coe {D : Set ℝ} {a : ℝ} {p : ℝ → Prop} :
     Eventually D a p ↔ ∃ δ > 0, ∀ x ∈ D, x ≠ a → |x - a| < δ → p x := Iff.rfl
 
+@[simp]
+lemma eventually_bot {D : Set ℝ} {p : ℝ → Prop} :
+    Eventually D ⊥ p ↔ ∃ G, ∀ x ∈ D, x < G → p x := Iff.rfl
+
 lemma eventually_true {D : Set ℝ} {a : EReal} {p : ℝ → Prop} : (∀ x ∈ D, p x) → Eventually D a p := by
   cases a
   · intro h; simp [Eventually]; use 0; tauto

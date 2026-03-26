@@ -86,7 +86,7 @@ theorem HasDerivAt.lhopital_zero_hasLimAt_bot {f f' g g' : ℝ → ℝ} {l : ERe
     (hg' : Eventually Set.univ ⊥ fun x => g' x ≠ 0)
     (hf : HasLimAt f Set.univ ⊥ 0) (hg : HasLimAt g Set.univ ⊥ 0)
     (hdiv : HasLimAt (fun x => f' x / g' x) Set.univ ⊥ l) : HasLimAt (fun x => f x / g x) Set.univ ⊥ l := by
-  simp [eventually_bot_def, ← EReal.coe_zero, hasLimAt_at_bot_iff_tendsto, -Filter.eventually_atBot] at *
+  simp [eventually_bot_def, ← EReal.coe_zero, hasLimAt_at_bot_iff_tendsto, -Filter.eventually_atBot, -eventually_bot] at *
   cases l <;>
   · simp [hasLimAt_at_bot_iff_tendsto, hasLimAt_bot_top_iff_tendsto, hasLimAt_bot_bot_iff_tendsto] at ⊢ hdiv
     exact HasDerivAt.lhopital_zero_atBot hff' hgg' hg' hf hg hdiv
@@ -97,7 +97,7 @@ theorem deriv.lhopital_zero_hasLimAt_bot {f g : ℝ → ℝ} {l : EReal}
     (hg' : Eventually Set.univ ⊥ fun x => deriv g x ≠ 0)
     (hf : HasLimAt f Set.univ ⊥ 0) (hg : HasLimAt g Set.univ ⊥ 0)
     (hdiv : HasLimAt (fun x => deriv f x / deriv g x) Set.univ ⊥ l) : HasLimAt (fun x => f x / g x) Set.univ ⊥ l := by
-  simp [eventually_bot_def, ← EReal.coe_zero, hasLimAt_at_bot_iff_tendsto, -Filter.eventually_atBot] at *
+  simp [eventually_bot_def, ← EReal.coe_zero, hasLimAt_at_bot_iff_tendsto, -Filter.eventually_atBot, -eventually_bot] at *
   cases l <;>
   · simp [hasLimAt_at_bot_iff_tendsto, hasLimAt_bot_top_iff_tendsto, hasLimAt_bot_bot_iff_tendsto] at ⊢ hdiv
     exact deriv.lhopital_zero_atBot hdf hg' hf hg hdiv

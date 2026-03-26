@@ -90,7 +90,7 @@ theorem Zad6a : HasLimAt (fun x => (arcsin (3 * x) - 3 * arcsin x) / x ^ 3) Set.
     <;> try simp
   all_goals apply ContinuousAt.const_sub; (try apply ContinuousAt.const_mul); apply continuousAt_pow
 
--- TODO: de l'H for inf/inf
+/- TODO: de l'H for inf/inf
 theorem Zad6b : HasRightLim (fun x => x ^ (1 / log (exp x - 1))) Set.univ 0 (exp 1) := by
   apply HasLimAt.of_eventually_eq (a := 0) ⟨1, zero_lt_one, by
     simp; intro x hp hx hb; rw [rpow_def_of_pos hp, ← div_eq_mul_inv]⟩
@@ -108,3 +108,4 @@ theorem Zad6b : HasRightLim (fun x => x ^ (1 / log (exp x - 1))) Set.univ 0 (exp
   · convert ((continuous_exp.sub_const 1).hasLimAt 0).subset (Set.subset_univ _); simp
   · convert ((continuous_exp.mul continuous_id').hasLimAt 0).subset (Set.subset_univ _) using 1; simp
   · convert continuousWithinAt_iff_hasLimAt.mp ((continuousWithinAt_id.add_const 1).inv₀ _) <;> simp
+-/

@@ -11,10 +11,10 @@ theorem Zad1 : ¬∃ g, HasRightLim (fun x => sin (x ^ 3)⁻¹) Set.univ 0 g := 
   apply not_hasLimAt_of_ne (x₁ := fun n => (n.succ * π)⁻¹.cbrt) (x₂ := fun n => (π / 2 + n * (2 * π))⁻¹.cbrt)
   · simp [Real.cbrt]; intro n; and_intros <;> positivity
   · simp [Real.cbrt]; intro n; and_intros <;> positivity
-  · simp [Real.cbrt, HasLim']
+  · simp [Real.cbrt, -EReal.coe_zero]
     convert ((HasLim'.id.add_const 1).const_div π⁻¹ (by simp [-EReal.coe_one])).rpow_const
       (Or.inr <| show 0 ≤ 3⁻¹ by positivity) using 1; simp
-  · simp [Real.cbrt, HasLim']
+  · simp [Real.cbrt, -EReal.coe_zero]
     have H := (HasLim'.id.mul_const (show 2 * π ≠ 0 by simp)).const_add (π / 2)
     simp [EReal.top_mul_of_pos (show (0 : EReal) < (2 : ℝ) * π by norm_cast; simp [Real.pi_pos])] at H
     convert H.inv.rpow_const (Or.inr <| show 0 ≤ 3⁻¹ by positivity); simp

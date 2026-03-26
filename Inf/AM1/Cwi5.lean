@@ -10,8 +10,9 @@ open Real
 theorem Zad1 : HasDerivAt (fun x => sqrt (5 - 2 * x)) (-1 / 3) (-2) := by
   simp [hasDerivAt_iff_hasLimAt', mul_add, ← sub_sub]; norm_num
   apply HasLimAt.of_eventually_eq
-  · simp [Eventually]; exists 9 / 2, (by positivity); intro x hx hb; calc
-      (√(9 - 2 * x) - 3) / x = (√(9 - 2 * x) + 3) * (√(9 - 2 * x) - 3) / ((√(9 - 2 * x) + 3) * x) := by field
+  · simp [← EReal.coe_zero]; exists 9 / 2, (by positivity); intro x hx hb; calc
+      (√(9 - 2 * x) - 3) / x
+      _ = (√(9 - 2 * x) + 3) * (√(9 - 2 * x) - 3) / ((√(9 - 2 * x) + 3) * x) := by field
       _ = (9 - 2 * x - 3 ^ 2) / ((√(9 - 2 * x) + 3) * x) := by
         congr; rw [← sq_sub_sq, sq_sqrt]
         grw [lt_of_abs_lt hb]; norm_num

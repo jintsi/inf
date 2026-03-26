@@ -175,14 +175,12 @@ theorem Finpartition.card [DecidableEq α] (s : Finset α) :
       rw [Nat.bell_succ', Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk]
     _ = (insert a s).card.bell := by simp [ha]
 
-
 namespace MD1.Cwi3
 
 theorem Zad1 (h : 0 < n) : n.bell = ∑ i < n, (n - 1).choose i * i.bell := by
   rw [Nat.Iio_eq_range, show n = n - 1 + 1 by lia, Nat.add_one_sub_one,
     ← Finset.sum_flip, Nat.bell_succ, Fin.sum_univ_eq_sum_range fun i => (_ * Nat.bell _)]
   congr! 2 with i hi; exact (Nat.choose_symm (by simpa using hi)).symm
-
 
 /-- the Bell triangle a_n,k -/
 def _root_.Nat.bellTrig (n k : ℕ) : ℕ :=
