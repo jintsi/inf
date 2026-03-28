@@ -1,3 +1,4 @@
+import Inf.AM1.Continuous
 import Inf.AM1.Deriv
 import Inf.AM1.Cwi1
 import Inf.AM1.Cwi4

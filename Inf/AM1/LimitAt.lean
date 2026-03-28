@@ -163,6 +163,10 @@ lemma eventually_coe {D : Set ℝ} {a : ℝ} {p : ℝ → Prop} :
     Eventually D a p ↔ ∃ δ > 0, ∀ x ∈ D, x ≠ a → |x - a| < δ → p x := Iff.rfl
 
 @[simp]
+lemma eventually_top {D : Set ℝ} {p : ℝ → Prop} :
+    Eventually D ⊤ p ↔ ∃ G, ∀ x ∈ D, G < x → p x := Iff.rfl
+
+@[simp]
 lemma eventually_bot {D : Set ℝ} {p : ℝ → Prop} :
     Eventually D ⊥ p ↔ ∃ G, ∀ x ∈ D, x < G → p x := Iff.rfl
 

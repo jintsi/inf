@@ -1,122 +1,97 @@
-import Inf.AM1.Continuous
 import Inf.AM1.Cwi3
-import Mathlib.NumberTheory.Real.Irrational
+import Mathlib.Topology.Instances.Irrational
 import Mathlib.Analysis.Complex.ExponentialBounds
+
+open Real Topology Filter
+
+/-- If two subsequences converge to different values, then a function/sequence does not converge.-/
+theorem Filter.not_tendsto_nhds_of_seq {α : Type*} {β : Type*} {f : α → β} {k : Filter α} {g₁ g₂ : β}
+    {x₁ x₂ : ℕ → α} [TopologicalSpace β] [T2Space β] [k.NeBot] : Tendsto x₁ atTop k → Tendsto x₂ atTop k →
+    Tendsto (f ∘ x₁) atTop (𝓝 g₁) → Tendsto (f ∘ x₂) atTop (𝓝 g₂) → g₁ ≠ g₂ → ¬∃ g, Tendsto f k (𝓝 g) :=
+  fun hx₁ hx₂ hfx₁ hfx₂ hg ⟨_, h⟩ => hg <|
+    (tendsto_nhds_unique hfx₁ (h.comp hx₁)).trans (tendsto_nhds_unique (h.comp hx₂) hfx₂)
 
 namespace AM1.Cwi4
 
-open Real
+theorem Zad1 : ¬∃ g, Tendsto (fun x => sin (x ^ 3)⁻¹) (𝓝[>] 0) (𝓝 g) := by
+  apply not_tendsto_nhds_of_seq (x₁ := fun n => (n * π)⁻¹.cbrt) (x₂ := fun n => (π / 2 + n * (2 * π))⁻¹.cbrt)
+  · simp_rw [cbrt, tendsto_nhdsWithin_iff, Set.mem_Ioi, eventually_atTop]; and_intros
+    · convert (tendsto_const_div_pow π⁻¹ 1 (by simp)).rpow_const
+        (Or.inr (show 0 ≤ 3⁻¹ by positivity)) using 2 <;> simp [div_eq_mul_inv]
+    · exists 1; intro n hn; positivity
+  · simp_rw [cbrt, tendsto_nhdsWithin_iff, Set.mem_Ioi, eventually_atTop]; and_intros
+    · rw [← zero_rpow (show 3⁻¹ ≠ 0 by simp)]; apply Tendsto.rpow_const; swap; · simp
+      exact tendsto_atTop_add_const_left _ _
+        (tendsto_natCast_atTop_atTop.atTop_mul_const two_pi_pos) |>.inv_tendsto_atTop
+    · exists 0; intro n _; positivity
+  · simp only [Function.comp_def, cbrt, ← Real.rpow_ofNat]
+    conv => arg 1; ext x; rw [Real.rpow_inv_rpow (by positivity) (by simp)]
+    simp; rfl
+  · simp only [Function.comp_def, cbrt, ← Real.rpow_ofNat]
+    conv => arg 1; ext x; rw [Real.rpow_inv_rpow (by positivity) (by simp)]
+    simp; rfl
+  · exact zero_ne_one
 
-theorem Zad1 : ¬∃ g, HasRightLim (fun x => sin (x ^ 3)⁻¹) Set.univ 0 g := by
-  apply not_hasLimAt_of_ne (x₁ := fun n => (n.succ * π)⁻¹.cbrt) (x₂ := fun n => (π / 2 + n * (2 * π))⁻¹.cbrt)
-  · simp [Real.cbrt]; intro n; and_intros <;> positivity
-  · simp [Real.cbrt]; intro n; and_intros <;> positivity
-  · simp [Real.cbrt, -EReal.coe_zero]
-    convert ((HasLim'.id.add_const 1).const_div π⁻¹ (by simp [-EReal.coe_one])).rpow_const
-      (Or.inr <| show 0 ≤ 3⁻¹ by positivity) using 1; simp
-  · simp [Real.cbrt, -EReal.coe_zero]
-    have H := (HasLim'.id.mul_const (show 2 * π ≠ 0 by simp)).const_add (π / 2)
-    simp [EReal.top_mul_of_pos (show (0 : EReal) < (2 : ℝ) * π by norm_cast; simp [Real.pi_pos])] at H
-    convert H.inv.rpow_const (Or.inr <| show 0 ≤ 3⁻¹ by positivity); simp
-  · refine HasLim'.of_eq (b := fun _ => 0) (g := 0) ?_ (by exact HasLim.const 0)
-    intro n; simp [Real.cbrt]; rw [← Nat.cast_ofNat, Real.rpow_inv_natCast_pow] <;> try positivity
-    simp [add_mul]
-  · refine HasLim'.of_eq (b := fun _ => 1) (g := 1) ?_ (by exact HasLim.const 1)
-    intro n; simp [Real.cbrt]; rw [← Nat.cast_ofNat (n := 3), Real.rpow_inv_natCast_pow] <;> try positivity
-    simp
-  · simp
+theorem Zad2a : Tendsto (fun x => (√(5 - 2 * x) - √(3 - x)) / (x ^ 3 - 8)) (𝓝[≠] 2) (𝓝 (-24⁻¹)) := by
+  apply Tendsto.congr' (f₁ := fun x => (-(x ^ 2 + 2 * x + 4) * (√(5 - 2 * x) + √(3 - x)))⁻¹)
+  · rw [eventuallyEq_nhdsWithin_iff, Metric.eventually_nhds_iff]
+    use 1 / 2; simp only [dist_eq, mul_inv]; grind
+  have hx : Tendsto (fun x : ℝ => x) (𝓝[≠] 2) (𝓝 2) := tendsto_nhds_of_tendsto_nhdsWithin tendsto_id
+  convert ((((hx.pow 2).add (hx.const_mul 2)).add_const 4).neg.mul
+    (((hx.const_mul 2).const_sub 5).sqrt.add (hx.const_sub 3).sqrt)).inv₀ (by norm_num) using 2
+  norm_num
 
-theorem Zad2a : HasLimAt (fun x => (sqrt (5 - 2 * x) - sqrt (3 - x)) / (x ^ 3 - 8)) Set.univ 2 (-1 / 24 : ℝ) := by
-  rw [neg_div, one_div, neg_inv, EReal.coe_inv]
-  apply HasLimAt.of_eq (fun x hx hne => (inv_div _ _).symm)
-  apply HasLimAt.inv <;> try positivity
-  apply HasLimAt.of_eventually_eq (a := 2) ⟨1 / 2, (by simp), fun x _ hne ha => by calc
-    (x ^ 3 - 8) / (√(5 - 2 * x) - √(3 - x)) = (x - 2) * (x ^ 2 + x * 2 + 4) / _ := by congr; ring
-    _ = _ * (√(5 - 2 * x) + √(3 - x)) / ((5 - 2 * x) - (3 - x)) := by
-      simp [abs_lt] at ha
-      rw [div_eq_div_iff]; nth_rw 2 [mul_assoc]; congr
-      convert sq_sub_sq _ _ <;> rw [Real.sq_sqrt] <;> linarith
-      rw [sub_ne_zero, Ne, Real.sqrt_inj]; all_goals grind
-    _ = -(x ^ 2 + x * 2 + 4) * (√(5 - 2 * x) + √(3 - x)) := by grind
-  ⟩
-  have hx : HasLimAt (fun x => x) Set.univ 2 (2 : ℝ) := hasLimAt_id 2
-  convert (((hx.pow_const 2).add (hx.mul_const 2) (by norm_cast)).add_const 4).neg.mul
-    ((((hx.const_mul 2).const_sub 5).rpow_const (1 / 2)).add
-    ((hx.const_sub 3).rpow_const (1 / 2))) (by simp; norm_cast) using 1
-  · ext; congr <;> apply Real.sqrt_eq_rpow
-  · simp [sq]; norm_cast; norm_num
+theorem Zad2b : Tendsto (fun x => √(x ^ 2 + π * x) + x) atBot (𝓝 (-π / 2)) := by
+  simp_rw [← Filter.tendsto_comp_neg_atTop_iff, neg_sq, mul_neg, ← sub_eq_add_neg]
+  apply Tendsto.congr' (f₁ := fun x => -π / (√(1 - π * x⁻¹) + 1))
+  · rw [EventuallyEq, eventually_atTop]; use π; intro x hx; have xpos := pi_pos.trans_le hx
+    field_simp; rw [sqrt_div' _ xpos.le, sqrt_mul xpos.le]; ring_nf
+    rw [mul_comm x, mul_assoc, ← div_eq_mul_inv, Real.div_sqrt, sub_add_cancel,
+      mul_inv_cancel_right₀ (sqrt_ne_zero'.mpr xpos), sq_sqrt, neg_add_cancel_comm_assoc]
+    linarith
+  convert (((tendsto_inv_atTop_zero.const_mul π).const_sub 1).sqrt.add_const 1).inv₀ (by simp)
+    |>.const_mul (-π) using 2; simp; ring
 
-theorem Zad2b : HasLimAt (fun x => sqrt (x ^ 2 + π * x) + x) Set.univ ⊥ (-π / 2 : ℝ) := by
-  apply HasLimAt.of_eventually_eq (a := ⊥) ⟨-π, fun x _ hx => by have : x < 0 := (by grw [hx]; simp [pi_pos]); calc
-    √(x ^ 2 + π * x) + x = (√(x ^ 2 + π * x) - √(x ^ 2)) * (√(x ^ 2 + π * x) + √(x ^ 2)) / (√(x ^ 2 + π * x) + √(x ^ 2)) := by
-      rw [mul_div_cancel_right₀]
-      · rw [sub_eq_add_neg]; simp [sqrt_sq_eq_abs, ← neg_eq_iff_eq_neg]; symm; simp [this.le]
-      · apply ne_of_gt; apply add_pos_of_nonneg_of_pos; simp; simp [sq_pos_iff, this.ne]
-    _ = (√(x ^ 2 + π * x) ^ 2 - √(x ^ 2) ^ 2) / (√(x ^ 2 + π * x) + √(x ^ 2)) := by congr; simp [sq_sub_sq, mul_comm]
-    _ = (x ^ 2 + π * x - x ^ 2) / (√(x ^ 2 + π * x) + √(x ^ 2)) := by
-      simp_rw [sub_eq_add_neg]; congr 3 <;> rw [sq_sqrt]; swap; exact sq_nonneg x
-      rw [sq, ← add_mul]; apply mul_nonneg_of_nonpos_of_nonpos; repeat linarith
-    _ = -π * √(x ^ 2) / (√(x ^ 2 + π * x) + √(x ^ 2)) := by
-      congr; simp [← mul_neg, sqrt_sq_eq_abs, ← neg_eq_iff_eq_neg]; symm; simp [this.le]
-    _ = -π / (√(x ^ 2 + π * x) / √(x ^ 2) + √(x ^ 2) / √(x ^ 2)) := by rw [← add_div, ← div_mul, mul_div_right_comm]
-    _ = -π / (√(1 + π / x) + 1) := by
-      rw [div_self, ← sqrt_div', add_div, div_self, sq, mul_div_mul_right] <;> simp [sq_nonneg, this.ne]
-  ⟩
-  convert hasLimAt_id ⊥ |>.const_div π |>.const_add 1 |>.rpow_const (1 / 2) ?_
-    |>.add_const 1 |>.const_div (-π) (by positivity) using 4 <;> simp [sqrt_eq_rpow]; norm_cast
+theorem Zad2c : Tendsto (fun x => (sin x + cos x) / cos (2 * x)) (𝓝[≠] (-(π / 4))) (𝓝 (√2 / 2)) := by
+  apply Tendsto.congr' (f₁ := fun x => 1 / (cos x - sin x))
+  · rw [eventuallyEq_nhdsWithin_iff, Metric.eventually_nhds_iff]; use π / 4, by simp [pi_pos]
+    simp_rw [dist_eq, sub_neg_eq_add, cos_two_mul', sq_sub_sq, add_comm, ← div_div]
+    intro x hd hne; rw [div_self]
+    rw [Ne, add_eq_zero_iff_eq_neg, ← cos_add_pi_div_two, ← Ne, ← sub_ne_zero, cos_sub_cos]
+    simp_all; and_intros <;> rw [sin_eq_zero_iff_of_lt_of_lt] <;> grind
+  apply tendsto_nhdsWithin_of_tendsto_nhds
+  convert ((continuous_cos.sub continuous_sin).tendsto (-(π / 4))).inv₀ ?_ using 2 <;> simp
+  exact sqrt_div_self
 
-theorem Zad2c : HasLimAt (fun x => (sin x + cos x) / cos (2 * x)) Set.univ (-π / 4 : ℝ) (sqrt 2 / 2 : ℝ) := by
-  simp [cos_two_mul', sq_sub_sq, add_comm, ← div_div]
-  apply HasLimAt.of_eventually_eq (h := fun x => 1 / (cos x - sin x)) ?_
-  · convert ((continuous_cos.sub continuous_sin).hasLimAt (-π / 4)).const_div 1 (by simp [neg_div])
-    simp [neg_div, ← EReal.coe_inv]; exact sqrt_div_self
-  exists π / 4, by simp [pi_pos]
-  intro x _ hne hd
-  rw [abs_lt] at hd; simp [neg_div, ← sub_lt_iff_lt_add] at hd; ring_nf at hd
-  congr; apply div_self
-  rw [Ne, add_eq_zero_iff_eq_neg, ← cos_add_pi_div_two, ← Ne, ← sub_ne_zero, cos_sub_cos]
-  simp; and_intros <;> rw [sin_eq_zero_iff_of_lt_of_lt] <;> bound
-
-theorem Zad4 {D : Set ℝ} (f : ℝ → ℝ) (m k : ℝ) : HasLimAt (fun x => f x - (m * x + k)) D ⊤ 0 ↔
-    HasLimAt (fun x => f x / x) D ⊤ m ∧ HasLimAt (fun x => f x - m * x) D ⊤ k := by
+theorem Zad4 [Field α] [LinearOrder α] [IsStrictOrderedRing α] [TopologicalSpace α] [OrderTopology α]
+    (f : α → α) (m k : α) : Tendsto (fun x => f x - (m * x + k)) atTop (𝓝 0) ↔
+    Tendsto (fun x => f x / x) atTop (𝓝 m) ∧ Tendsto (fun x => f x - m * x) atTop (𝓝 k) := by
   constructor
   · intro h
-    apply HasLimAt.add_const k at h; simp [← sub_sub] at h
-    rw [and_iff_left (by assumption)]
-    replace h := (h.div (hasLimAt_id ⊤)).add_const m
-    simp [sub_div] at h
-    exact h.of_eventually_eq ⟨0, fun x _ hx => by simp [mul_div_cancel_right₀ m hx.ne']⟩
-  · intro ⟨_, h⟩
-    convert h.sub_const k using 2 <;> simp [sub_sub]
+    apply Tendsto.add_const k at h; simp_rw [zero_add, ← sub_sub, sub_add_cancel] at h
+    simp only [h, and_true]
+    replace h := (h.div_atTop tendsto_id).add_const m; rw [zero_add] at h
+    apply h.congr'; rw [EventuallyEq, eventually_atTop]; use 1; grind
+  · intro ⟨_, h⟩; convert h.sub_const k using 2 <;> simp [sub_sub]
 
 open Classical in
 theorem Zad8 {x : ℝ} : ContinuousAt (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
-  constructor
-  · simp [continuousAt_iff_hasLim]; intro h
-    let xq := fun (n : ℕ) => ⌊x * n⌋ / (n : ℝ)
-    let xnq := fun (n : ℕ) => xq n + √2 / n
-    have h1 : HasLim xq x := by
-      apply HasLim.squeeze_const (a := fun n => x - 1 / n)
-      · exists 1; intro n hn; subst xq; simp; grw [← Int.sub_one_lt_floor]; simp [sub_div]
-        rw [mul_div_cancel_right₀]; positivity
-      · exists 1; intro n hn; subst xq; simp; grw [Int.floor_le]; rw [mul_div_cancel_right₀]; positivity
-      · convert HasLim'.id.inv.const_sub x; simp
-    have h2 : HasLim xnq x := by
-      convert h1.add (HasLim'.id.inv.const_mul (show √2 ≠ 0 by simp)) using 1; simp
-    have h3 : HasLim ((fun x => if Irrational x then 0 else x ^ 2) ∘ xq) (x ^ 2) := by
-      apply HasLim.of_eventually_eq ⟨1, fun n hn => by
-        apply ite_cond_eq_false; simp [irrational_iff_ne_rational]; exists ⌊x * n⌋, n; and_intros
-        positivity; rfl⟩
-      simp [sq]; exact h1.mul h1
-    have h4 : HasLim ((fun x => if Irrational x then 0 else x ^ 2) ∘ xnq) 0 :=
-      HasLim.of_eventually_eq ⟨1, fun n hn => by
-        apply ite_cond_eq_true; subst xnq; simp; rw [show xq n = (⌊x * n⌋ / n : ℚ) by simp; rfl]
-        simp [-Rat.cast_div, irrational_sqrt_two]; positivity⟩ (HasLim.const 0)
-    replace h1 := (h xq h1).eq h3; replace h2 := (h xnq h2).eq h4
-    rw [h1, sq_eq_zero_iff] at h2; assumption
+  constructor; swap
   · intro h; subst h; simp [Metric.continuousAt_iff]
     intro e he; exists sqrt e, (by simpa); intro x hb
     split <;> simpa [sq_lt, ← abs_lt]
+  intro h
+  have h1 : Tendsto (fun x => if Irrational x then 0 else x ^ 2) (𝓝[{y | ¬Irrational y}] x) (𝓝 (x ^ 2)) := by
+    refine tendsto_nhdsWithin_congr ?_ (tendsto_nhdsWithin_of_tendsto_nhds (tendsto_id.pow 2))
+    simp; tauto
+  have h2 : Tendsto (fun x => if Irrational x then 0 else x ^ 2) (𝓝[{y | Irrational y}] x) (𝓝 0) := by
+    refine tendsto_nhdsWithin_congr ?_ tendsto_const_nhds
+    simp; tauto
+  replace h1 := tendsto_nhds_unique' ?_ h1 (tendsto_nhdsWithin_of_tendsto_nhds h.tendsto)
+  replace h2 := tendsto_nhds_unique' ?_ h2 (tendsto_nhdsWithin_of_tendsto_nhds h.tendsto)
+  · exact sq_eq_zero_iff.mp (h1.trans h2.symm)
+  · convert dense_irrational.denseRange_val.nhdsWithin_neBot x; simp
+  · convert Rat.denseRange_cast.nhdsWithin_neBot x; simp [Irrational, Set.range]
 
 theorem Zad9 : ∃ x ∈ Set.Ioo 0 1, exp (-x) = sin (π * x / 2) := by
   have h := intermediate_value_Ioo' zero_le_one ((Continuous.rexp continuous_neg).sub
@@ -129,14 +104,14 @@ theorem Zad11 : UniformContinuous NNReal.sqrt ∧ ¬∃ K, LipschitzWith K NNRea
   and_intros
   · simp [Metric.uniformContinuous_iff, NNReal.dist_eq]
     intro e he; exists e ^ 2, sq_pos_of_pos he
-    intro ⟨a, ha⟩ ⟨b, hb⟩ h; simp at *
+    intro ⟨a, ha⟩ ⟨b, hb⟩ h; simp_rw [NNReal.coe_mk] at *
     wlog hab : b ≤ a generalizing a b
     · rw [abs_sub_comm]; rw [abs_sub_comm] at h; exact this b hb a ha h (le_of_not_ge hab)
     rw [← abs_of_pos he, ← sq_lt_sq]; apply h.trans_le'
-    simp [sub_sq, abs_of_nonneg (sub_nonneg_of_le hab), *, sub_add, le_sub_iff_add_le, ← two_mul, mul_assoc]
-    grw [← Real.sqrt_le_sqrt hab]; simp [hb]
-  · simp [lipschitzWith_iff_dist_le_mul]
-    intro K; exists 0; simp [NNReal.dist_eq]
+    rw [sub_sq, sq_sqrt ha, sq_sqrt hb, abs_of_nonneg (sub_nonneg_of_le hab)]
+    grw [← Real.sqrt_le_sqrt hab]; simp [mul_assoc, hb]; ring_nf; trivial
+  · simp_rw [lipschitzWith_iff_dist_le_mul, not_exists, not_forall, not_le, NNReal.dist_eq]
+    intro K; exists 0; norm_num
     by_cases hK : K = 0
     · exists 1; subst K; simp
     · exists 1 / (2 * K) ^ 2; simp; field_simp; simp
