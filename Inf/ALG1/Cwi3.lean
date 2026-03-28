@@ -1,4 +1,5 @@
-import Mathlib.Tactic
+import Mathlib.Data.Rat.Init
+import Mathlib.Data.ZMod.Basic
 
 namespace ALG1
 

@@ -85,7 +85,7 @@ theorem Zad6a : HasLimAt (fun x => (arcsin (3 * x) - 3 * arcsin x) / x ^ 3) Set.
     simpa; all_goals simp [sub_eq_zero]; apply Ne.symm; simp; grind
   ⟩; norm_num
   convert continuousAt_iff_hasLimAt.mp ?_
-  · set_option backward.isDefEq.respectTransparency false in simp; norm_num; rfl
+  · simp; norm_num; rfl
   refine ((ContinuousAt.mul ?h9 ?h1).mul (((?h9).sqrt.inv₀ ?_).add ((?h1).sqrt.inv₀ ?_))).const_div 8 ?_
     <;> try simp
   all_goals apply ContinuousAt.const_sub; (try apply ContinuousAt.const_mul); apply continuousAt_pow

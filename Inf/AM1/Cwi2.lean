@@ -1,7 +1,9 @@
-import Mathlib.Tactic
-import Mathlib.Algebra.Order.Group.Unbundled.Abs
-import Mathlib.Algebra.Order.Group.Pointwise.CompleteLattice
-import Mathlib.Order.CompleteLattice.Group
+--import Mathlib.Tactic
+import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
+import Mathlib.Data.Nat.Choose.Sum
+import Mathlib.Data.Real.Archimedean
+import Mathlib.Data.Nat.Cast.Order.Field
+import Mathlib.Order.ConditionallyCompleteLattice.Group
 
 namespace AM1.Cwi2
 
@@ -17,7 +19,7 @@ theorem Zad2a : ∀ n ≥ 3, 2 * n + 1 ≤ 2 ^ n := by
   case refl => norm_num
   case step n hn ih => grind
 
-theorem Zad2b : ∀ n : ℕ, 7 ∣ (10^(3 * n + 1) - 3 * (-1) ^ n) := by
+theorem Zad2b : ∀ n : ℕ, 7 ∣ (10 ^ (3 * n + 1) - 3 * (-1) ^ n) := by
   intro n
   induction n
   case zero => norm_num

@@ -1,5 +1,7 @@
-import Mathlib.Tactic
+import Mathlib.Analysis.Complex.Trigonometric
+import Mathlib.Data.Nat.Fib.Basic
 import Mathlib.Data.Nat.EvenOddRec
+import Mathlib.LinearAlgebra.Matrix.Block
 
 namespace ALG1
 
@@ -18,14 +20,16 @@ open Real in
 theorem Zad4_1f (α β : ℝ) : !![cos α, -sin α; sin α, cos α] * !![cos β, -sin β; sin β, cos β] =
     !![cos (α + β), -sin (α + β); sin (α + β), cos (α + β)] := by simp [sin_add, cos_add]; grind
 
-theorem Zad4_2a (n : ℕ) : !![0, 1; 1, 1] ^ (n + 1) = !![Nat.fib n, Nat.fib (n + 1); Nat.fib (n + 1), Nat.fib (n + 2)] := by
+theorem Zad4_2a (n : ℕ) : !![0, 1; 1, 1] ^ (n + 1) =
+    !![Nat.fib n, Nat.fib (n + 1); Nat.fib (n + 1), Nat.fib (n + 2)] := by
   induction n
   case zero => simp
   case succ n ih =>
     rw [pow_succ, ih]
     simp [Nat.fib_add_two]
 
-theorem Zad4_2b (L n : ℕ) : !![1, L, 0; 0, 1, L; 0, 0, 1] ^ n = !![1, n * L, (n.choose 2) * L ^ 2; 0, 1, n * L; 0, 0, 1] := by
+theorem Zad4_2b (L n : ℕ) : !![1, L, 0; 0, 1, L; 0, 0, 1] ^ n =
+    !![1, n * L, (n.choose 2) * L ^ 2; 0, 1, n * L; 0, 0, 1] := by
   induction n
   case zero => simp; exact Matrix.one_fin_three
   case succ n ih =>
@@ -69,7 +73,8 @@ theorem Zad4_4c : !![1, 0, 0, 0; 0, 1, 0, 3; 0, 0, 1, 0; 0, 0, 0, 1] *
                   !![1, 0,-1, 2; 2, 0, 0, 2; 1,-1, 3, 0; 0, 1, 1, 0] =
                   !![1, 0,-1, 2; 2, 3, 3, 2; 1,-1, 3, 0; 0, 1, 1, 0] := by simp
 
-theorem Zad4_5a : (!![2, -2, 1; 2, 1, -2; 1, 2, 2]⁻¹ : Matrix _ _ ℚ) = !![2/9, 2/9, 1/9; -2/9, 1/9, 2/9; 1/9, -2/9, 2/9] := by
+theorem Zad4_5a : (!![2, -2, 1; 2, 1, -2; 1, 2, 2]⁻¹ : Matrix _ _ ℚ) =
+    !![2/9, 2/9, 1/9; -2/9, 1/9, 2/9; 1/9, -2/9, 2/9] := by
   apply Matrix.inv_eq_right_inv; norm_num; exact Matrix.one_fin_three.symm
 
 theorem Zad4_5b : (!![1, 1, 1, 1; 1, 1, -1, -1; 1, -1, 1, -1; 1, -1, -1, 1]⁻¹ : Matrix _ _ ℚ) =

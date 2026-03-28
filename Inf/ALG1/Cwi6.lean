@@ -1,5 +1,8 @@
-import Mathlib.Tactic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.RingTheory.Polynomial.Basic
 import Mathlib.RingTheory.Polynomial.SmallDegreeVieta
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 
 namespace ALG1
 
@@ -36,7 +39,6 @@ theorem Zad6_3a : LinearIndependent ℝ ![id, Real.sin, Real.cos] := by
     · subst_vars; exists Real.pi; simp; exact Real.pi_ne_zero.symm
     · exists 0; simpa
 
-set_option backward.isDefEq.respectTransparency false in
 theorem Zad6_3b : LinearIndependent ℝ ![Real.sin, Real.cos, fun r => Real.sin (2 * r), fun r => Real.cos (2 * r)] := by
   simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair,
         Submodule.mem_span_triple, funext_iff, Real.sin_two_mul, Real.cos_two_mul]; and_intros

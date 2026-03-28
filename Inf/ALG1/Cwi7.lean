@@ -1,13 +1,18 @@
-import Mathlib.Tactic
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.NumberTheory.Real.Irrational
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.NumberTheory.PrimeCounting
 import Mathlib.LinearAlgebra.Matrix.Symmetric
-import Mathlib.LinearAlgebra.Dimension.Basic
+import Mathlib.Algebra.DirectSum.Decomposition
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.Data.Matrix.Reflection
+import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
 namespace ALG1
 
 theorem Zad7_1a : Module.finrank ℂ (ℂ × ℂ) = 2 := by simp
 
-set_option backward.isDefEq.respectTransparency false in
 theorem Zad7_1b : Module.finrank ℝ (ℂ × ℂ) = 4 := by simp
 
 theorem Zad7_2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
@@ -23,7 +28,7 @@ theorem Zad7_2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
   rw [← sub_eq_iff_eq_add]; ac_nf; simp [← mul_assoc]
   rw [← Real.sqrt_mul] <;> norm_num
   norm_cast; refine (Irrational.ne_rat ?_ _).symm
-  have h : Irrational √6 := by native_decide
+  have h : Irrational √6 := by rw [irrational_sqrt_ofNat_iff]; norm_num
   exact ((h.mul_natCast two_ne_zero).mul_ratCast hb).natCast_sub 3
 
 theorem Zad7_2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (Nat.nth Nat.Prime i) := by
@@ -249,7 +254,6 @@ abbrev Zad7_5b.V1 := Submodule.span ℚ {!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3
 
 abbrev Zad7_5b.V2 := Submodule.span ℚ {!![(0 : ℚ), 1; 1, 1], !![-1, 2; 2, 1], !![2, 1; 1, 3]}
 
-set_option backward.isDefEq.respectTransparency false in
 noncomputable def Zad7_5b.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
   let v := ![!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]]
   convert Module.Basis.span (v := v) ?_ <;> simp [v, Set.pair_comm]
@@ -268,7 +272,6 @@ noncomputable def Zad7_5b.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
   · simp [Submodule.eq_top_iff', Submodule.mem_span_pair, V2, Submodule.mem_span_triple]
     intro m x y z h; exists m 0 0, m 0 1; subst h; simp; ring
 
-set_option backward.isDefEq.respectTransparency false in
 noncomputable def Zad7_5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
   let v : Fin 3 → Matrix _ _ ℚ := ![!![1, 1; 0, 1], !![0, 1; 1, 1], !![1, 0; 0, 1]]
   have : V1 + V2 = Submodule.span ℚ (Set.range v) := by
@@ -289,7 +292,7 @@ noncomputable def Zad7_5b.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) :=
     and_intros
     · exists 4 / 11, -1 / 11; norm_num
     · exists 2, -1, 0; norm_num
-  · set_option backward.isDefEq.respectTransparency false in simp [Matrix.eta_fin_two 0]
+  · simp [Matrix.eta_fin_two 0]
   · simp [Submodule.eq_top_iff', Submodule.mem_span_singleton,
       V1, V2, Submodule.mem_span_pair, Submodule.mem_span_triple]
     intro m a b h1 c d e h2; exists m 0 0

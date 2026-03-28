@@ -1,7 +1,5 @@
-import Mathlib.Tactic
-import Mathlib.Order.Monotone.Defs
-import Mathlib.Data.Int.Order.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Arctan
+import Mathlib.Tactic.NormNum.RealSqrt
 
 namespace AM1.Cwi1
 

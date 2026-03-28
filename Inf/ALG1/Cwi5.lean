@@ -1,6 +1,6 @@
-import Inf.AM1.Limit
 import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Analysis.Calculus.FDeriv.Mul
+import Mathlib.Data.ZMod.Basic
 
 /-! # Some notes from `Mathlib/Algebra/Module/Defs.lean`:
 
@@ -80,18 +80,21 @@ theorem Zad5_D2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧
     · exact ⟨BddAbove.smul_of_nonneg ha ‹_›, BddBelow.smul_of_nonneg hb ‹_›⟩
     · exact ⟨BddBelow.smul_of_nonpos ‹_› hb, BddAbove.smul_of_nonpos ‹_› ha⟩
 
-theorem Zad5_D2b : IsSubmodule ℝ {f : ℕ → ℝ | ∃ g, HasLim f g} where
-  zero_mem := ⟨0, HasLim.const 0⟩
-  add_mem := by simp; intro a b ga ha gb hb; exact ⟨ga + gb, HasLim.add ha hb⟩
-  smul_mem := by simp [Pi.smul_def]; intro c a g h; exact ⟨c * g, HasLim.const_mul c h⟩
+open Topology Filter in
+theorem Zad5_D2b : IsSubmodule ℝ {f : ℕ → ℝ | ∃ g, Tendsto f atTop (𝓝 g)} where
+  zero_mem := ⟨0, tendsto_const_nhds⟩
+  add_mem := fun ⟨ga, ha⟩ ⟨gb, hb⟩ => ⟨ga + gb, ha.add hb⟩
+  smul_mem := fun c _ ⟨g, h⟩ => ⟨c * g, h.const_mul c⟩
 
-theorem Zad5_D2c : IsSubmodule ℝ {f : ℕ → ℝ | HasLim f 0} where
-  zero_mem := HasLim.const 0
-  add_mem := fun ha hb => by simpa using HasLim.add ha hb
-  smul_mem := fun c a h => by simpa using HasLim.const_mul c h
+open Topology Filter in
+theorem Zad5_D2c : IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 0)} where
+  zero_mem := tendsto_const_nhds
+  add_mem := fun ha hb => by simpa using Tendsto.add ha hb
+  smul_mem := fun c a h => by simpa using Tendsto.const_mul c h
 
-theorem Zad5_D2d : ¬IsSubmodule ℝ {f : ℕ → ℝ | HasLim f 1} :=
-  fun this => by simpa using HasLim.eq this.zero_mem (HasLim.const (0 : ℝ))
+open Topology Filter in
+theorem Zad5_D2d : ¬IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 1)} :=
+  fun this => one_ne_zero (tendsto_nhds_unique this.zero_mem tendsto_const_nhds)
 
 theorem Zad5_D2e : IsSubmodule ℝ (Set.range Finsupp.toFun : Set (ℕ → ℝ)) where
   zero_mem := ⟨0, rfl⟩
