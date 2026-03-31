@@ -1,4 +1,3 @@
---import Mathlib.Tactic
 import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
 import Mathlib.Data.Nat.Choose.Sum
 import Mathlib.Data.Real.Archimedean
