@@ -1,8 +1,7 @@
-import Inf.AM1.Deriv
-import Inf.AM1.Continuous
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.InverseDeriv
+import Mathlib.Analysis.Calculus.LHopital
 
 namespace AM1.Cwi6
 
@@ -56,56 +55,35 @@ theorem Zad2 : UniformContinuous arctan := by
 theorem Zad4 {a b : ℝ} {f : ℝ → ℝ} (hab : a < b) (hd : DifferentiableOn ℝ f (Set.Ioo a b))
     (hb : ∃ c, ∀ x ∈ Set.Ioo a b, |deriv f x| ≤ c) : UniformContinuousOn f (Set.Ioo a b) := by
   obtain ⟨c, hb⟩ := hb
-  have hc : 0 ≤ c :=
-    (abs_nonneg _).trans (hb ((a + b) / 2) ⟨left_lt_add_div_two.mpr hab, add_div_two_lt_right.mpr hab⟩)
+  have hc : 0 ≤ c := (abs_nonneg _).trans (hb ((a + b) / 2) (by grind))
   apply LipschitzOnWith.uniformContinuousOn (K := ⟨c, hc⟩)
   apply Convex.lipschitzOnWith_of_nnnorm_deriv_le
   · intro x hx; exact hd.differentiableAt (Ioo_mem_nhds hx.1 hx.2)
   · exact hb
   · exact convex_Ioo a b
 
-theorem Zad6a : HasLimAt (fun x => (arcsin (3 * x) - 3 * arcsin x) / x ^ 3) Set.univ 0 4 := by
-  apply deriv.lhopital_zero_hasLimAt
-  · exists (1 / 3), (by simp); simp [abs_lt]; intro x hn hl hu
-    exact ((differentiableAt_arcsin.mpr (by grind)).fun_comp' x (differentiableAt_fun_id.const_mul 3)).fun_sub
-     ((differentiableAt_arcsin.mpr (by grind)).const_mul 3)
-  · exists 1, zero_lt_one; simp; tauto
-  · convert Continuous.hasLimAt ?_ 0; simp
-    exact (continuous_const_mul 3).arcsin.sub (continuous_arcsin.const_mul 3)
-  · convert Continuous.hasLimAt (continuous_pow 3) 0; simp
-  apply HasLimAt.of_eventually_eq (a := 0) ⟨(1 / 3), by simp, by
-    simp; intro x hx hb
-    have := (differentiableAt_arcsin.mpr (by grind)).fun_comp' x (differentiableAt_fun_id.const_mul 3)
-    have := (differentiableAt_arcsin.mpr (by grind)).const_mul (x := x) 3
-    simp [*, deriv_comp_mul_left, ← mul_sub, mul_div_mul_left]
-    rewrite [← mul_div_mul_left (c := (√(1 - (3 * x) ^ 2))⁻¹ + (√(1 - x ^ 2))⁻¹), ← sq_sub_sq,
-      inv_pow, inv_pow, sq_sqrt (by simp; linarith), sq_sqrt (by simp; linarith)]; swap
-    · apply ne_of_gt; apply add_pos_of_pos_of_nonneg <;> simp; linarith
-    rw [inv_sub_inv, sub_sub_sub_cancel_left, mul_pow, ← sub_one_mul, div_div, ← mul_assoc, mul_div_mul_right]
-    simpa; all_goals simp [sub_eq_zero]; apply Ne.symm; simp; grind
-  ⟩; norm_num
-  convert continuousAt_iff_hasLimAt.mp ?_
-  · simp; norm_num; rfl
-  refine ((ContinuousAt.mul ?h9 ?h1).mul (((?h9).sqrt.inv₀ ?_).add ((?h1).sqrt.inv₀ ?_))).const_div 8 ?_
-    <;> try simp
-  all_goals apply ContinuousAt.const_sub; (try apply ContinuousAt.const_mul); apply continuousAt_pow
+open Topology Filter
 
-/- TODO: de l'H for inf/inf
-theorem Zad6b : HasRightLim (fun x => x ^ (1 / log (exp x - 1))) Set.univ 0 (exp 1) := by
-  apply HasLimAt.of_eventually_eq (a := 0) ⟨1, zero_lt_one, by
-    simp; intro x hp hx hb; rw [rpow_def_of_pos hp, ← div_eq_mul_inv]⟩
-  apply HasLimAt.comp_continuous continuous_exp
-  apply deriv.lhopital_zero_hasRightLim
-  · exact ⟨1, zero_lt_one, fun x hp hx hb => differentiableAt_log hx⟩
-  · exists 1, zero_lt_one; intro x hp hx hb; rw [deriv.log] <;> simp [sub_eq_zero, *]
-  · sorry
-  · sorry
-  apply HasLimAt.of_eq (by
-    simp; intro x hp hx; rewrite [deriv.log, inv_div_comm] <;> simp [sub_eq_zero, *, div_div]; rfl)
-  apply deriv.lhopital_zero_hasRightLim (eventually_true _)
-    <;> try simp [← mul_add_one, div_mul_cancel_left₀]
-  · exists 1; grind
-  · convert ((continuous_exp.sub_const 1).hasLimAt 0).subset (Set.subset_univ _); simp
-  · convert ((continuous_exp.mul continuous_id').hasLimAt 0).subset (Set.subset_univ _) using 1; simp
-  · convert continuousWithinAt_iff_hasLimAt.mp ((continuousWithinAt_id.add_const 1).inv₀ _) <;> simp
--/
+theorem Zad6a : Tendsto (fun x => (arcsin (3 * x) - 3 * arcsin x) / x ^ 3) (𝓝[≠] 0) (𝓝 4) := by
+  have h : ∀ᶠ x in 𝓝[≠] 0, (DifferentiableAt ℝ (fun x => arcsin (3 * x)) x ∧
+      DifferentiableAt ℝ (fun x => 3 * arcsin x) x) := by
+    apply eventually_nhdsWithin_of_eventually_nhds; simp_rw [Metric.eventually_nhds_iff, dist_eq]
+    exists 1 / 3, (by simp); intro x hx; and_intros
+    · exact (differentiableAt_arcsin.mpr (by grind)).fun_comp' x (by fun_prop)
+    · exact (differentiableAt_arcsin.mpr (by grind)).const_mul 3
+  apply deriv.lhopital_zero_nhdsNE
+  · apply h.mono; simp +contextual
+  · simpa using eventually_mem_nhdsWithin
+  · exact tendsto_nhdsWithin_of_tendsto_nhds (Continuous.tendsto' (by fun_prop) _ _ (by simp))
+  · exact tendsto_nhdsWithin_of_tendsto_nhds (Continuous.tendsto' (by fun_prop) _ _ (by simp))
+  · apply Tendsto.congr' (f₁ := fun x => 8 / ((1 - 9 * x ^ 2) * (1 - x ^ 2) * (√(1 - 9 * x ^ 2)⁻¹ + √(1 - x ^ 2)⁻¹)))
+    · apply h.mp; simp_rw [eventually_nhdsWithin_iff, Set.mem_compl_singleton_iff,
+        Metric.eventually_nhds_iff, dist_eq, sub_zero]; simp +contextual [deriv_comp_mul_left]
+      exists 1 / 3, (by simp); intro x hb hx _ _
+      have : 0 < 1 - x ^ 2 := by simp; linarith
+      have : 0 < 1 - (3 * x) ^ 2 := by simp; linarith
+      ring_nf at this; field_simp; ring_nf; field_simp
+      rw [sq_sqrt, sq_sqrt] <;> bound
+    convert tendsto_nhdsWithin_of_tendsto_nhds (ContinuousAt.tendsto ?_)
+    · norm_num
+    · fun_prop (disch := positivity)
