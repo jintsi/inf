@@ -1,3 +1,5 @@
+import Mathlib.Data.PNat.Order
+import Mathlib.Data.PNat.Interval
 import Mathlib.Topology.Algebra.Order.Floor
 import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 
@@ -7,16 +9,11 @@ namespace AM1.Cwi3
 
 /-- Here, it's significant that we're working with `PNat` and not `ℕ` -/
 theorem Zad1a : Antitone fun (n : ℕ+) => (4 ^ n.val : ℚ) / (n.val + 2).factorial := by
-  suffices Antitone fun n => (4 ^ (n + 1) : ℚ) / (n + 1 + 2).factorial by
-    simp [Antitone] at *
-    intro a b hab; specialize @this a.natPred b.natPred; simp at this; exact this hab
-  apply antitone_nat_of_succ_le; intro n
-  rw [div_le_div_iff₀, mul_comm (4 ^ (n + 1)), ←div_le_div_iff₀, Nat.factorial] <;> try positivity
-  simp [Rat.pow_succ, mul_div_assoc]; rw [div_self] <;> try positivity
-  linarith
+  apply antitone_of_succ_le; rw [Equiv.pnatEquivNat.forall_congr_left]; dsimp
+  intro n _; rw [Nat.factorial]; field_simp; norm_cast; ring_nf; grind
 
 theorem Zad1b_below : BddBelow (Set.range fun (n : ℕ) => 1 + (n : ℝ) ^ (3⁻¹ : ℝ)) := by
-  simp [bddBelow_def]; exists 1; intro n; simp; positivity
+  exists 1; simpa [lowerBounds] using fun n => by positivity
 
 theorem Zad1b_above : ¬BddAbove (Set.range fun (n : ℕ) => 1 + (n : ℝ) ^ (3⁻¹ : ℝ)) := by
   simp [bddAbove_def]; intro x; exists ⌈x⌉₊ ^ 3; simp
@@ -50,10 +47,8 @@ theorem _root_.Filter.Tendsto.sqrt_atTop (h : Tendsto f l atTop) : Tendsto (fun 
   Real.tendsto_sqrt_atTop.comp h
 
 theorem Zad5a : Tendsto (fun n : ℕ => n ^ 2 / (√(n + 1) - √(n + 4))) atTop atBot := by
-  apply Tendsto.congr (fun n => by
-    rewrite [← mul_div_mul_left, ← sq_sub_sq, Real.sq_sqrt, Real.sq_sqrt]; norm_num; rfl
-    all_goals positivity
-  )
+  apply Tendsto.congr (f₁ := fun n : ℕ => (√(n + 1) + √(n + 4)) * n ^ 2 / -3)
+  · intro n; grind
   have h1 := (tendsto_atTop_add_const_right _ 1 tendsto_id).sqrt_atTop
   have h2 := (tendsto_atTop_add_const_right _ 4 tendsto_id).sqrt_atTop
   exact (h1.atTop_add_atTop h2).atTop_mul_atTop₀ (tendsto_pow_atTop two_ne_zero)
@@ -83,7 +78,7 @@ theorem Zad5c : Tendsto (fun n : ℕ => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) atTo
     ((tendsto_rpow_div_mul_add 2 1 (-1) zero_ne_one).comp
       (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop))
   · simp; use 0; intro n hn; apply Real.rpow_le_rpow <;> try positivity
-    norm_cast; zify; grw [← Int.le_self_sq n]; simp
+    norm_cast; grw [sq, ← n.le_mul_self]; simp
   · simp [div_eq_mul_inv]; use 2; intro n hn
     rw [Real.rpow_mul (by positivity)]; gcongr; norm_cast; linarith
 
@@ -137,6 +132,22 @@ theorem Zad7_inf {a : ℕ → ℝ} (h : Tendsto a atTop (𝓝 0))
     (hp : ∀ n, 0 < a n) : iInf a ∉ Set.range a := by
   suffices iInf a = 0 by simpa [this] using fun n => ne_of_gt (hp n)
   exact IsGLB.ciInf_eq (IsGLB.range_of_tendsto (fun n => (hp n).le) h)
+
+theorem Zad10 {a : ℕ → ℝ} (h : Tendsto a atTop atBot) :
+    Tendsto (fun n => (1 + 1 / a n) ^ a n) atTop (𝓝 (exp 1)) := by
+  replace h := tendsto_neg_atTop_iff.mpr h
+  have := by simpa [exp_neg] using
+    ((tendsto_one_add_div_rpow_exp (-1)).comp h).inv₀ (by simp)
+  apply this.congr'
+  suffices ∀ᶠ n in atTop, 0 ≤ 1 - (-a n)⁻¹ from this.mono fun x hx => by simp_all [rpow_neg]
+  apply h.eventually (p := fun n => 0 ≤ 1 - _); simp; exists 1; field_simp; tauto
+
+theorem Zad11a : Tendsto (fun n => ((2 * n + 3) / (2 * n + 5)) ^ (1 + n) : ℕ → ℝ) atTop (𝓝 (exp (-1))) := by
+  suffices Tendsto (fun n => (1 - 2 / (2 * n + 3)) ^ n : ℕ → ℝ) atTop (𝓝 (exp (-1))) by
+    convert this.comp (tendsto_id.atTop_add_nonneg fun _ => zero_le_one) using 2; simp; field_simp; ring
+  simp_rw [sub_eq_add_neg]; apply tendsto_one_add_pow_exp_of_tendsto
+  field_simp
+  convert tendsto_add_mul_div_add_mul_atTop_nhds 0 3 (-2 : ℝ) two_ne_zero using 2 <;> grind
 
 theorem Zad13 : Antitone fun (n : ℕ+) => (1 + 1 / n : ℚ) ^ (n + 1 : ℕ) := by
   suffices Antitone fun n => (1 + 1 / (n + 1 : ℕ) : ℚ) ^ (n + 1 + 1) by
