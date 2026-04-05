@@ -35,7 +35,13 @@ theorem Zad1 : ¬∃ g, Tendsto (fun x => sin (x ^ 3)⁻¹) (𝓝[>] 0) (𝓝 g)
 theorem Zad2a : Tendsto (fun x => (√(5 - 2 * x) - √(3 - x)) / (x ^ 3 - 8)) (𝓝[≠] 2) (𝓝 (-24⁻¹)) := by
   apply Tendsto.congr' (f₁ := fun x => (-(x ^ 2 + 2 * x + 4) * (√(5 - 2 * x) + √(3 - x)))⁻¹)
   · rw [eventuallyEq_nhdsWithin_iff, Metric.eventually_nhds_iff]
-    use 1 / 2; simp only [dist_eq, mul_inv]; grind
+    use 1 / 2; simp only [dist_eq, mul_inv]; simp; intro x hx hne; field_simp; rw [div_eq_div_iff]
+    · grind
+    · rw [mul_ne_zero_iff]; and_intros
+      · convert_to -(3 + (x + 1) ^ 2) ≠ 0; · ring
+        rw [neg_ne_zero]; positivity
+      · grind
+    · rwa [sub_ne_zero, show (8 : ℝ) = 2 ^ 3 by norm_num, ne_eq, Odd.pow_inj (by decide)]
   have hx : Tendsto (fun x : ℝ => x) (𝓝[≠] 2) (𝓝 2) := tendsto_nhds_of_tendsto_nhdsWithin tendsto_id
   convert ((((hx.pow 2).add (hx.const_mul 2)).add_const 4).neg.mul
     (((hx.const_mul 2).const_sub 5).sqrt.add (hx.const_sub 3).sqrt)).inv₀ (by norm_num) using 2
@@ -104,7 +110,7 @@ theorem Zad11 : UniformContinuous NNReal.sqrt ∧ ¬∃ K, LipschitzWith K NNRea
   and_intros
   · simp [Metric.uniformContinuous_iff, NNReal.dist_eq]
     intro e he; exists e ^ 2, sq_pos_of_pos he
-    intro ⟨a, ha⟩ ⟨b, hb⟩ h; simp_rw [NNReal.coe_mk] at *
+    intro (.mk a ha) (.mk b hb) h; simp_rw [NNReal.coe_mk] at *
     wlog hab : b ≤ a generalizing a b
     · rw [abs_sub_comm]; rw [abs_sub_comm] at h; exact this b hb a ha h (le_of_not_ge hab)
     rw [← abs_of_pos he, ← sq_lt_sq]; apply h.trans_le'

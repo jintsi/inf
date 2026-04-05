@@ -164,7 +164,7 @@ theorem ContinuousOn.tendsto_integralSum_intervalIntegral {f : ℝ → E}
 
 open Classical in
 include hab in
-theorem ContinuousOn.tendsto_sum_atTop_intervalIntegral {f : ℝ → E}
+theorem tendsto_sum_intervalIntegral {f : ℝ → E}
     (hc : ContinuousOn f (Set.Icc a b)) {t : ℕ → ℕ → ℝ}
     (ht : ∀ n : ℕ, n ≠ 0 → ∀ i : ℕ, t n i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
     Tendsto (fun n : ℕ => ((b - a) / n) • ∑ i ∈ Finset.range n, f (t n i)) atTop (𝓝 (∫ x in a..b, f x)) := by
@@ -184,20 +184,37 @@ theorem ContinuousOn.tendsto_sum_atTop_intervalIntegral {f : ℝ → E}
     rw [index_intervalBox, index_intervalBox] at h; exact h
 
 include hab in
-theorem ContinuousOn.tendsto_sum_left_atTop_intervalIntegral {f : ℝ → E}
+theorem tendsto_sum_left_intervalIntegral {f : ℝ → E}
     (hc : ContinuousOn f (Set.Icc a b)) : Tendsto (fun n : ℕ => ((b - a) / n) •
     ∑ i ∈ Finset.range n, f (a + (b - a) * i / n)) atTop (𝓝 (∫ x in a..b, f x)) :=
-  hc.tendsto_sum_atTop_intervalIntegral hab fun n hn i =>
+  tendsto_sum_intervalIntegral hab hc fun n hn i =>
     Set.left_mem_Icc.mpr (by field_simp; grind)
 
 include hab in
-theorem ContinuousOn.tendsto_sum_right_atTop_intervalIntegral {f : ℝ → E}
+theorem tendsto_sum_right_intervalIntegral {f : ℝ → E}
     (hc : ContinuousOn f (Set.Icc a b)) : Tendsto (fun n : ℕ => ((b - a) / n) •
     ∑ i ∈ Finset.range n, f (a + (b - a) * (i + 1) / n)) atTop (𝓝 (∫ x in a..b, f x)) :=
-  hc.tendsto_sum_atTop_intervalIntegral hab fun n hn i =>
+  tendsto_sum_intervalIntegral hab hc fun n hn i =>
     Set.right_mem_Icc.mpr (by field_simp; grind)
 
-theorem ContinuousOn.tendsto_sum_right_atTop_intervalIntegral_zero {a : ℝ} (ha : 0 < a)
+include hab in
+theorem tendsto_sum_midpoint_intervalIntegral {f : ℝ → E}
+    (hc : ContinuousOn f (Set.Icc a b)) : Tendsto (fun n : ℕ => ((b - a) / n) •
+    ∑ i ∈ Finset.range n, f (a + (b - a) * (i + 2⁻¹) / n)) atTop (𝓝 (∫ x in a..b, f x)) :=
+  tendsto_sum_intervalIntegral hab hc fun n hn i =>
+    Set.mem_Icc.mpr (by field_simp; grind)
+
+theorem tendsto_sum_left_intervalIntegral_zero {a : ℝ} (ha : 0 < a)
+    {f : ℝ → E} (hc : ContinuousOn f (Set.Icc 0 a)) : Tendsto (fun n : ℕ => (a / n) •
+    ∑ i ∈ Finset.range n, f (a * i / n)) atTop (𝓝 (∫ x in 0..a, f x)) := by
+  convert tendsto_sum_left_intervalIntegral ha hc using 5 <;> simp
+
+theorem tendsto_sum_right_intervalIntegral_zero {a : ℝ} (ha : 0 < a)
     {f : ℝ → E} (hc : ContinuousOn f (Set.Icc 0 a)) : Tendsto (fun n : ℕ => (a / n) •
     ∑ i ∈ Finset.range n, f (a * (i + 1) / n)) atTop (𝓝 (∫ x in 0..a, f x)) := by
-  convert hc.tendsto_sum_right_atTop_intervalIntegral ha using 5 <;> simp
+  convert tendsto_sum_right_intervalIntegral ha hc using 5 <;> simp
+
+theorem tendsto_sum_right_intervalIntegral_zero_one {f : ℝ → E}
+    (hc : ContinuousOn f (Set.Icc 0 1)) :
+    Tendsto (fun n : ℕ => (n : ℝ)⁻¹ • ∑ i ∈ Finset.range n, f ((i + 1) / n)) atTop (𝓝 (∫ x in 0..1, f x)) := by
+  convert tendsto_sum_right_intervalIntegral zero_lt_one hc using 3 <;> simp

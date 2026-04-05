@@ -337,5 +337,4 @@ theorem Zad7_8.directSum : DirectSum.IsInternal ![A, B] := by
 theorem Zad7_D1 {K : Type u} {V : Type v} [DivisionRing K] [AddCommGroup V] [Module K V]
     (s t : Submodule K V) [FiniteDimensional K s] [FiniteDimensional K t] :
     Module.finrank K (s + t) = Module.finrank K s + Module.finrank K t - Module.finrank K ↥(s ⊓ t) := by
-  have := Submodule.finrank_sup_add_finrank_inf_eq s t
-  grind
+  rw [← Submodule.finrank_sup_add_finrank_inf_eq s t, add_tsub_cancel_right, Submodule.add_eq_sup]
