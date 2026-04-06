@@ -10,6 +10,9 @@ import Inf.ALG1.Cwi4
 import Inf.ALG1.Cwi5
 import Inf.ALG1.Cwi6
 import Inf.ALG1.Cwi7
+import Inf.ALG1.Cwi8
+import Inf.ALG1.Cwi10
+import Inf.ALG1.Cwi11
 
 import Inf.MD1.Cwi1
 import Inf.MD1.Cwi2

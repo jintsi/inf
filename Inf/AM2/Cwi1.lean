@@ -4,7 +4,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.InverseDeriv
 import Mathlib.Data.Nat.Factorial.DoubleFactorial
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.MeanValue
 
-lemma Finset.sum_range_natCast [DivisionRing R] [CharZero R] (n : ℕ) :
+lemma Finset.sum_range_natCast [DivisionRing R] [NeZero (2 : R)] (n : ℕ) :
     ∑ i ∈ range n, (i : R) = n * (n - 1) / 2 := by
   rw [← Nat.cast_sum, eq_div_iff two_ne_zero, ← Nat.cast_ofNat, ← Nat.cast_mul, sum_range_id_mul_two]
   cases n <;> simp
