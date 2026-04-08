@@ -13,12 +13,13 @@ theorem Zad4_1d (a b c : ℕ) : !![a, b, c; c, b, a; 1, 1, 1] * !![1, a, c; 1, b
     !![a + b + c, a ^ 2 + b ^ 2 + c ^ 2, a * c + b ^ 2 + c * a;
        a + b + c, a * c + b ^ 2 + c * a, a ^ 2 + b ^ 2 + c ^ 2;
        3,         a + b + c,             a + b + c] := by
-  simp; grind
+  simp [add_assoc, sq, mul_comm, add_comm]; ring
 theorem Zad4_1e : !![2, 1; 1, 3] ^ 3 = !![15, 20; 20, 35] := by simp [pow_succ]
 
 open Real in
 theorem Zad4_1f (α β : ℝ) : !![cos α, -sin α; sin α, cos α] * !![cos β, -sin β; sin β, cos β] =
-    !![cos (α + β), -sin (α + β); sin (α + β), cos (α + β)] := by simp [sin_add, cos_add]; grind
+    !![cos (α + β), -sin (α + β); sin (α + β), cos (α + β)] := by
+  simp [sin_add, cos_add, sub_eq_add_neg, add_comm]
 
 theorem Zad4_2a (n : ℕ) : !![0, 1; 1, 1] ^ (n + 1) =
     !![Nat.fib n, Nat.fib (n + 1); Nat.fib (n + 1), Nat.fib (n + 2)] := by
@@ -31,7 +32,7 @@ theorem Zad4_2a (n : ℕ) : !![0, 1; 1, 1] ^ (n + 1) =
 theorem Zad4_2b (L n : ℕ) : !![1, L, 0; 0, 1, L; 0, 0, 1] ^ n =
     !![1, n * L, (n.choose 2) * L ^ 2; 0, 1, n * L; 0, 0, 1] := by
   induction n
-  case zero => simp; exact Matrix.one_fin_three
+  case zero => simpa using Matrix.one_fin_three
   case succ n ih =>
     simp [pow_succ, ih]; and_intros
     · exact (succ_nsmul' L n).symm
@@ -42,8 +43,8 @@ open Real in
 theorem Zad4_2c (α : Real) (n : Nat) : !![cos α, -sin α; sin α, cos α] ^ n =
     !![cos (n * α), -sin (n * α); sin (n * α), cos (n * α)] := by
   induction n
-  case zero => simp; exact Matrix.one_fin_two
-  case succ n ih => rw [pow_succ, ih, Zad4_1f]; grind
+  case zero => simpa using Matrix.one_fin_two
+  case succ n ih => rw [pow_succ, ih, Zad4_1f, Nat.cast_add_one, add_one_mul]
 
 theorem Zad4_3 : !![1, 0, 0, 0, 0, 0, 0, 1;
                     0, 1, 0, 0, 0, 0, 1, 0;
@@ -115,14 +116,9 @@ theorem Zad4_D3b (n : ℕ) : !![2, 1, 0; 0, 2, 0; 0, 0, -3] ^ n =
     rw [pow_succ, ih]; simp; and_intros <;> ring_nf
     simp; cases n <;> simp [pow_succ, mul_assoc]
 
-theorem Zad4_D4a [Field α] (d₁ d₂ : Fin n → α) :
-    Matrix.diagonal d₁ * Matrix.diagonal d₂ = Matrix.diagonal (d₁ * d₂) := Matrix.diagonal_mul_diagonal d₁ d₂
+alias Zad4_D4a := Matrix.diagonal_mul_diagonal
 
-/-- Predicate `Matrix.BlockTriangular M id` is the way of stating that M is upper triangular. -/
-theorem Zad4_D4b [Field α] {M N : Matrix (Fin n) (Fin n) α} (hM : M.BlockTriangular id) (hN : N.BlockTriangular id) :
-    (M * N).BlockTriangular id := Matrix.BlockTriangular.mul hM hN
+/-! `M.BlockTriangular id` is the way of stating that `M` is upper triangular,
+`M.BlockTriangular OrderDual.toDual` means lower triangular -/
 
-/-- Predicate `Matrix.BlockTriangular M Neg.neg`, or more generally `Matrix.BlockTriangular M OrderDual.toDual`
-(`Neg.neg` only works here because `Fin` has it defined as negation modulo `n`) is the way of stating that M is lower triangular. -/
-theorem Zad4_D4c [Field α] {M N : Matrix (Fin n) (Fin n) α} (hM : M.BlockTriangular Neg.neg) (hN : N.BlockTriangular Neg.neg) :
-    (M * N).BlockTriangular Neg.neg := Matrix.BlockTriangular.mul hM hN
+alias Zad4_D4bc := Matrix.BlockTriangular.mul

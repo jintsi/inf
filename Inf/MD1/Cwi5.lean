@@ -40,5 +40,4 @@ theorem Zad2 [DecidableEq β] [Fintype β] :
     simp_rw [Finset.card_univ, Int.nsmul_eq_mul, ← mul_assoc, mul_comm (Nat.cast _)]
     congr! with j hj; simp_all
 
-theorem Zad4 : numDerangements (n + 2) = (n + 1) * (numDerangements n + numDerangements (n + 1)) :=
-  numDerangements_add_two n
+alias Zad4 := numDerangements_add_two

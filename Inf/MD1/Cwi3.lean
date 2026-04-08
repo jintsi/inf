@@ -210,5 +210,4 @@ lemma _root_.Nat.bellTrig_eq_sum_bell (n k : ℕ) :
 
 theorem Zad4 (n : ℕ) : n.bell = n.bellTrig 0 := by simp [Nat.bellTrig_eq_sum_bell]
 
-theorem Zad5 (n : ℕ) : (Tree.treesOfNumNodesEq n).card = catalan n :=
-  Tree.treesOfNumNodesEq_card_eq_catalan n
+alias Zad5 := Tree.treesOfNumNodesEq_card_eq_catalan

@@ -82,7 +82,7 @@ theorem Zad5c : Tendsto (fun n : ℕ => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) atTo
   · simp [div_eq_mul_inv]; use 2; intro n hn
     rw [Real.rpow_mul (by positivity)]; gcongr; norm_cast; linarith
 
-theorem tendsto_const_rpow_inv (a : ℝ) (ha : 0 < a) : Tendsto (fun x : ℝ => a ^ x⁻¹) atTop (𝓝 1) := by
+theorem _root_.tendsto_const_rpow_inv (a : ℝ) (ha : 0 < a) : Tendsto (fun x : ℝ => a ^ x⁻¹) atTop (𝓝 1) := by
   wlog! ha' : 1 ≤ a
   · convert (this a⁻¹ (by simpa) (by bound)).inv₀ (by simp) using 2 <;> simp [Real.inv_rpow ha.le]
   apply tendsto_const_nhds.squeeze' tendsto_rpow_div

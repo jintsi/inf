@@ -3,15 +3,9 @@ import Mathlib.Tactic.NormNum.RealSqrt
 
 namespace AM1.Cwi1
 
-/-- "Increasing" translates to mathlib as `StrictMono` -/
-theorem Zad1_inc [Preorder α] [Preorder β] [Preorder γ] {f : α → β} {g : β → γ}
-    (hf : StrictMono f) (hg : StrictMono g) : StrictMono (g ∘ f) :=
-  hg.comp hf
+alias Zad1_inc := StrictMono.comp
 
-/-- "Decreasing" translates to mathlib as `StrictAnti` -/
-theorem Zad1_dec [Preorder α] [Preorder β] [Preorder γ] {f : α → β} {g : β → γ}
-    (hf : StrictAnti f) (hg : StrictAnti g) : StrictMono (g ∘ f) :=
-  hg.comp hf
+alias Zad1_dec := StrictAnti.comp
 
 theorem Zad2a : (fun (⟨k, l⟩ : ℤ × ℤ) => min k l).Surjective := by
   simp [Function.Surjective]
@@ -51,29 +45,23 @@ theorem Zad5b : arcsin (sqrt 3 / 2) = π / 3 := by
   apply arcsin_eq_of_sin_eq sin_pi_div_three
   simp; constructor <;> (field_simp; norm_num)
 
-theorem Zad5c : arccos 0 = π / 2 := arccos_zero
+alias Zad5c := arccos_zero
 
-theorem Zad5d : arctan 0 = 0 := arctan_zero
+alias Zad5d := arctan_zero
 
-/-- For some reason arc cotangent isn't defined in mathlib -/
+/-- For some reason arc cotangent isn't defined in mathlib. -/
 noncomputable def _root_.Real.arccot (x : ℝ) : ℝ := π / 2 - arctan x
 
 theorem Zad5e : arccot 0 = π / 2 := by simp [arccot]
 
-theorem Zad5f : arccot (-sqrt 3) = (5/6)*π := by
-  simp [arccot]
-  apply add_eq_of_eq_sub'
-  ring_nf
+theorem Zad5f : arccot (-sqrt 3) = (5/6)*π := by simp [arccot]; ring_nf
 
 theorem Zad5g : arccot (tan (7 / 8 * π)) = (5 / 8) * π := by
   rw [arccot, ← tan_sub_pi, sub_eq_of_eq_add]
   apply eq_add_of_sub_eq'
-  ring_nf
   rw [arctan_tan] <;> (field_simp; norm_num)
 
-theorem Zad5h : cos (2 * arcsin (4 / 5)) = -7 / 25 := by
-  rw [cos_two_mul, cos_arcsin]
-  ring_nf
+theorem Zad5h : cos (2 * arcsin (4 / 5)) = -7 / 25 := by rw [cos_two_mul, cos_arcsin]; ring
 
 theorem Zad5i : arccos (sin (15 / 7 * π)) = (5 / 14) * π := by
   rw [arccos, ← sin_sub_two_pi, arcsin_sin] <;> (field_simp; norm_num)

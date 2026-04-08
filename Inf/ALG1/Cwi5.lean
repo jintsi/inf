@@ -66,8 +66,6 @@ theorem Zad5_7 : (X ^ 2 + 1 : ℤ[X]) ∈ Submodule.span ℤ {X, X ^ 2 - 3, X + 
   simp_rw [Submodule.mem_span_insert, Submodule.mem_span_singleton]; simp
   exists -2, 1, 2, 0; grind
 
-noncomputable instance Zad5_D2 : Module ℝ (ℕ → ℝ) := Pi.Function.module ℕ ℝ ℝ
-
 theorem Zad5_D2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧ BddBelow (Set.range f)} where
   zero_mem := by simp
   add_mem := by
@@ -100,8 +98,6 @@ theorem Zad5_D2e : IsSubmodule ℝ (Set.range Finsupp.toFun : Set (ℕ → ℝ))
   zero_mem := ⟨0, rfl⟩
   add_mem := by simp; intros; subst_vars; rename_i f g; exists f + g
   smul_mem := by simp; intro c f; exists c • f
-
-noncomputable instance Zad5_D3a : Module ℝ (ℝ → ℝ) := Pi.Function.module ℝ ℝ ℝ
 theorem Zad5_D3b : IsSubmodule ℝ {f : ℝ → ℝ | Continuous f} where
   zero_mem := continuous_zero
   add_mem := Continuous.add
@@ -139,13 +135,11 @@ instance Zad5_D4 {T : Type u} : Module (ZMod 2) (Set T) where
     intro a b s
     fin_cases a <;> fin_cases b <;> norm_num <;> first | exact zero_smul ℕ s | exact (one_smul ℕ _).symm
 
-theorem Zad5_D5a [DivisionSemiring R] [AddCommMonoid M] [Module R M] {a : R} {v : M} :
-    a • v = 0 ↔ a = 0 ∨ v = 0 := smul_eq_zero
+alias Zad5_D5a := smul_eq_zero
 
-theorem Zad5_D5b1 [Ring R] [AddCommGroup M] [Module R M] (a : R) (v : M) :
-    -a • v = -(a • v) := neg_smul a v
+alias Zad5_D5b1 := neg_smul
 
-theorem Zad5_D5b2 [Semiring R] [AddCommGroup M] [Module R M] (a : R) (v : M) :
-    a • -v = -(a • v) := smul_neg a v
+alias Zad5_D5b2 := smul_neg
 
-theorem Zad5_D5c [Ring R] [AddCommGroup M] [Module R M] (v : M) : -1 • v = -v := by simp
+theorem Zad5_D5c [Ring R] [AddCommGroup M] [Module R M] (v : M) : -1 • v = -v := by
+  rw [neg_smul, one_smul]

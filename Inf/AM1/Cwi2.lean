@@ -6,60 +6,60 @@ import Mathlib.Order.ConditionallyCompleteLattice.Group
 
 namespace AM1.Cwi2
 
-theorem Zad1_add [Lattice α] [AddCommGroup α] [AddLeftMono α] (a b : α) :
-    |a + b| ≤ |a| + |b| := abs_add_le a b
+alias Zad1_add := abs_add_le
 
-theorem Zad1_sub [Lattice α] [AddCommGroup α] [AddLeftMono α] (a b : α) :
-    |(|a|) - (|b|)| ≤ |a - b| := abs_abs_sub_abs_le a b
+alias Zad1_sub := abs_abs_sub_abs_le
 
 theorem Zad2a : ∀ n ≥ 3, 2 * n + 1 ≤ 2 ^ n := by
   intro n hn
   induction hn
-  case refl => norm_num
-  case step n hn ih => grind
+  case refl => simp
+  case step n hn ih => lia
 
 theorem Zad2b : ∀ n : ℕ, 7 ∣ (10 ^ (3 * n + 1) - 3 * (-1) ^ n) := by
   intro n
   induction n
-  case zero => norm_num
-  case succ n ih => grind
+  case zero => simp
+  case succ n ih => lia
 
+open Finset in
 theorem Zad3_neg (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, x i ∈ Set.Ioo (-1) 0) :
-      1 + ∑ i < n, x i < ∏ i < n, (1 + x i) := by
+      1 + ∑ i ∈ range n, x i < ∏ i ∈ range n, (1 + x i) := by
   induction hn
   case refl =>
-    simp [Finset.Iio_eq_Ico, Finset.range] at *
+    simp [range] at *
     ring_nf; simp
-    exact mul_pos_of_neg_of_neg (hx 1 (by norm_num)).right (hx 0 (by norm_num)).right
+    exact mul_pos_of_neg_of_neg (hx 1 le_rfl).right (hx 0 zero_le_one).right
   case step n hn ih =>
-    simp [Finset.Iio_eq_Ico, Finset.sum_range_succ, Finset.prod_range_succ, -Order.lt_add_one_iff] at *
-    have ih := ih <| (Nat.forall_lt_succ_right.mp hx).left
+    simp [sum_range_succ, prod_range_succ, -Order.lt_add_one_iff] at *
+    have ih := ih (Nat.forall_lt_succ_right.mp hx).left
     rw [← add_assoc, mul_add, mul_one]
     apply add_lt_add ih
-    have h := Finset.prod_lt_prod
+    have h := prod_lt_prod
       (fun i hi => add_neg_cancel (1 : ℝ) ▸
-        add_lt_add_right (hx i (Nat.lt_succ_of_lt <| Finset.mem_range.mp hi)).left 1)
-      (fun i hi => (add_lt_add_right (hx i (Nat.lt_succ_of_lt <| Finset.mem_range.mp hi)).right 1).le)
-      ⟨0, by simp; omega, by simp; exact (hx 0 (by norm_num)).right⟩
-    rw [add_zero, Finset.prod_const_one] at h
+        add_lt_add_right (hx i (Nat.lt_succ_of_lt <| mem_range.mp hi)).left 1)
+      (fun i hi => (add_lt_add_right (hx i (Nat.lt_succ_of_lt <| mem_range.mp hi)).right 1).le)
+      ⟨0, by simp; omega, by simpa using (hx 0 n.succ_pos).right⟩
+    rw [add_zero, prod_const_one] at h
     exact lt_mul_of_lt_one_left (hx n n.lt_succ_self).right h
 
+open Finset in
 theorem Zad3_pos (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, 0 < x i) :
-        1 + ∑ i < n, x i < ∏ i < n, (1 + x i) := by
+        1 + ∑ i ∈ range n, x i < ∏ i ∈ range n, (1 + x i) := by
   induction hn
   case refl =>
-    simp [Finset.Iio_eq_Ico, Finset.range]
+    simp [range]
     ring_nf; simp
-    exact mul_pos (hx 1 (by norm_num)) (hx 0 (by norm_num))
+    exact mul_pos (hx 1 one_lt_two) (hx 0 two_pos)
   case step n hn ih =>
-    simp [Finset.Iio_eq_Ico, Finset.sum_range_succ, Finset.prod_range_succ, -Order.lt_add_one_iff] at *
+    simp [sum_range_succ, prod_range_succ, -Order.lt_add_one_iff] at *
     have ih := ih <| (Nat.forall_lt_succ_right.mp hx).left
     rw [← add_assoc, mul_add, mul_one]
     apply add_lt_add ih
-    have h := Finset.prod_lt_prod
+    have h := prod_lt_prod
       (fun i hi => (by simp))
       (fun i hi => (add_lt_add_right (hx i (Nat.lt_succ_of_lt <| Finset.mem_range.mp hi)) 1).le)
-      ⟨0, by simp; omega, by simp; exact (hx 0 (by norm_num))⟩
+      ⟨0, by simp; omega, by simpa using (hx 0 n.succ_pos)⟩
     rw [add_zero, Finset.prod_const_one] at h
     exact lt_mul_of_one_lt_left (hx n n.lt_succ_self) h
 
@@ -75,11 +75,7 @@ theorem Zad3_bernoulli (n : ℕ) (x : ℝ) (hx : -1 < x) : 1 + n * x ≤ (1 + x)
 
 theorem Zad4 [CommSemiring R] (a b : R) (n : ℕ) :
     (a + b) ^ n = ∑ k ≤ n, n.choose k * a ^ (n - k) * b ^ k := by
-  rw [add_comm, add_pow, Finset.Iic_eq_Icc, ← Finset.Ico_succ_right_eq_Icc]
-  simp
-  apply Finset.sum_congr rfl
-  intro k hk
-  ac_nf
+  rw [add_comm, add_pow, Nat.range_succ_eq_Iic]; ring_nf
 
 theorem Zad5a_inf : sInf { 4 + 1 / (n : ℝ) | n : PNat } = 4 := by
   refine ge_antisymm (le_csInf ?nonempty ?bound) (Real.sInf_le_iff ?bdd ?nonempty |>.mpr ?kres)
@@ -135,15 +131,10 @@ theorem Zad5b_sup : sSup {x / (x ^ 2 + 1) | (x : Real) (_ : x > 0)} = 1 / 2 := b
   · intro e he; simp
     exists 1; grind
 
-open scoped Pointwise in
-theorem Zad6_add {a b : Set ℝ} (han : a.Nonempty) (hab : BddAbove a) (hbn : b.Nonempty) (hbb : BddAbove b) :
-    sSup (a + b) = sSup a + sSup b := csSup_add han hab hbn hbb
+alias Zad6_add := csSup_add
 
-theorem Zad6_union {a b : Set ℝ} (han : a.Nonempty) (hab : BddAbove a) (hbn : b.Nonempty) (hbb : BddAbove b) :
-    sSup (a ∪ b) = max (sSup a) (sSup b) := csSup_union hab han hbb hbn
+alias Zad6_union := csSup_union
 
-theorem Zad7 {a : Set ℝ} (hn : a.Nonempty) (hb : BddAbove a) :
-    sInf (-a) = -sSup a := csInf_neg hn hb
+alias Zad7 := csInf_neg
 
-theorem Zad8a [Nonempty α] {f g : α → ℝ} (hf : BddAbove (Set.range f)) (hg : BddAbove (Set.range g)) :
-    iSup (f + g) ≤ iSup f + iSup g := ciSup_add_le_ciSup_add_ciSup hf hg
+alias Zad8a := ciSup_add_le_ciSup_add_ciSup
