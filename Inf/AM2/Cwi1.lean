@@ -122,7 +122,8 @@ theorem Zad3b : ∫ x in 0..1, x ^ 5 / √(3 * x ^ 3 + 1) = 8 / 81 := by calc
 
 variable [NormedAddCommGroup E] [NormedSpace ℝ E] {f : ℝ → E}
 
-theorem Zad4 {a : ℝ} (hf : ∀ x ∈ Set.uIcc (-a) a, f (-x) = -f x) : ∫ x in -a..a, f x = 0 := calc ∫ x in -a..a, f x
+theorem Zad4 {a : ℝ} (hf : ∀ x ∈ Set.uIcc (-a) a, f (-x) = -f x) : ∫ x in -a..a, f x = 0 := calc
+  ∫ x in -a..a, f x
   _ = (2 : ℝ)⁻¹ • ((∫ x in -a..a, f x) + ∫ x in -a..a, f x) := by rw [← two_smul ℝ, smul_smul]; simp
   _ = (2 : ℝ)⁻¹ • ((∫ x in -a..a, f x) - ∫ x in -a..a, -f x) := by
     simp_rw [sub_eq_add_neg, ← integral_neg, neg_neg]
