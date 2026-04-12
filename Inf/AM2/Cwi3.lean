@@ -5,6 +5,8 @@ import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
 open MeasureTheory Real
 
+lemma ENNReal.ofReal_pi : ENNReal.ofReal π = NNReal.pi := ENNReal.ofReal_eq_coe_nnreal pi_nonneg
+
 namespace AM2.Cwi3
 
 theorem Zad1a_bounds {x : ℝ} : x ^ 2 / 2 ≤ (x ^ 2 + 1)⁻¹ ↔ x ∈ Set.Icc (-1) 1 := calc
@@ -27,7 +29,7 @@ theorem Zad1a : volume (regionBetween (fun x => x ^ 2 / 2) (fun x => (x ^ 2 + 1)
       fun_prop (disch := intro x; positivity)
   _ = .ofReal (π / 2 - 1 / 3) := by simp [← add_comm (1 : ℝ)]; ring_nf
   _ = NNReal.pi / 2 - 1 / 3 := by
-    rw [ENNReal.ofReal_sub, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_eq_coe_nnreal pi_nonneg] <;> simp; rfl
+    simp [ENNReal.ofReal_sub, ENNReal.ofReal_div_of_pos, ENNReal.ofReal_pi]
 
 @[simp]
 lemma _root_.integral_arctan : ∫ x in a..b, arctan x =

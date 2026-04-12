@@ -34,7 +34,7 @@ theorem Zad7_2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
 theorem Zad7_2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (Nat.nth Nat.Prime i) := by
   induction n; · simp
   rename_i n ih
-  simp [linearIndependent_fin_succ', Fin.init_def, ih, Submodule.mem_span_range_iff_exists_fun, Rat.smul_def]
+  simp [linearIndependent_finSucc', Fin.init_def, ih, Submodule.mem_span_range_iff_exists_fun, Rat.smul_def]
   intro x
   let den := Finset.univ.lcm fun i => (x i).den
   have h : ∀ i, (x i).den ∣ den := fun i => Finset.dvd_lcm (Finset.mem_univ i)
@@ -237,7 +237,7 @@ noncomputable def Zad7_5a.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
     · exists ![1, 1, 1, 0]; simp; norm_num; exists 0; simp
     · exists ![0, 3 / 2, 1, 1 / 2]; simp; norm_num; exists ![0, -1 / 2, 0, 3 / 2]; simp; norm_num
     · exists ![0, 3 / 2, 1, 1 / 2]; simp; norm_num; exists ![0, -3 / 2, 0, 9 / 2]; simp; norm_num
-  · simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+  · simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   · simp [Submodule.eq_top_iff', Submodule.mem_span_triple, Submodule.mem_sup]
     simp [V1, V2, Submodule.ofLinearComb]
     intro v x h1 h2 y h3 h4 h; exists v 2 - v 1, v 1 - v 0, v 0; subst h
@@ -282,7 +282,7 @@ noncomputable def Zad7_5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
     · intro ⟨a, b, c, h⟩; exists 7 / 11 * c, c / 11, b, -a / 5, 2 / 5 * a
       subst h; simp; ring_nf; simp
   rw [this]; apply Module.Basis.span
-  simp [v, linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+  simp [v, linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   apply_fun fun m => m 0 0; simp
 
 noncomputable def Zad7_5b.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := by

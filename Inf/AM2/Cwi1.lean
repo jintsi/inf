@@ -1,6 +1,7 @@
 import Inf.AM2.RiemannIntegral
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.InverseDeriv
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.DerivIntegrable
 import Mathlib.Data.Nat.Factorial.DoubleFactorial
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.MeanValue
 
@@ -26,8 +27,7 @@ theorem Zad1 : ∫ x in 1..3, 2 * x - 1 = 6 := by
 
 theorem Zad2a : Tendsto (fun n => ∑ i ∈ range n, n / (n ^ 2 + (i + 1) ^ 2 : ℝ)) atTop (𝓝 (π / 4)) := by
   apply Tendsto.congr' (f₁ := fun n : ℕ => (n : ℝ)⁻¹ • ∑ i ∈ range n, (1 + ((i + 1) / n) ^ 2 : ℝ)⁻¹)
-  · simp_rw [EventuallyEq, eventually_atTop, smul_eq_mul, mul_sum]
-    use 1; intro n hn; field_simp
+  · simp_rw [smul_eq_mul, mul_sum]; filter_upwards [eventually_ne_atTop 0] with n hn; field_simp
   convert tendsto_sum_right_intervalIntegral_zero_one (f := fun x => (1 + x ^ 2)⁻¹)
     (by fun_prop (disch := intros; positivity))
   simp
@@ -43,42 +43,43 @@ theorem Zad2c : Tendsto (fun n : ℕ => (n * √n)⁻¹ * ∑ i ∈ range n, √
   convert tendsto_sum_midpoint_intervalIntegral zero_lt_one
     (f := fun x => √(2 * x)) (by fun_prop) using 1
   · funext; simp
-  · simp only [Nat.ofNat_nonneg, sqrt_mul, intervalIntegral.integral_const_mul]
-    simp_rw [sqrt_eq_rpow]; rw [integral_rpow (by norm_num)]; norm_num; ring
+  · simp_rw [sqrt_mul zero_le_two, intervalIntegral.integral_const_mul, sqrt_eq_rpow]
+    rw [integral_rpow (by norm_num)]; ring_nf
 
 theorem Zad2d : Tendsto (fun n : ℕ => ∑ i ∈ range n, (2 * i + 1 + n : ℝ)⁻¹) atTop (𝓝 (log 3 / 2)) := by
   apply Tendsto.congr' (f₁ := fun n : ℕ => (n : ℝ)⁻¹ * ∑ i ∈ range n, ((2 * i + 1) / n + 1 : ℝ)⁻¹)
-  · simp_rw [EventuallyEq, eventually_atTop, mul_sum]
-    use 1; intro n hn; field_simp
+  · simp_rw [mul_sum]; filter_upwards [eventually_ne_atTop 0] with n hn; field_simp
   convert tendsto_sum_midpoint_intervalIntegral zero_lt_one
     (f := fun x => (2 * x + 1)⁻¹) (by fun_prop (disch := grind)) using 6
   · funext; simp
   · ring
   · simp; ring_nf
 
+@[simp]
+lemma _root_.integral_inv_sqrt_one_sub_sq (ha : a ∈ Set.Icc (-1) 1) (hb : b ∈ Set.Icc (-1) 1) :
+    ∫ x in a..b, (√(1 - x ^ 2))⁻¹ = arcsin b - arcsin a := by
+  simp_rw [← one_div, ← congrFun deriv_arcsin]; apply integral_deriv_eq_sub_uIoo (by fun_prop)
+  · grw [Set.uIoo_subset_Ioo ha hb]; simp [differentiableAt_arcsin]; bound
+  · exact (monotone_arcsin.monotoneOn _).intervalIntegrable_deriv
+
 theorem Zad2e : Tendsto (fun n : ℕ => ∑ i ∈ range n, (√(2 * n ^ 2 - (i + 1) ^ 2))⁻¹) atTop (𝓝 (π / 4)) := by
   apply Tendsto.congr' (f₁ := fun n : ℕ => (n : ℝ)⁻¹ * ∑ i ∈ range n, (√(2 - ((i + 1) / n) ^ 2))⁻¹)
-  · simp_rw [EventuallyEq, eventually_atTop, mul_sum]
-    use 1; intro n hn; nth_rw 1 [← Real.sqrt_sq (n.cast_nonneg)]
-    simp_rw [← mul_inv, ← Real.sqrt_mul (sq_nonneg _)]; field_simp
+  · filter_upwards [eventually_ne_atTop 0] with n hn; nth_rw 1 [← Real.sqrt_sq (n.cast_nonneg)]
+    simp_rw [mul_sum, ← mul_inv, ← Real.sqrt_mul (sq_nonneg _)]; field_simp
   convert ←  tendsto_sum_right_intervalIntegral_zero_one (f := fun x => (√(2 - x ^ 2))⁻¹)
     (ContinuousOn.inv₀ (by fun_prop) ?_)
   · calc ∫ x in 0..1, (√(2 - x ^ 2))⁻¹
     _ = ∫ x in 0..1, (√2 * √(1 - (x / √ 2) ^ 2))⁻¹ := by
       congr! 3 with x; rw [← sqrt_mul two_pos.le, div_pow, sq_sqrt two_pos.le]; field_simp
-    _ = ∫ x in 0..(√2)⁻¹, deriv arcsin x := by
+    _ = ∫ x in 0..(√2)⁻¹, (√(1 - x ^ 2))⁻¹ := by
       simp_rw [mul_inv]
       rw [integral_const_mul, integral_comp_div (fun x => (√(1 - x ^ 2))⁻¹) (sqrt_ne_zero'.mpr two_pos)]
       simp
     _ = π / 4 := by
-      rw [intervalIntegral.integral_deriv_eq_sub' _ rfl]
-      · rw [arcsin_zero, sub_zero, ← arcsin_eq_of_sin_eq sin_pi_div_four, sqrt_div_self]
-        simp; ring_nf; and_intros <;> gcongr 1 <;> norm_num
-      · simp [differentiableAt_arcsin]; intro x h1 h2; use (neg_one_lt_zero.trans_le h1).ne'
-        intro h; subst h; absurd h2; simp [← sqrt_div_self, div_lt_one₀, sqrt_lt']; norm_num
-      · simp only [deriv_arcsin, one_div, inv_nonneg, sqrt_nonneg, Set.uIcc_of_le]
-        apply ContinuousOn.inv₀ (by fun_prop)
-        simp +contextual [← sqrt_inv, le_sqrt, sqrt_ne_zero', -sq_lt_one_iff_abs_lt_one]; bound
+      rw [integral_inv_sqrt_one_sub_sq (by norm_num), arcsin_zero, sub_zero,
+        ← arcsin_eq_of_sin_eq sin_pi_div_four, sqrt_div_self]
+      · simp; ring_nf; and_intros <;> (gcongr 1; norm_num)
+      · use neg_one_lt_zero.le.trans (by positivity); simp [← sqrt_inv, inv_le_one₀]
   · simp only [Set.mem_Icc, ne_eq, sqrt_ne_zero', sub_pos, and_imp]; intro x h0 h1
     exact ((sq_le_one_iff₀ h0).mpr h1).trans_lt one_lt_two
 
@@ -96,7 +97,7 @@ theorem Zad2f : Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ((2 * n).factorial / n.
   · norm_num [exp_sub, exp_mul, exp_log]
   apply Tendsto.rexp; simp_rw [mul_comm]
   convert tendsto_sum_right_intervalIntegral_zero_one (f := fun x => log (1 + x))
-    (by fun_prop (disch := simp; intros; positivity))
+    (by fun_prop (disch := simp; bound))
   norm_num; linarith
 
 theorem Zad3a : ∫ x in 0..π/3, sin x ^ 3 * cos x ^ 2 = 47 / 480 := by
@@ -125,16 +126,14 @@ variable [NormedAddCommGroup E] [NormedSpace ℝ E] {f : ℝ → E}
 theorem Zad4 {a : ℝ} (hf : ∀ x ∈ Set.uIcc (-a) a, f (-x) = -f x) : ∫ x in -a..a, f x = 0 := calc
   ∫ x in -a..a, f x
   _ = (2 : ℝ)⁻¹ • ((∫ x in -a..a, f x) + ∫ x in -a..a, f x) := by rw [← two_smul ℝ, smul_smul]; simp
-  _ = (2 : ℝ)⁻¹ • ((∫ x in -a..a, f x) - ∫ x in -a..a, -f x) := by
-    simp_rw [sub_eq_add_neg, ← integral_neg, neg_neg]
-  _ = (2 : ℝ)⁻¹ • ((∫ x in -a..a, f x) - ∫ x in -a..a, f (-x)) := by rw [integral_congr hf]
-  _ = (2 : ℝ)⁻¹ • ((∫ x in -a..a, f x) - ∫ x in -a..a, f x) := by rw [integral_comp_neg, neg_neg]
-  _ = 0 := by simp
+  _ = (2 : ℝ)⁻¹ • ((∫ x in -a..a, f x) - ∫ x in -a..a, f (-x)) := by
+    simp_rw [integral_congr hf, sub_eq_add_neg, ← integral_neg, neg_neg]
+  _ = 0 := by rw [integral_comp_neg, neg_neg, sub_self, smul_zero]
 
-theorem Zad5 {a : ℝ} (hc : ContinuousOn f (Set.uIcc (-a) a)) (hf : ∀ x ∈ Set.uIcc (-a) a, f (-x) = f x) :
-    ∫ x in -a..a, f x = 2 • ∫ x in 0..a, f x := calc ∫ x in -a..a, f x
-  _ = (∫ x in -a..0, f x) + ∫ x in 0..a, f x := by
-    apply (integral_add_adjacent_intervals (hc.mono ?_).intervalIntegrable (hc.mono ?_).intervalIntegrable).symm
+theorem Zad5 {a : ℝ} (hc : IntervalIntegrable f MeasureTheory.volume (-a) a)
+    (hf : ∀ x ∈ Set.uIcc (-a) a, f (-x) = f x) : ∫ x in -a..a, f x = 2 • ∫ x in 0..a, f x := calc
+  ∫ x in -a..a, f x = (∫ x in -a..0, f x) + ∫ x in 0..a, f x := by
+    apply (integral_add_adjacent_intervals (hc.mono_set ?_) (hc.mono_set ?_)).symm
     · apply Set.uIcc_subset_uIcc_left; simpa [Set.mem_uIcc] using le_total 0 a
     · apply Set.uIcc_subset_uIcc_right; simpa [Set.mem_uIcc] using le_total 0 a
   _ = (∫ x in -a..0, f (-x)) + ∫ x in 0..a, f x := by
@@ -164,10 +163,7 @@ theorem Zad8_odd (n : ℕ) : ∫ x in 0..π / 2, cos x ^ (2 * n + 1) = (2 * n)�
   case zero => simp
   case succ n ih => simp_rw [mul_add_one, add_right_comm, Zad8_step, ih, doubleFactorial_add_two]; grind
 
-theorem Zad9 {a b : ℝ} {f g : ℝ → ℝ} (hf : ContinuousOn f (Set.uIcc a b))
-    (hg : ContinuousOn g (Set.uIcc a b)) (hg0 : ∀ x ∈ Set.uIoc a b, 0 ≤ g x) :
-    ∃ c ∈ Set.uIcc a b, ∫ x in a..b, f x * g x = f c * ∫ x in a..b, g x :=
-  exists_eq_const_mul_intervalIntegral_of_nonneg hf hg.intervalIntegrable hg0
+alias Zad9 := exists_eq_const_mul_intervalIntegral_of_nonneg
 
 theorem Zad10 : ∫ x in π..2 * π, exp (-x ^ 2) * cos x ^ 2 < ∫ x in 0..π, exp (-x ^ 2) * cos x ^ 2 := calc
   ∫ x in π..2 * π, exp (-x ^ 2) * cos x ^ 2 = ∫ x in 0..π, exp (-(x + π) ^ 2) * cos x ^ 2 := by

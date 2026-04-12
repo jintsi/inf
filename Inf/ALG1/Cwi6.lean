@@ -7,11 +7,11 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 namespace ALG1
 
 theorem Zad6_1a : LinearIndependent ℚ ![![(0 : ℚ), 1, 2, -1], ![1, 0, 3, 1], ![0, 2, -1, 4]] := by
-  simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+  simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   intro x h1 h2 h3; linarith
 
 theorem Zad6_1b : ¬LinearIndependent ℚ ![![(1 : ℚ), 2, 0, 3], ![3, -1, 5, 0], ![-1, 5, -5, 6]] := by
-  simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+  simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   exists 1 / 2, 1 / 2; norm_num
 
 open Polynomial in
@@ -23,7 +23,7 @@ theorem Zad6_1c : ¬LinearIndependent ℚ ![(X ^ 3 + 1 : Polynomial ℚ), X ^ 3 
 
 theorem Zad6_2 (s : ℚ) : LinearIndependent ℚ ![![2, 1, 0, s], ![0, 1, 2, 2], ![0, 1, 1, 2], ![s, 0, 2, s]]
     ↔ (s ≠ 0 ∧ s ≠ 4) := by
-  simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair,
+  simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair,
         Submodule.mem_span_triple]; apply and_congr
   · exact ⟨fun h hs => (h hs (1 / 2) (by norm_num)).right hs, Not.elim⟩
   · constructor
@@ -31,8 +31,8 @@ theorem Zad6_2 (s : ℚ) : LinearIndependent ℚ ![![2, 1, 0, s], ![0, 1, 2, 2],
     · intro hs x hx a b h1 h2 h3; grind
 
 theorem Zad6_3a : LinearIndependent ℝ ![id, Real.sin, Real.cos] := by
-  simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair, funext_iff]
-  and_intros
+  simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair,
+    funext_iff]; and_intros
   · exists 0; simp
   · intro x; exists Real.pi / 2; simp
   · intro x y; by_cases x = 0
@@ -40,7 +40,7 @@ theorem Zad6_3a : LinearIndependent ℝ ![id, Real.sin, Real.cos] := by
     · exists 0; simpa
 
 theorem Zad6_3b : LinearIndependent ℝ ![Real.sin, Real.cos, fun r => Real.sin (2 * r), fun r => Real.cos (2 * r)] := by
-  simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair,
+  simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair,
         Submodule.mem_span_triple, funext_iff, Real.sin_two_mul, Real.cos_two_mul]; and_intros
   · exists 0; norm_num
   · intro x; by_cases x = 0
@@ -64,7 +64,7 @@ theorem Zad6_3d (n : ℕ) : LinearIndependent ℝ fun (i : Fin n) (x : ℝ) => �
   induction n
   case zero => simp
   case succ n ih =>
-    simp [linearIndependent_fin_succ', Fin.init_def, Submodule.mem_span_range_iff_exists_fun, funext_iff]
+    simp [linearIndependent_finSucc', Fin.init_def, Submodule.mem_span_range_iff_exists_fun, funext_iff]
     exists ih; intro c; by_cases c = 0
     case pos h =>
       exists n; simp [h]; apply Ne.symm; simp [Finset.prod_ne_zero_iff]
@@ -139,7 +139,7 @@ theorem Zad6_D1c : !![(3 : ℚ), 2, 0; 2, 4, 1] ∉ Submodule.span ℚ
 
 theorem Zad6_D2 {x₁ x₂ x₃ : ZMod 2} : LinearIndependent (ZMod 2) ![![x₁, x₂, x₃], ![1, 0, 1], ![1, 1, 1]] ↔
     x₁ ≠ x₃ := by
-  simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+  simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   constructor
   · contrapose!; intro h; subst h; exists x₁ - x₂; simp
   · contrapose!; intro ⟨x, h1, h2⟩; exact h1.symm.trans h2
@@ -185,7 +185,7 @@ theorem Zad6_D6b : ∀ v, v ∈ Submodule.span ℚ
 
 theorem Zad6_D7 {s t : ℝ} : LinearIndependent ℝ ![![5, 7, s, 2], ![1, 3, 2, 1], ![2, 2, 4, t]] ↔
     (s ≠ 10 ∨ t ≠ 1 / 2) := by
-  simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+  simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   constructor
   · intro ⟨_, h⟩; specialize h 2 1; norm_num at h; convert imp_iff_not_or.mp h using 1 <;> grind
   · intro h; and_intros
@@ -198,11 +198,11 @@ theorem Zad6_D8_W1 {s : ℝ} : Module.finrank ℝ (Submodule.span ℝ
   case isTrue =>
     subst s; rw [Submodule.span_insert_eq_span (by simp [Submodule.mem_span_pair]; exists 2, 1; norm_num)]
     have h : LinearIndependent ℝ ![![(4 : ℝ), 1, 6, 1, 1], ![2, 1, -1, -1, -2]] := by
-      simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton]
+      simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton]
     convert finrank_span_eq_card h <;> simp [Set.pair_comm]
   case isFalse h =>
     have h : LinearIndependent ℝ ![![10, 3, 9 + s, 1, 2 - s], ![(4 : ℝ), 1, 6, 1, 1], ![2, 1, -1, -1, -2]] := by
-      simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+      simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
       grind
     convert finrank_span_eq_card h <;> simp [Set.union_comm]
 
@@ -214,7 +214,7 @@ theorem Zad6_D8_W2 {t : ℝ} : Set.finrank ℝ {x : Fin 5 → ℝ | 3 * x 0 - 11
   case isTrue =>
     subst t
     have h : LinearIndependent ℝ ![![(1 : ℝ), 0, 0, 1, 5], ![0, 1, 0, -3, -13], ![0, 0, 1, 0, -1]] := by
-      simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+      simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
     apply finrank_span_eq_card at h; simp at h; simp [Set.finrank]
     rw [Submodule.span_eq_of_le]; exact h
     · intro x; simp [Submodule.mem_span_triple]; intro h1 h2 h3; exists x 2, x 1, x 0
@@ -222,7 +222,7 @@ theorem Zad6_D8_W2 {t : ℝ} : Set.finrank ℝ {x : Fin 5 → ℝ | 3 * x 0 - 11
     · apply Submodule.span_mono; intro x; simp; intro h; rcases h with h | h | h <;> simp [h] <;> norm_num
   case isFalse ht =>
     have h : LinearIndependent ℝ ![![(1 : ℝ), 0, 0, 1, 5], ![0, 1, 0, -3, -13]] := by
-      simp [linearIndependent_fin_succ, Fin.tail_def, Submodule.mem_span_singleton]
+      simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton]
     apply finrank_span_eq_card at h; simp at h; simp [Set.finrank]
     rw [Submodule.span_eq_of_le]; exact h
     · intro x; simp [Submodule.mem_span_pair]; intro h1 h2 h3; exists x 1, x 0

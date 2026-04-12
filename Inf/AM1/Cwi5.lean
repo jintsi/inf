@@ -30,12 +30,11 @@ theorem Zad3 {x : ℝ} : DifferentiableAt ℝ (fun x => x / (1 + (1 / x).exp)) x
   constructor
   · contrapose; intro; subst x
     rw [← hasDerivAt_deriv_iff, hasDerivAt_iff_tendsto_slope, slope_fun_def_field]; ring_nf
-    apply mt (Tendsto.congr' ?_ (f₂ := fun x => (1 + x⁻¹.exp)⁻¹)); swap
+    apply mt (Tendsto.congr' ?_ (f₂ := fun x => (1 + x⁻¹.exp)⁻¹)) ?_
     · apply eventuallyEq_nhdsWithin_of_eqOn; grind [Set.EqOn]
     intro h
-    have hl : Tendsto (fun x : ℝ => (1 + x⁻¹.exp)⁻¹) (𝓝[<] 0) (𝓝 1) := by
-      convert ((tendsto_exp_comp_nhds_zero.mpr tendsto_inv_nhdsLT_zero).const_add 1).inv₀
-      simp
+    have hl : Tendsto (fun x : ℝ => (1 + x⁻¹.exp)⁻¹) (𝓝[<] 0) (𝓝 1) :=
+      ((tendsto_exp_comp_nhds_zero.mpr tendsto_inv_nhdsLT_zero).const_add_zero 1).inv_one
     have hr : Tendsto (fun x : ℝ => (1 + x⁻¹.exp)⁻¹) (𝓝[>] 0) (𝓝 0) :=
       (tendsto_const_nhds.add_atTop (tendsto_exp_comp_atTop.mpr tendsto_inv_nhdsGT_zero)).inv_tendsto_atTop
     exact one_ne_zero <| (tendsto_nhds_unique hl (tendsto_nhdsWithin_mono_left (by simp) h)).trans
@@ -56,7 +55,7 @@ theorem _root_.Real.hasDerivAt_arccot (x : ℝ) : HasDerivAt arccot (-1 / (1 + x
   · convert hasDerivAt_cot _ using 1
       <;> simp [arccot, sin_pi_div_two_sub, cos_sq_arctan, (cos_arctan_pos x).ne']
   · rw [neg_ne_zero]; positivity
-  · rw [Metric.eventually_nhds_iff]; exists 1, zero_lt_one; intro y _
+  · apply Eventually.of_forall; intro y
     simp [cot_eq_cos_div_sin, arccot, cos_pi_div_two_sub, sin_pi_div_two_sub, ← tan_eq_sin_div_cos]
 
 theorem Zad8 {f : ℝ → ℝ} {f' x : ℝ} (h : HasDerivAt f f' x) :
@@ -68,10 +67,10 @@ theorem Zad8 {f : ℝ → ℝ} {f' x : ℝ} (h : HasDerivAt f f' x) :
   · apply eventually_nhdsWithin_of_forall; simp
 
 theorem Zad9_ne_zero {x : ℝ} (hne : x ≠ 0) :
-    HasDerivAt (fun x => x ^ 2 * sin (1 / x)) (2 * x * sin (1 / x) - cos (1 / x)) x := by
-  convert (hasDerivAt_pow 2 x).fun_mul (hasDerivAt_inv hne).sin using 1 <;> grind
+    HasDerivAt (fun x => x ^ 2 * sin x⁻¹) (2 * x * sin (1 / x) - cos (1 / x)) x := by
+  convert (hasDerivAt_pow 2 x).fun_mul (hasDerivAt_inv hne).sin using 1; simp; field
 
-theorem Zad9_zero : HasDerivAt (fun x => x ^ 2 * sin (1 / x)) 0 0 := by
+theorem Zad9_zero : HasDerivAt (fun x => x ^ 2 * sin x⁻¹) 0 0 := by
   rw [hasDerivAt_iff_tendsto_slope, slope_fun_def_field]; ring_nf
   apply Tendsto.congr' (f₁ := fun x => sin x⁻¹ * x)
   · apply eventuallyEq_nhdsWithin_of_eqOn; grind [Set.EqOn]
@@ -79,7 +78,7 @@ theorem Zad9_zero : HasDerivAt (fun x => x ^ 2 * sin (1 / x)) 0 0 := by
   · simp [abs_sin_le_one]
   · exact tendsto_nhdsWithin_of_tendsto_nhds tendsto_id
 
-theorem Zad9_not_continuous : ¬Continuous (deriv (fun x => x ^ 2 * sin (1 / x))) := by
+theorem Zad9_not_continuous : ¬Continuous (deriv (fun x => x ^ 2 * sin x⁻¹)) := by
   apply mt fun h => Continuous.tendsto' h 0 0 Zad9_zero.deriv
   rw [tendsto_iff_seq_tendsto]; push Not; use fun n => (n * (2 * π))⁻¹,
     (tendsto_natCast_atTop_atTop.atTop_mul_const two_pi_pos).inv_tendsto_atTop

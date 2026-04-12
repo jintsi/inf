@@ -16,13 +16,11 @@ namespace AM1.Cwi4
 theorem Zad1 : ¬∃ g, Tendsto (fun x => sin (x ^ 3)⁻¹) (𝓝[>] 0) (𝓝 g) := by
   apply not_tendsto_nhds_of_seq (x₁ := fun n => (n * π)⁻¹.cbrt) (x₂ := fun n => (π / 2 + n * (2 * π))⁻¹.cbrt)
   · simp_rw [cbrt, tendsto_nhdsWithin_iff, Set.mem_Ioi, eventually_atTop]; and_intros
-    · convert (tendsto_const_div_pow π⁻¹ 1 (by simp)).rpow_const
-        (Or.inr (show 0 ≤ 3⁻¹ by positivity)) using 2 <;> simp [div_eq_mul_inv]
+    · exact (tendsto_natCast_atTop.atTop_mul_const pi_pos).inv_atTop.zero_rpow_const 3⁻¹ (by positivity)
     · exists 1; intro n hn; positivity
   · simp_rw [cbrt, tendsto_nhdsWithin_iff, Set.mem_Ioi, eventually_atTop]; and_intros
-    · rw [← zero_rpow (show 3⁻¹ ≠ 0 by simp)]; apply Tendsto.rpow_const; swap; · simp
-      exact tendsto_atTop_add_const_left _ _
-        (tendsto_natCast_atTop_atTop.atTop_mul_const two_pi_pos) |>.inv_tendsto_atTop
+    · exact (tendsto_natCast_atTop_atTop.atTop_mul_const two_pi_pos).const_add_atTop (π / 2)
+        |>.inv_atTop.zero_rpow_const 3⁻¹ (by positivity)
     · exists 0; intro n _; positivity
   · simp only [Function.comp_def, cbrt, ← Real.rpow_ofNat]
     conv => arg 1; ext x; rw [Real.rpow_inv_rpow (by positivity) (by simp)]
@@ -49,42 +47,41 @@ theorem Zad2a : Tendsto (fun x => (√(5 - 2 * x) - √(3 - x)) / (x ^ 3 - 8)) (
 
 theorem Zad2b : Tendsto (fun x => √(x ^ 2 + π * x) + x) atBot (𝓝 (-π / 2)) := by
   simp_rw [← Filter.tendsto_comp_neg_atTop_iff, neg_sq, mul_neg, ← sub_eq_add_neg]
-  apply Tendsto.congr' (f₁ := fun x => -π / (√(1 - π * x⁻¹) + 1))
+  apply Tendsto.congr' (f₁ := fun x => -π / (√(1 - π / x) + 1))
   · rw [EventuallyEq, eventually_atTop]; use π; intro x hx; have xpos := pi_pos.trans_le hx
     field_simp; rw [sqrt_div' _ xpos.le, sqrt_mul xpos.le]; ring_nf
     rw [mul_comm x, mul_assoc, ← div_eq_mul_inv, Real.div_sqrt, sub_add_cancel,
       mul_inv_cancel_right₀ (sqrt_ne_zero'.mpr xpos), sq_sqrt, neg_add_cancel_comm_assoc]
     linarith
-  convert (((tendsto_inv_atTop_zero.const_mul π).const_sub 1).sqrt.add_const 1).inv₀ (by simp)
-    |>.const_mul (-π) using 2; simp; ring
+  convert (((tendsto_const_div_atTop π).const_sub 1).sqrt.add_const 1).const_div (-π) (by simp) using 3
+  norm_num
 
-theorem Zad2c : Tendsto (fun x => (sin x + cos x) / cos (2 * x)) (𝓝[≠] (-(π / 4))) (𝓝 (√2 / 2)) := by
-  apply Tendsto.congr' (f₁ := fun x => 1 / (cos x - sin x))
+theorem Zad2c : Tendsto (fun x => (sin x + cos x) / cos (2 * x)) (𝓝[≠] (-(π / 4))) (𝓝 (√2)⁻¹) := by
+  apply Tendsto.congr' (f₁ := fun x => (cos x - sin x)⁻¹)
   · rw [eventuallyEq_nhdsWithin_iff, Metric.eventually_nhds_iff]; use π / 4, by simp [pi_pos]
     simp_rw [dist_eq, sub_neg_eq_add, cos_two_mul', sq_sub_sq, add_comm, ← div_div]
-    intro x hd hne; rw [div_self]
+    intro x hd hne; rw [div_self, one_div]
     rw [Ne, add_eq_zero_iff_eq_neg, ← cos_add_pi_div_two, ← Ne, ← sub_ne_zero, cos_sub_cos]
     simp_all; and_intros <;> rw [sin_eq_zero_iff_of_lt_of_lt] <;> grind
   apply tendsto_nhdsWithin_of_tendsto_nhds
-  convert ((continuous_cos.sub continuous_sin).tendsto (-(π / 4))).inv₀ ?_ using 2 <;> simp
-  exact sqrt_div_self
+  convert ((continuous_cos.sub continuous_sin).tendsto (-(π / 4))).inv₀ ?_ using 2 <;> simp [← sqrt_div_self]
 
 theorem Zad4 [Field α] [LinearOrder α] [IsStrictOrderedRing α] [TopologicalSpace α] [OrderTopology α]
     (f : α → α) (m k : α) : Tendsto (fun x => f x - (m * x + k)) atTop (𝓝 0) ↔
     Tendsto (fun x => f x / x) atTop (𝓝 m) ∧ Tendsto (fun x => f x - m * x) atTop (𝓝 k) := by
   constructor
   · intro h
-    apply Tendsto.add_const k at h; simp_rw [zero_add, ← sub_sub, sub_add_cancel] at h
-    simp only [h, and_true]
-    replace h := (h.div_atTop tendsto_id).add_const m; rw [zero_add] at h
-    apply h.congr'; rw [EventuallyEq, eventually_atTop]; use 1; grind
+    apply Tendsto.zero_add_const k at h; simp_rw [← sub_sub, sub_add_cancel] at h
+    symm; use h
+    apply ((h.div_atTop tendsto_id).zero_add_const m).congr'; unfold id
+    filter_upwards [eventually_ne_atTop 0] with x hx; field
   · intro ⟨_, h⟩; convert h.sub_const k using 2 <;> simp [sub_sub]
 
 open Classical in
 theorem Zad8 {x : ℝ} : ContinuousAt (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
   constructor; swap
   · intro h; subst h; simp [Metric.continuousAt_iff]
-    intro e he; exists sqrt e, (by simpa); intro x hb
+    intro e he; exists sqrt e, sqrt_pos.mpr he; intro x hb
     split <;> simpa [sq_lt, ← abs_lt]
   intro h
   have h1 : Tendsto (fun x => if Irrational x then 0 else x ^ 2) (𝓝[{y | ¬Irrational y}] x) (𝓝 (x ^ 2)) := by
@@ -100,8 +97,8 @@ theorem Zad8 {x : ℝ} : ContinuousAt (fun x => if Irrational x then 0 else x ^ 
   · convert Rat.denseRange_cast.nhdsWithin_neBot x; simp [Irrational, Set.range]
 
 theorem Zad9 : ∃ x ∈ Set.Ioo 0 1, exp (-x) = sin (π * x / 2) := by
-  have h := intermediate_value_Ioo' zero_le_one ((Continuous.rexp continuous_neg).sub
-    (Real.continuous_sin.comp' ((continuous_const_mul π).div_const 2))).continuousOn
+  have h := intermediate_value_Ioo' zero_le_one
+    (by fun_prop : ContinuousOn (fun x => rexp (-x) - sin (π * x / 2)) _)
   simp [Set.subset_def] at h
   convert h 0 (by grw [exp_neg_one_lt_half]; norm_num) zero_lt_one using 3
   exact sub_eq_zero.symm

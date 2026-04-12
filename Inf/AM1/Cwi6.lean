@@ -95,14 +95,12 @@ theorem Zad9a {k : ℕ} (hk : k ≠ 0) {x : ℝ} (hx : 0 < x) : log x < k * x ^ 
     have := by simpa using this Set.self_mem_Ici hx.le hx
     linarith
   apply strictMonoOn_of_deriv_pos (convex_Ici 1)
-  · refine ContinuousOn.sub ?_ (continuousOn_log.mono (by simp))
-    fun_prop (disch := simp)
+  · fun_prop (disch := simp <;> intros; linarith)
   · intro x hx; rw [interior_Ici, Set.mem_Ioi] at hx
-    rw [deriv_fun_sub, deriv_log, deriv_const_mul_field, Real.deriv_rpow_const]
+    rw [deriv_fun_sub ?_ (by simp; bound), deriv_log, deriv_const_mul_field, Real.deriv_rpow_const]
     · rw [sub_pos, ← mul_assoc, mul_inv_cancel₀ (by simpa), one_mul, ← rpow_neg_one]
       apply rpow_lt_rpow_of_exponent_lt hx; simpa using Nat.pos_of_ne_zero hk
-    · apply DifferentiableAt.const_mul; apply differentiableAt_rpow_const_of_ne; bound
-    · simp; bound
+    · exact (differentiableAt_rpow_const_of_ne k⁻¹ (by bound)).const_mul k
 
 theorem Zad9b_upper (x : ℝ) : x * exp (-x ^ 2) ≤ (√(2 * exp 1))⁻¹ := by
   by_cases! hx : x ≤ 0
@@ -111,8 +109,7 @@ theorem Zad9b_upper (x : ℝ) : x * exp (-x ^ 2) ≤ (√(2 * exp 1))⁻¹ := by
     simp only [inv_pow, Nat.ofNat_nonneg, sq_sqrt, sqrt_mul, mul_inv]
     congr; rw [exp_neg, ← exp_one_rpow 2⁻¹, sqrt_eq_rpow]; simp
   have hval' : ∀ x, deriv (fun x => x * exp (-x ^ 2)) x = exp (-x ^ 2) * (1 - 2 * x ^ 2) := by
-    intro x; rw [deriv_fun_mul, deriv_id'', _root_.deriv_exp] <;> try fun_prop
-    simp; ring
+    intro x; simp (maxDischargeDepth := 3); ring
   by_cases! hx' : x ≤ (√2)⁻¹
   · suffices MonotoneOn (fun x => x * exp (-x ^ 2)) (Set.Icc 0 (√2)⁻¹) by
       grw [← hval, ← this ⟨hx.le, hx'⟩ ⟨hx.le.trans hx', le_rfl⟩ hx']

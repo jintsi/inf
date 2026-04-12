@@ -3,15 +3,28 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
 import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.InverseDeriv
 
-namespace AM1.Cwi8
-
 open Real
 
+lemma HasDerivAt.const_div [NontriviallyNormedField K] (C : K) {f : K → K} (hf : HasDerivAt f f' x)
+    (hx : f x ≠ 0) : HasDerivAt (fun x => C / f x) (-(C * f') / f x ^ 2) x := by
+  simpa [← div_eq_mul_inv, ← mul_div_assoc] using (hf.fun_inv hx).const_mul C
+
+theorem hasDerivAt_log_add_const {x C : ℝ} (h : x ≠ -C) : HasDerivAt (fun x => log (x + C)) (x + C)⁻¹ x := by
+  simpa using ((hasDerivAt_id' x).add_const C).log (by bound)
+
+theorem hasDerivAt_log_sub_const {x C : ℝ} (h : x ≠ C) : HasDerivAt (fun x => log (x - C)) (x - C)⁻¹ x := by
+  simpa using ((hasDerivAt_id' x).sub_const C).log (by bound)
+
+theorem HasDerivAt.tan {f : ℝ → ℝ} {f' x : ℝ} (hf : HasDerivAt f f' x) (hx : Real.cos (f x) ≠ 0) :
+    HasDerivAt (fun x => tan (f x)) (f' / Real.cos (f x) ^ 2) x := by
+  convert (hasDerivAt_tan hx).comp x hf using 1; ring
+
+namespace AM1.Cwi8
+
 theorem Zad1a (h : 0 < x) : HasDerivAt (fun x => log x - 4 / √x - 1 / x) ((√x + 1) ^ 2 / x ^ 2) x := by
-  convert (hasDerivAt_log h.ne').fun_sub (((hasDerivAt_sqrt h.ne').fun_inv (by positivity)).const_mul 4)
-    |>.fun_sub (hasDerivAt_inv h.ne') using 1
-  · ext x; simp [div_eq_mul_inv]
-  · rw [sq_sqrt h.le]; ring_nf; rw [sq_sqrt h.le]; field_simp; ring_nf; rw [sq_sqrt h.le]
+  convert (hasDerivAt_log h.ne').fun_sub ((hasDerivAt_sqrt h.ne').const_div 4 (by positivity))
+    |>.fun_sub ((hasDerivAt_id' x).const_div 1 h.ne') using 1
+  rw [sq_sqrt h.le]; ring_nf; rw [sq_sqrt h.le]; field_simp; ring_nf; rw [sq_sqrt h.le]
 
 theorem Zad1b (h : x ≠ 0) : HasDerivAt (fun x => log x ^ 8 / 8) (log x ^ 7 / x) x := by
   convert ((hasDerivAt_log h).fun_pow 8).div_const 8 using 1; field
@@ -43,7 +56,7 @@ theorem Zad1h (h : -1 ≠ x) : HasDerivAt (fun x => (1 + x ^ 5) * (log (1 + x ^ 
   have h : 1 + x ^ 5 ≠ 0 := by
     rw [add_comm, ← sub_neg_eq_add, sub_ne_zero, ne_comm]
     convert (show Odd 5 by decide).pow_inj.ne.mpr h; norm_num
-  have := by simpa [-hasDerivAt_const_add_iff] using ((hasDerivAt_pow 5 x).const_add 1)
+  have := by simpa [-hasDerivAt_const_add_iff] using (hasDerivAt_pow 5 x).const_add 1
   convert (this.fun_mul ((this.log h).sub_const 1)).div_const 5 using 1
   field
 
@@ -54,8 +67,8 @@ theorem Zad1i (x : ℝ) : HasDerivAt (fun x => -(exp (-x) * (2 * cos (2 * x) + s
   ring
 
 theorem Zad1j (h₀ : sin x ≠ 0) (h₁ : sin x ≠ 1) (h₂ : sin x ≠ -1) :
-    HasDerivAt (fun x => log (-log (sin x))) (cot x / log (sin x)) x := by
-  simp_rw [log_neg_eq_log, cot_eq_cos_div_sin]
+    HasDerivAt (fun x => log (log (sin x))) (cot x / log (sin x)) x := by
+  simp_rw [cot_eq_cos_div_sin]
   apply ((hasDerivAt_sin x).log h₀).log
   simp; bound
 
@@ -63,18 +76,9 @@ theorem Zad1k (x : ℝ) : HasDerivAt (fun x => arctan (exp x)) (exp x + exp (-x)
   convert (hasDerivAt_exp x).arctan using 1; rw [exp_neg]; field
 
 theorem Zad1l (x : ℝ) : HasDerivAt (fun x => 2 * arctan ((2 * x + 1) / √3) / √3) (x ^ 2 + x + 1)⁻¹ x := by
-  convert (((hasDerivAt_const_mul 2).add_const 1).div_const √3).arctan.mul_const (2 / √3) using 1
-  · ext; ring
-  · field_simp; rw [sq_sqrt (by simp), div_eq_iff]; · ring
-    ring_nf; nlinarith
-
-theorem _root_.hasDerivAt_log_add_const {x C : ℝ} (h : x ≠ -C) :
-    HasDerivAt (fun x => log (x + C)) (x + C)⁻¹ x := by
-  simpa using ((hasDerivAt_id' x).add_const C).log (by bound)
-
-theorem _root_.hasDerivAt_log_sub_const {x C : ℝ} (h : x ≠ C) :
-    HasDerivAt (fun x => log (x - C)) (x - C)⁻¹ x := by
-  simpa using ((hasDerivAt_id' x).sub_const C).log (by bound)
+  convert ((((hasDerivAt_const_mul 2).add_const 1).div_const √3).arctan.const_mul 2).div_const √3 using 1
+  field_simp; rw [sq_sqrt (by simp), div_eq_iff]; · ring
+  ring_nf; nlinarith
 
 theorem Zad2a (h₁ : x ≠ 1) (h₂ : x ≠ -1) :
     HasDerivAt (fun x => (log (x + 1) - log (x - 1)) / 2) (1 - x ^ 2)⁻¹ x := by
@@ -106,14 +110,9 @@ theorem Zad2d (h : x ≠ -1) : HasDerivAt
 
 theorem Zad3_step (n : ℕ) (ih : HasDerivAt f (sin x ^ n) x) :
     HasDerivAt (fun x => ((n + 1) * f x - sin x ^ (n + 1) * cos x) / (n + 2)) (sin x ^ (n + 2)) x := by
-  convert (ih.const_mul ↑(n + 1)).fun_sub (((hasDerivAt_sin x).fun_pow (n + 1)).fun_mul (hasDerivAt_cos x))
+  convert (ih.const_mul (n + 1 : ℝ)).fun_sub (((hasDerivAt_sin x).fun_pow (n + 1)).fun_mul (hasDerivAt_cos x))
     |>.div_const (n + 2)
-  · exact (Nat.cast_add_one n).symm
-  · rw [mul_assoc, ← sq, cos_sq']; push_cast; field
-
-theorem _root_.HasDerivAt.tan {f : ℝ → ℝ} {f' x : ℝ} (hf : HasDerivAt f f' x) (hx : cos (f x) ≠ 0) :
-    HasDerivAt (fun x => tan (f x)) (f' / cos (f x) ^ 2) x := by
-  convert (hasDerivAt_tan hx).comp x hf using 1; ring
+  rw [mul_assoc, ← sq, cos_sq']; push_cast; field
 
 theorem Zad4a (h : cos (x / 2) ≠ 0) : HasDerivAt (fun x => arctan (2 * tan (x / 2)) / 2)
     (5 - 3 * cos x)⁻¹ x := by

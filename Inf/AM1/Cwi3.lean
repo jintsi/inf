@@ -1,6 +1,7 @@
 import Mathlib.Data.PNat.Order
 import Mathlib.Data.PNat.Interval
 import Mathlib.Topology.Algebra.Order.Floor
+import Inf.AM1.Tendsto
 import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 
 open Topology Filter
@@ -43,16 +44,11 @@ theorem Zad3 : Tendsto (fun n => 3 ^ n / n.factorial : ℕ → ℝ) atTop (𝓝 
 theorem Zad4 {a : ℕ → ℝ} {g : ℝ} (hg : g ≠ 0) (h : Tendsto a atTop (𝓝 g)) :
     Tendsto (fun n => a n ^ (3⁻¹ : ℝ)) atTop (𝓝 (g ^ (3⁻¹ : ℝ))) := h.rpow_const (Or.inl hg)
 
-theorem _root_.Filter.Tendsto.sqrt_atTop (h : Tendsto f l atTop) : Tendsto (fun x => √(f x)) l atTop :=
-  Real.tendsto_sqrt_atTop.comp h
-
 theorem Zad5a : Tendsto (fun n : ℕ => n ^ 2 / (√(n + 1) - √(n + 4))) atTop atBot := by
   apply Tendsto.congr (f₁ := fun n : ℕ => (√(n + 1) + √(n + 4)) * n ^ 2 / -3)
   · intro n; grind
-  have h1 := (tendsto_atTop_add_const_right _ 1 tendsto_id).sqrt_atTop
-  have h2 := (tendsto_atTop_add_const_right _ 4 tendsto_id).sqrt_atTop
-  exact (h1.atTop_add_atTop h2).atTop_mul_atTop₀ (tendsto_pow_atTop two_ne_zero)
-    |>.atTop_div_const_of_neg (by simp) |>.comp tendsto_natCast_atTop_atTop
+  exact (tendsto_natCast_add_atTop 1).sqrt_atTop.atTop_add_atTop ((tendsto_natCast_add_atTop 4).sqrt_atTop)
+    |>.atTop_mul_atTop₀ (tendsto_natCast_atTop.atTop_pow₀ 2) |>.atTop_div_const_of_neg (by simp)
 
 noncomputable def _root_.Real.cbrt := fun r : ℝ => r ^ (3⁻¹ : ℝ)
 
@@ -60,46 +56,37 @@ open Real
 
 theorem Zad5b : Tendsto (fun n : ℕ => n * (cbrt (n ^ 3 + n) - n)) atTop (𝓝 (1 / 3)) := by
   apply Tendsto.congr'; symm; simp [EventuallyEq]; use 1; intro n hn; calc
-    n * (cbrt (n ^ 3 + n) - n) = n * (n * (cbrt (1 + (↑n)⁻¹ ^ 2) - 1)) := by
+    n * (cbrt (n ^ 3 + n) - n) = n * (n * (cbrt (1 + (↑n ^ 2)⁻¹) - 1)) := by
       congr; rw [mul_sub, mul_one, cbrt, cbrt]; congr
       apply eq_mul_of_mul_inv_eq₀ (by positivity)
       rw [← Real.inv_rpow, ← Real.mul_rpow]; field_simp; simp; apply Real.pow_rpow_inv_natCast
       all_goals positivity
-    _ = (cbrt (1 + (↑n)⁻¹ ^ 2) ^ 2 + cbrt (1 + (↑n)⁻¹ ^ 2) + 1)⁻¹ := by
+    _ = (cbrt (1 + (↑n ^ 2)⁻¹) ^ 2 + cbrt (1 + (↑n ^ 2)⁻¹) + 1)⁻¹ := by
       apply eq_inv_of_mul_eq_one_left; ring_nf
       rw [cbrt, ← Nat.cast_ofNat (n := 3), Real.rpow_inv_natCast_pow]; field
       all_goals positivity
-  have := by simpa using tendsto_natCast_atTop_atTop.inv_tendsto_atTop.pow 2
-    |>.const_add 1 |>.rpow_const (p := 3⁻¹) (by simp)
+  have := (tendsto_natCast_atTop.atTop_pow₀ 2).inv_atTop.const_add_zero 1 |>.one_rpow_const 3⁻¹
   simp [cbrt, tendsto_inv_iff₀]; convert ((this.pow 2).add this).add_const 1; norm_num
 
 theorem Zad5c : Tendsto (fun n : ℕ => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) atTop (𝓝 1) := by
-  apply (tendsto_rpow_div.comp tendsto_natCast_atTop_atTop).squeeze'
-    ((tendsto_rpow_div_mul_add 2 1 (-1) zero_ne_one).comp
-      (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop))
+  apply (tendsto_rpow_div.comp tendsto_natCast_atTop).squeeze'
+    ((tendsto_rpow_div_mul_add 2 1 (-1) zero_ne_one).comp (tendsto_natCast_add_atTop 1))
   · simp; use 0; intro n hn; apply Real.rpow_le_rpow <;> try positivity
     norm_cast; grw [sq, ← n.le_mul_self]; simp
   · simp [div_eq_mul_inv]; use 2; intro n hn
     rw [Real.rpow_mul (by positivity)]; gcongr; norm_cast; linarith
 
-theorem _root_.tendsto_const_rpow_inv (a : ℝ) (ha : 0 < a) : Tendsto (fun x : ℝ => a ^ x⁻¹) atTop (𝓝 1) := by
-  wlog! ha' : 1 ≤ a
-  · convert (this a⁻¹ (by simpa) (by bound)).inv₀ (by simp) using 2 <;> simp [Real.inv_rpow ha.le]
-  apply tendsto_const_nhds.squeeze' tendsto_rpow_div
-  · simpa using ⟨0, fun x hx => Real.one_le_rpow ha' (inv_nonneg.mpr hx)⟩
-  · simpa using ⟨a, fun x hx => Real.rpow_le_rpow ha.le hx (by bound)⟩
-
 theorem Zad5d : Tendsto (fun n : ℕ => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ)) atTop (𝓝 7) := by
   have := (isLittleO_pow_pow_of_abs_lt_left (show |-3| < |7| by norm_num)).right_isTheta_add'
   have ⟨c₁, hc₁, h₁⟩ := Asymptotics.isBigO_iff''.mp this.isBigO
   have ⟨c₂, hc₂, h₂⟩ := Asymptotics.isBigO_iff'.mp this.isBigO_symm
-  simp [-eventually_atTop] at h₁ h₂
+  simp only [norm_pow, norm_ofNat, Pi.add_apply, norm_eq_abs] at h₁ h₂
   suffices Tendsto (fun n : ℕ => |(7 ^ n + (-3) ^ n : ℝ)| ^ (n⁻¹ : ℝ)) atTop (𝓝 7) by
     apply this.congr; intro n; congr; simp
     rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]; positivity; bound
   apply Tendsto.squeeze' (g := fun n : ℕ => c₁ ^ (n⁻¹ : ℝ) * 7) (h := fun n : ℕ => c₂ ^ (n⁻¹ : ℝ) * 7)
-  · simpa using ((tendsto_const_rpow_inv c₁ hc₁).comp tendsto_natCast_atTop_atTop).mul_const 7
-  · simpa using ((tendsto_const_rpow_inv c₂ hc₂).comp tendsto_natCast_atTop_atTop).mul_const 7
+  · simpa using ((tendsto_const_rpow_inv c₁ hc₁).comp tendsto_natCast_atTop).mul_const 7
+  · simpa using ((tendsto_const_rpow_inv c₂ hc₂).comp tendsto_natCast_atTop).mul_const 7
   map_tacs [apply h₁.mp; apply h₂.mp]; all_goals
   · simp; use 1; intro n hn this
     convert Real.rpow_le_rpow (by bound) this (show 0 ≤ (n⁻¹ : ℝ) by simp) using 1
@@ -144,7 +131,7 @@ theorem Zad10 {a : ℕ → ℝ} (h : Tendsto a atTop atBot) :
 
 theorem Zad11a : Tendsto (fun n => ((2 * n + 3) / (2 * n + 5)) ^ (1 + n) : ℕ → ℝ) atTop (𝓝 (exp (-1))) := by
   suffices Tendsto (fun n => (1 - 2 / (2 * n + 3)) ^ n : ℕ → ℝ) atTop (𝓝 (exp (-1))) by
-    convert this.comp (tendsto_id.atTop_add_nonneg fun _ => zero_le_one) using 2; simp; field_simp; ring
+    convert (tendsto_add_atTop_iff_nat 1).mpr this using 2; rw [Nat.cast_add_one]; field_simp; ring
   simp_rw [sub_eq_add_neg]; apply tendsto_one_add_pow_exp_of_tendsto
   field_simp
   convert tendsto_add_mul_div_add_mul_atTop_nhds 0 3 (-2 : ℝ) two_ne_zero using 2 <;> grind
@@ -167,8 +154,8 @@ theorem Zad15 : ¬∀ a b : ℕ → ℝ, Tendsto (a * b) atTop (𝓝 0) →
   · convert tendsto_const_nhds with n; simp +contextual [Classical.or_iff_not_imp_left]
   all_goals rw [tendsto_iff_seq_tendsto]; simp_rw [not_forall, exists_prop]
   · exists fun n => 2 * n + 1
-    use (tendsto_id.const_mul_atTop' two_pos).atTop_add_nonneg fun n => zero_le_one
+    use (tendsto_const_mul_atTop' two_pos).atTop_add_nonneg fun n => zero_le_one
     simp [Function.comp_def]
   · exists fun n => 2 * n
-    use tendsto_id.const_mul_atTop' two_pos
+    use tendsto_const_mul_atTop' two_pos
     simp [Function.comp_def]
