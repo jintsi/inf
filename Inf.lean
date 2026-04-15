@@ -33,7 +33,7 @@ Term 1:
 - Linear Algebra 1 (ALG1)
 
 Term 2 (current):
-- Analysis 2 (AM2, in progress)
+- Analysis 2 (AM2, up to date)
 - Discrete Mathematics 1 (MD1, up to date)
 - Linear Algebra 2 (ALG2, TBD)
 -/
