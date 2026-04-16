@@ -28,28 +28,26 @@ theorem Zad11_2c [CommRing R] [Nontrivial R] [Fintype n] [DecidableEq n] {A : Ma
   simp [reverse, this]; rw [← C_ofNat, ← C_ofNat, ← pow_one X]
   simp [-pow_one, ← pow_mul]; simp [C_ofNat]; ring
 
-local instance Zad11_3_invertible : Invertible (!![1, 2, 2; 2, 1, -2; 2, -2, 1] : Matrix _ _ ℚ) where
-  invOf := !![1 / 9, 2 / 9, 2 / 9; 2 / 9, 1 / 9, -(2 / 9); 2 / 9, -(2 / 9), 1 / 9]
-  invOf_mul_self := by norm_num; ext i j; fin_cases i <;> fin_cases j <;> rfl
-  mul_invOf_self := by norm_num; ext i j; fin_cases i <;> fin_cases j <;> rfl
+lemma Zad11_3_isUnit : IsUnit (!![1, 2, 2; 2, 1, -2; 2, -2, 1] : Matrix _ _ ℚ) := by
+  simp [isUnit_iff_isUnit_det, det_fin_three]; norm_num
 
 /-- The column vectors `![1, 2, 2]`, `![2, 1, -2]`, and `![2, -2, 1]` are the matrix's eigenvectors.  -/
 theorem Zad11_3a : (!![2, -2, 0; -2, 1, -2; 0, -2, 0] : Matrix _ _ ℚ) =
     !![1, 2, 2; 2, 1, -2; 2, -2, 1] * diagonal ![-2, 1, 4] * !![1, 2, 2; 2, 1, -2; 2, -2, 1]⁻¹ := by
+  have := Zad11_3_isUnit.invertible
   symm; rw [mul_inv_eq_iff_eq_mul_of_invertible]
   ext i j; fin_cases i <;> fin_cases j <;> norm_num
 
-theorem _root_.Matrix.mul_mul_inv_pow [CommRing R] [Fintype n] [DecidableEq n]
-    (A : Matrix n n R) (B : Matrix n n R) [Invertible A] (k : ℕ) :
-    (A * B * A⁻¹) ^ k = A * B ^ k * A⁻¹ := by
-  induction k
-  case zero => simp
-  case succ k ih => simp [pow_add, ih, ← mul_assoc]
+theorem _root_.Matrix.conj_pow [CommRing R] [Fintype n] [DecidableEq n]
+    {M : Matrix n n R} (h : IsUnit M) (N : Matrix n n R) (n : ℕ) :
+    (M * N * M⁻¹) ^ n = M * N ^ n * M⁻¹ := by
+  have := h.invertible
+  induction n with simp [pow_add, *, ← mul_assoc]
 
 theorem Zad11_3b (n : ℕ) : (!![2, -2, 0; -2, 1, -2; 0, -2, 0] : Matrix _ _ ℚ) ^ n = (9⁻¹ : ℚ) •
     !![4 * 4 ^ n +     (-2) ^ n + 4, -4 * 4 ^ n + 2 * (-2) ^ n + 2,  2 * 4 ^ n + 2 * (-2) ^ n - 4;
       -4 * 4 ^ n + 2 * (-2) ^ n + 2,  4 * 4 ^ n + 4 * (-2) ^ n + 1, -2 * 4 ^ n + 4 * (-2) ^ n - 2;
        2 * 4 ^ n + 2 * (-2) ^ n - 4, -2 * 4 ^ n + 4 * (-2) ^ n - 2,      4 ^ n + 4 * (-2) ^ n + 4] := by
-  rw [Zad11_3a, mul_mul_inv_pow, diagonal_pow, /-mul_inv_eq_iff_eq_mul_of_invertible-/]
-  simp [← invOf_eq_nonsing_inv, Invertible.invOf, ← vecMulᵣ_eq, vecHead, vecTail, vecMulᵣ]
+  rw [Zad11_3a, Matrix.conj_pow Zad11_3_isUnit, diagonal_pow, /-mul_inv_eq_iff_eq_mul_of_invertible-/]
+  simp [inv_def, det_fin_three, ← vecMulᵣ_eq, vecHead, vecTail, vecMulᵣ]; norm_num
   and_intros <;> ring
