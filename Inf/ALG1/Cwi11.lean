@@ -48,6 +48,6 @@ theorem Zad11_3b (n : ℕ) : (!![2, -2, 0; -2, 1, -2; 0, -2, 0] : Matrix _ _ ℚ
     !![4 * 4 ^ n +     (-2) ^ n + 4, -4 * 4 ^ n + 2 * (-2) ^ n + 2,  2 * 4 ^ n + 2 * (-2) ^ n - 4;
       -4 * 4 ^ n + 2 * (-2) ^ n + 2,  4 * 4 ^ n + 4 * (-2) ^ n + 1, -2 * 4 ^ n + 4 * (-2) ^ n - 2;
        2 * 4 ^ n + 2 * (-2) ^ n - 4, -2 * 4 ^ n + 4 * (-2) ^ n - 2,      4 ^ n + 4 * (-2) ^ n + 4] := by
-  rw [Zad11_3a, Matrix.conj_pow Zad11_3_isUnit, diagonal_pow, /-mul_inv_eq_iff_eq_mul_of_invertible-/]
+  rw [Zad11_3a, Matrix.conj_pow Zad11_3_isUnit, diagonal_pow]
   simp [inv_def, det_fin_three, ← vecMulᵣ_eq, vecHead, vecTail, vecMulᵣ]; norm_num
   and_intros <;> ring
