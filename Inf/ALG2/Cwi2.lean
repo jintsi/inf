@@ -4,7 +4,7 @@ import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import Mathlib.Geometry.Euclidean.Angle.Unoriented.Basic
 
-open Real Matrix InnerProductSpace
+open Real Matrix InnerProductSpace RealInnerProductSpace
 
 namespace ALG2
 
@@ -14,24 +14,25 @@ alias Zad2_1b := inner_zero_left
 theorem Zad2_2 [Fintype n] {A : Matrix n n ℝ} : (Aᵀ * A).trace = 0 → A = 0 := by
   simp [← A.trace_conjTranspose_mul_self_eq_zero_iff]
 
-@[implicit_reducible]
-def Zad2_3 [Fintype n] [DecidableEq n] : Core ℝ (Matrix n n ℝ) where
-  inner A B := (Aᵀ * B).trace
-  conj_inner_symm A B := by simp; rw [← trace_transpose]; simp
-  re_inner_nonneg A := by simp [trace, mul_apply, ← sq]; positivity
-  add_left A B C := by simp [add_mul]
-  smul_left A B r := by simp
-  definite A := Zad2_2
+namespace Zad2_3
 
-noncomputable local instance [Fintype n] [DecidableEq n] : NormedAddCommGroup (Matrix n n ℝ) :=
-  Zad2_3.toNormedAddCommGroup
+variable [Fintype n] [DecidableEq n]
 
-noncomputable local instance [Fintype n] [DecidableEq n] : InnerProductSpace ℝ (Matrix n n ℝ) :=
-  ofCore Zad2_3.toCore
+noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup (Matrix n n ℝ) :=
+  toMatrixNormedAddCommGroup 1 PosDef.one
+
+noncomputable scoped instance innerProductSpace : InnerProductSpace ℝ (Matrix n n ℝ) :=
+  toMatrixInnerProductSpace 1 PosSemidef.one
 
 @[simp]
-lemma norm_matrix [Fintype n] [DecidableEq n] (A : Matrix n n ℝ) : ‖A‖ = √(Aᵀ * A).trace := rfl
+lemma inner_def (A B : Matrix n n ℝ) : ⟪A, B⟫ = (Aᵀ * B).trace := by simpa [inner] using trace_mul_comm _ _
 
+@[simp]
+lemma norm_def (A : Matrix n n ℝ) : ‖A‖ = √(Aᵀ * A).trace := by simp [← inner_def]
+
+end Zad2_3
+
+open Zad2_3 in
 theorem Zad2_4 : ‖!![(2 : ℝ), 1; 0, 2]‖ = 3 := by norm_num [trace, mul_apply, sqrt_eq_cases]
 
 open MeasureTheory in
@@ -55,9 +56,10 @@ theorem Zad2_6 : angle !₂[(1 : ℝ), 2, 3] !₂[3, -1, 2] = π / 3 := by
   simp [angle, inner, EuclideanSpace.norm_eq, Fin.sum_univ_three]; norm_num
   apply arccos_eq_of_eq_cos <;> bound
 
+open Zad2_3 in
 theorem Zad2_8 : (ℝ ∙ !![(4 : ℝ), 2; -2, 1]).starProjection !![-2, 1; 0, 2] =
     !![-(16 / 25), -(8 / 25); 8 / 25, -(4 / 25)] := by
-  norm_num [Submodule.starProjection_singleton, inner, trace, mul_apply]
+  norm_num [Submodule.starProjection_singleton, trace, mul_apply]
 
 theorem Zad2_9 [CommRing R] [NoZeroDivisors R] [Fintype n] [DecidableEq n] {A : Matrix n n R}
     (h : Aᵀ * A = 1) : A.det = 1 ∨ A.det = -1 := by
