@@ -1,3 +1,4 @@
+import Inf.ALG2.Sylvester
 import Inf.ALG2.Cwi2
 import Inf.ALG1.Cwi7
 import Mathlib.Algebra.Order.Chebyshev
@@ -9,12 +10,7 @@ open Real Matrix InnerProductSpace RealInnerProductSpace
 
 namespace ALG2.Zad3_1
 
-lemma posDef : !![1, 0, 1; 0, 2, 0; 1, 0, (3 : ℝ)].PosDef := by
-  apply PosDef.of_dotProduct_mulVec_pos (by simp [IsHermitian.ext_iff, Fin.forall_fin_succ])
-  simp [← FinVec.forall_iff, FinVec.Forall, -not_and]; intro x y z h
-  convert_to 0 < (x + z) ^ 2 + 2 * y ^ 2 + 2 * z ^ 2; · ring
-  have : ¬(x + z = 0 ∧ y = 0 ∧ z = 0) := by grind only
-  contrapose! this; and_intros <;> nlinarith
+lemma posDef : !![1, 0, 1; 0, 2, 0; 1, 0, (3 : ℝ)].PosDef := by simp [IsHermitian.ext_iff]
 
 noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup (Fin 3 → ℝ) :=
   toNormedAddCommGroup _ posDef
@@ -35,7 +31,7 @@ end Zad3_1
 open Zad3_1 in
 theorem Zad3_1a : (ℝ ∙ ![1, 1, (1 : ℝ)]).orthogonal = Submodule.span ℝ {![1, 1, -1], ![1, -1, 0]} := by
   ext v; simp [Submodule.mem_orthogonal_singleton_iff_inner_right, Submodule.mem_span_pair]; constructor
-  · intro h; exists -v 2, v 0 + v 2; apply funext; simp [Fin.forall_fin_succ]; linarith
+  · intro h; exists -v 2, v 0 + v 2; apply funext; simp; linarith
   · rintro ⟨a, b, rfl⟩; simp; ring
 
 open Zad3_1 in
@@ -97,9 +93,9 @@ lemma inner_eq {p q : degreeLT ℝ n} : ⟪p, q⟫ =
     ∑ i ∈ Finset.range n, ∑ j ∈ Finset.range n, p.val.coeff i * q.val.coeff j / (i + j + 1) := by
   simp [inner_eq_integral, eval_eq_sum_degreeLTEquiv p.property, eval_eq_sum_degreeLTEquiv q.property,
     degreeLTEquiv, Fin.sum_univ_eq_sum_range fun i => _ * _, Finset.sum_mul_sum]
-  rw [intervalIntegral.integral_finset_sum fun i hi => ContinuousOn.intervalIntegrable (by fun_prop)]
+  rw [intervalIntegral.integral_finsetSum fun i hi => ContinuousOn.intervalIntegrable (by fun_prop)]
   congr! with i hi
-  rw [intervalIntegral.integral_finset_sum fun j hj => ContinuousOn.intervalIntegrable (by fun_prop)]
+  rw [intervalIntegral.integral_finsetSum fun j hj => ContinuousOn.intervalIntegrable (by fun_prop)]
   congr! with j hj; simp [mul_assoc, ← mul_left_comm (q.val.coeff j), ← pow_add]; ring
 
 theorem first : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 0).val = 1 := by
@@ -123,7 +119,7 @@ noncomputable def Zad3_7.V : Submodule ℝ (EuclideanSpace ℝ (Fin 3)) :=
 
 @[simp]
 lemma Zad3_7.mem_V : x ∈ V ↔ x.ofLp 0 + 2 * x.ofLp 1 - x.ofLp 2 = 0 := by
-  simp [V, Submodule.mem_span_pair, PiLp.ext_iff, Fin.forall_fin_succ, sub_eq_zero, mul_comm]
+  simp [V, Submodule.mem_span_pair, PiLp.ext_iff, sub_eq_zero, mul_comm]
 
 noncomputable def Zad3_7.basis : OrthonormalBasis (Fin 2) ℝ V :=
   gramSchmidtOrthonormalBasis (by
@@ -131,7 +127,7 @@ noncomputable def Zad3_7.basis : OrthonormalBasis (Fin 2) ℝ V :=
     · simp
     · infer_instance
     · infer_instance
-    apply linearIndepOn_id_pair (by simp); simp [PiLp.ext_iff, Fin.exists_fin_succ]
+    apply linearIndepOn_id_pair (by simp); simp [PiLp.ext_iff]
   ) ![⟨!₂[1, 0, 1], by simp⟩, ⟨!₂[-1, 1, 1], by simp; norm_num⟩]
 
 theorem Zad3_7a : Zad3_7.basis i = ![!₂[(√2)⁻¹, 0, (√2)⁻¹], !₂[-(√3)⁻¹, (√3)⁻¹, (√3)⁻¹]] i := by
@@ -142,7 +138,7 @@ theorem Zad3_7a : Zad3_7.basis i = ![!₂[(√2)⁻¹, 0, (√2)⁻¹], !₂[-(�
 theorem Zad3_7b : Zad3_7.V.starProjection !₂[x, y, z] =
     !₂[5 / 6 * x - y / 3 + z / 6, -(x / 3) + y / 3 + z / 3, x / 6 + y / 3 + 5 / 6 * z] := by
   simp [Zad3_7.basis.starProjection_eq_sum_rankOne, Zad3_7a, inner, Fin.sum_univ_three,
-    PiLp.ext_iff, Fin.forall_fin_succ, add_mul, mul_assoc, ← mul_inv]; ring_nf; trivial
+    PiLp.ext_iff, add_mul, mul_assoc, ← mul_inv]; ring_nf; trivial
 
 theorem Zad3_8 : !![2024, 1; -1, 0] =
     ∑ i, ![-2024, 0, -1, 0] i • ![!![-1, 0; 0, 0], !![0, 2; 2, 1], !![0, -1; 1, 0], !![0, 1; -1, 4]] i := by
