@@ -64,7 +64,7 @@ namespace Zad3_6
 open Polynomial
 
 @[implicit_reducible]
-noncomputable def core : Core ℝ (Polynomial.degreeLT ℝ n) where
+noncomputable def core : Core ℝ ℝ[X]_n where
   inner p q := ∫ x in 0..1, p.val.eval x * q.val.eval x
   conj_inner_symm p q := by simp [mul_comm]
   re_inner_nonneg p := by simpa [← sq] using intervalIntegral.integral_nonneg zero_le_one (by bound)
@@ -79,17 +79,17 @@ noncomputable def core : Core ℝ (Polynomial.degreeLT ℝ n) where
     · filter_upwards; simp; bound
     · apply ContinuousOn.intervalIntegrable; fun_prop
 
-noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup (Polynomial.degreeLT ℝ n) :=
+noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup ℝ[X]_n :=
   core.toNormedAddCommGroup
 
-noncomputable scoped instance innerProductSpace : InnerProductSpace ℝ (Polynomial.degreeLT ℝ n) :=
+noncomputable scoped instance innerProductSpace : InnerProductSpace ℝ ℝ[X]_n :=
   ofCore core.toCore
 
-lemma inner_eq_integral {p q : degreeLT ℝ n} :
+lemma inner_eq_integral {p q : ℝ[X]_n} :
     ⟪p, q⟫ = ∫ x in 0..1, p.val.eval x * q.val.eval x := rfl
 
 @[simp]
-lemma inner_eq {p q : degreeLT ℝ n} : ⟪p, q⟫ =
+lemma inner_eq {p q : ℝ[X]_n} : ⟪p, q⟫ =
     ∑ i ∈ Finset.range n, ∑ j ∈ Finset.range n, p.val.coeff i * q.val.coeff j / (i + j + 1) := by
   simp [inner_eq_integral, eval_eq_sum_degreeLTEquiv p.property, eval_eq_sum_degreeLTEquiv q.property,
     degreeLTEquiv, Fin.sum_univ_eq_sum_range fun i => _ * _, Finset.sum_mul_sum]

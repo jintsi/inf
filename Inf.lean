@@ -30,6 +30,7 @@ import Inf.AM2.Cwi4
 import Inf.ALG2.Cwi1
 import Inf.ALG2.Cwi2
 import Inf.ALG2.Cwi3
+import Inf.ALG2.Cwi4
 
 /-! ### Status
 
@@ -40,5 +41,5 @@ Term 1:
 Term 2 (current):
 - Analysis 2 (AM2, up to date)
 - Discrete Mathematics 1 (MD1, up to date)
-- Linear Algebra 2 (ALG2, in progress)
+- Linear Algebra 2 (ALG2, up to date)
 -/
