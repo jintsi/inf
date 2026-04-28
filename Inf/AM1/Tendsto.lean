@@ -162,12 +162,13 @@ theorem atTop_pow₀ [Semiring R] [PartialOrder R] [IsOrderedRing R] (n : ℕ) [
 
 /-! `Mathlib.Order.Filter.AtTopBot.Field` -/
 
-section variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K] {f : α → K}
-
+variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K] in
 theorem _root_.tendsto_const_mul_atTop {C : K} (h : 0 < C) : Tendsto (fun x => C * x) atTop atTop :=
   tendsto_id.const_mul_atTop h
 
-end
+variable [Field K] [LinearOrder K] [IsStrictOrderedRing K] in
+theorem _root_.tendsto_const_mul_atTop_of_neg {C : K} (h : C < 0) :
+    Tendsto (fun x => C * x) atTop atBot := tendsto_id.const_mul_atTop_of_neg h
 
 /-! `Mathlib.Topology.Algebra.Order.Field` -/
 
