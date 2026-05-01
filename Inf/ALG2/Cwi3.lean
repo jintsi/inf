@@ -15,10 +15,8 @@ lemma posDef : !![1, 0, 1; 0, 2, 0; 1, 0, (3 : ℝ)].PosDef := by simp [IsHermit
 noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup (Fin 3 → ℝ) :=
   toNormedAddCommGroup _ posDef
 
-noncomputable scoped instance seminormedAddCommGroup : SeminormedAddCommGroup (Fin 3 → ℝ) :=
-  toSeminormedAddCommGroup _ posDef.posSemidef
-
-noncomputable scoped instance innerProductSpace : InnerProductSpace ℝ (Fin 3 → ℝ) :=
+noncomputable scoped instance innerProductSpace :
+    @InnerProductSpace ℝ (Fin 3 → ℝ) _ normedAddCommGroup.toSeminormedAddCommGroup :=
   toInnerProductSpace _ posDef.posSemidef
 
 @[simp]
@@ -64,8 +62,8 @@ namespace Zad3_6
 open Polynomial
 
 @[implicit_reducible]
-noncomputable def core : Core ℝ ℝ[X]_n where
-  inner p q := ∫ x in 0..1, p.val.eval x * q.val.eval x
+noncomputable def core : Core ℝ ℝ[X] where
+  inner p q := ∫ x in 0..1, p.eval x * q.eval x
   conj_inner_symm p q := by simp [mul_comm]
   re_inner_nonneg p := by simpa [← sq] using intervalIntegral.integral_nonneg zero_le_one (by bound)
   add_left p q r := by simp [add_mul]; apply intervalIntegral.integral_add <;>
@@ -74,22 +72,22 @@ noncomputable def core : Core ℝ ℝ[X]_n where
   definite p := by
     simp [← sq]; rw [intervalIntegral.integral_eq_zero_iff_of_le_of_nonneg_ae zero_le_one]
     · intro h; have := MeasureTheory.Measure.eqOn_Ioc_of_ae_eq _ h (by fun_prop) (by fun_prop)
-      ext1; apply eq_zero_of_infinite_isRoot; apply (Set.Ioc_infinite one_pos).mono
+      apply eq_zero_of_infinite_isRoot; apply (Set.Ioc_infinite one_pos).mono
       simp_all [Set.EqOn, Set.subset_def]
     · filter_upwards; simp; bound
     · apply ContinuousOn.intervalIntegrable; fun_prop
 
-noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup ℝ[X]_n :=
+noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup ℝ[X] :=
   core.toNormedAddCommGroup
 
-noncomputable scoped instance innerProductSpace : InnerProductSpace ℝ ℝ[X]_n :=
+noncomputable scoped instance innerProductSpace : InnerProductSpace ℝ ℝ[X] :=
   ofCore core.toCore
 
-lemma inner_eq_integral {p q : ℝ[X]_n} :
-    ⟪p, q⟫ = ∫ x in 0..1, p.val.eval x * q.val.eval x := rfl
+lemma inner_eq_integral {p q : ℝ[X]} :
+    ⟪p, q⟫ = ∫ x in 0..1, p.eval x * q.eval x := rfl
 
 @[simp]
-lemma inner_eq {p q : ℝ[X]_n} : ⟪p, q⟫ =
+lemma inner_degreeLT_eq {p q : ℝ[X]_n} : ⟪p, q⟫ =
     ∑ i ∈ Finset.range n, ∑ j ∈ Finset.range n, p.val.coeff i * q.val.coeff j / (i + j + 1) := by
   simp [inner_eq_integral, eval_eq_sum_degreeLTEquiv p.property, eval_eq_sum_degreeLTEquiv q.property,
     degreeLTEquiv, Fin.sum_univ_eq_sum_range fun i => _ * _, Finset.sum_mul_sum]
@@ -104,26 +102,30 @@ theorem first : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 0).val = 1 := by
 theorem second : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 1).val = X - C 2⁻¹ := by
   rw [gramSchmidt_def, ← Fintype.sum_ite_mem]
   norm_num [Submodule.starProjection_singleton, ← real_inner_self_eq_norm_sq, -inner_self_eq_norm_sq_to_K,
-    first, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul]
+    first, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul, -Submodule.coe_inner, -Submodule.coe_norm]
 
 theorem third : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 2).val = X ^ 2 - X + C 6⁻¹ := by
   rw [gramSchmidt_def, ← Fintype.sum_ite_mem]
   norm_num [Submodule.starProjection_singleton, ← real_inner_self_eq_norm_sq, -inner_self_eq_norm_sq_to_K,
-    Fin.sum_univ_succ, Fin.lt_def, first, second, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul]
+    Fin.sum_univ_succ, Fin.lt_def, first, second, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul,
+    -Submodule.coe_inner, -Submodule.coe_norm]
   rw [show C (1 / 6 : ℝ) = C 2⁻¹ - C 3⁻¹ by norm_num [← C_sub]]; ring_nf
 
 end Zad3_6
 
-noncomputable def Zad3_7.V : Submodule ℝ (EuclideanSpace ℝ (Fin 3)) :=
+/-- Subspace `{(x, y, z) | x + 2 * y - z = 0}` of `EuclideanSpace ℝ (Fin 3)` -/
+noncomputable def Zad3_7.X : Submodule ℝ (EuclideanSpace ℝ (Fin 3)) :=
   .span ℝ {!₂[1, 0, 1], !₂[0, 1, 2]}
 
 @[simp]
-lemma Zad3_7.mem_V : x ∈ V ↔ x.ofLp 0 + 2 * x.ofLp 1 - x.ofLp 2 = 0 := by
-  simp [V, Submodule.mem_span_pair, PiLp.ext_iff, sub_eq_zero, mul_comm]
+lemma Zad3_7.mem_X : x ∈ X ↔ x.ofLp 0 + 2 * x.ofLp 1 - x.ofLp 2 = 0 := by
+  simp [X, Submodule.mem_span_pair, PiLp.ext_iff, sub_eq_zero, mul_comm]
 
-noncomputable def Zad3_7.basis : OrthonormalBasis (Fin 2) ℝ V :=
+/-- An orthonormal basis on `X` with basis vectors `!₂[(√2)⁻¹, 0, (√2)⁻¹]` and
+`!₂[-(√3)⁻¹, (√3)⁻¹, (√3)⁻¹]`. -/
+noncomputable def Zad3_7.basis : OrthonormalBasis (Fin 2) ℝ X :=
   gramSchmidtOrthonormalBasis (by
-    simp only [V]; convert finrank_span_set_eq_card ?_
+    simp only [X]; convert finrank_span_set_eq_card ?_
     · simp
     · infer_instance
     · infer_instance
@@ -135,7 +137,7 @@ theorem Zad3_7a : Zad3_7.basis i = ![!₂[(√2)⁻¹, 0, (√2)⁻¹], !₂[-(�
   case hf => simp [Pairwise, inner, Fin.sum_univ_three]
   all_goals fin_cases i <;> simp [PiLp.norm_eq_of_L2, Fin.sum_univ_three, ← WithLp.toLp_smul] <;> norm_num
 
-theorem Zad3_7b : Zad3_7.V.starProjection !₂[x, y, z] =
+theorem Zad3_7b : Zad3_7.X.starProjection !₂[x, y, z] =
     !₂[5 / 6 * x - y / 3 + z / 6, -(x / 3) + y / 3 + z / 3, x / 6 + y / 3 + 5 / 6 * z] := by
   simp [Zad3_7.basis.starProjection_eq_sum_rankOne, Zad3_7a, inner, Fin.sum_univ_three,
     PiLp.ext_iff, add_mul, mul_assoc, ← mul_inv]; ring_nf; trivial

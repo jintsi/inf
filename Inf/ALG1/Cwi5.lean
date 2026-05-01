@@ -11,7 +11,10 @@ A module is just a vector space with less axioms required from `K` and `V` separ
 which is why the same typeclass is used for both - and why `K` and `V` are typically notated
 `R` and `M` instead, i.e. `[Semiring R] [AddCommMonoid M] [Module R M]`. -/
 
-class IsSubmodule (R : Type u) {M : Type v} [Semiring R] [AddCommMonoid M] [Module R M] (s : Set M) : Prop where
+/-- A subset of a module (vector space) is a submodule (subspace) iff it contains the origin and
+is closed under addition and scalar multiplication. -/
+structure IsSubmodule (R : Type u) {M : Type v} [Semiring R] [AddCommMonoid M] [Module R M]
+    (s : Set M) : Prop where
   zero_mem : 0 ∈ s
   add_mem : a ∈ s → b ∈ s → a + b ∈ s
   smul_mem (c : R) {x : M} : x ∈ s → c • x ∈ s
@@ -141,5 +144,4 @@ alias Zad5_D5b1 := neg_smul
 
 alias Zad5_D5b2 := smul_neg
 
-theorem Zad5_D5c [Ring R] [AddCommGroup M] [Module R M] (v : M) : -1 • v = -v := by
-  rw [neg_smul, one_smul]
+alias Zad5_D5c := neg_one_smul

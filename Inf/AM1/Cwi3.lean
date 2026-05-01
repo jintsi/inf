@@ -50,6 +50,7 @@ theorem Zad5a : Tendsto (fun n : ℕ => n ^ 2 / (√(n + 1) - √(n + 4))) atTop
   exact (tendsto_natCast_add_atTop 1).sqrt_atTop.atTop_add_atTop ((tendsto_natCast_add_atTop 4).sqrt_atTop)
     |>.atTop_mul_atTop₀ (tendsto_natCast_atTop.atTop_pow₀ 2) |>.atTop_div_const_of_neg (by simp)
 
+/-- The cube root function `r.cbrt = r ^ 3⁻¹`. -/
 noncomputable def _root_.Real.cbrt := fun r : ℝ => r ^ (3⁻¹ : ℝ)
 
 open Real

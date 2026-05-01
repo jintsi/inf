@@ -23,6 +23,7 @@ theorem Zad4_4b : MeasureTheory.volume (parallelepiped
   case hb => rfl
   simp [Basis.det, det_fin_three, Basis.toMatrix]
 
+/-- Basis `B = ![1 + X, 1 - 2 * X]`. -/
 noncomputable def Zad4_5.B : Basis (Fin 2) ℝ ℝ[X]_2 := by
   apply basisOfLinearIndependentOfCardEqFinrank
     (b := ![⟨1 + X, by rw [mem_degreeLT]; compute_degree!⟩,
@@ -33,6 +34,7 @@ noncomputable def Zad4_5.B : Basis (Fin 2) ℝ ℝ[X]_2 := by
 
 theorem Zad4_5.B_eq : (B i).val = ![1 + X, 1 - 2 * X] i := by fin_cases i <;> simp [B]
 
+/-- Basis `C = ![3 - X, 2 + X]`. -/
 noncomputable def Zad4_5.C : Basis (Fin 2) ℝ ℝ[X]_2 := by
   apply basisOfLinearIndependentOfCardEqFinrank
     (b := ![⟨3 - X, by rw [mem_degreeLT]; compute_degree!⟩,

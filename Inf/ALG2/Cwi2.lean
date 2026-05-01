@@ -1,3 +1,4 @@
+import Mathlib.Analysis.Matrix.Normed
 import Mathlib.Analysis.Matrix.Order
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.Haar.OfBasis
@@ -11,24 +12,30 @@ namespace ALG2
 alias Zad2_1a := inner_zero_right
 alias Zad2_1b := inner_zero_left
 
-theorem Zad2_2 [Fintype n] {A : Matrix n n ℝ} : (Aᵀ * A).trace = 0 → A = 0 := by
-  simp [← A.trace_conjTranspose_mul_self_eq_zero_iff]
+alias ⟨Zad2_2, _⟩ := trace_conjTranspose_mul_self_eq_zero_iff
 
 namespace Zad2_3
 
-variable [Fintype n] [DecidableEq n]
+variable [Fintype n] [DecidableEq n] [RCLike K]
 
-noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup (Matrix n n ℝ) :=
-  toMatrixNormedAddCommGroup 1 PosDef.one
+attribute [scoped instance] frobeniusNormedAddCommGroup frobeniusNormedSpace
 
-noncomputable scoped instance innerProductSpace : InnerProductSpace ℝ (Matrix n n ℝ) :=
-  toMatrixInnerProductSpace 1 PosSemidef.one
+/-- The standard inner product on real- or complex-valued matrices, given by
+`⟪A, B⟫ = (Aᴴ * B).trace`. -/
+noncomputable scoped instance innerProductSpace : InnerProductSpace K (Matrix n n K) where
+  inner A B := (Aᴴ * B).trace
+  conj_inner_symm A B := by trans (Bᴴ * A).conjTranspose.trace; simp [-conjTranspose_mul]; simp
+  add_left A B C := by simp [add_mul]
+  smul_left A B r := by simp
+  norm_sq_eq_re_inner A := by
+    rw [frobenius_norm_def, one_div, ← Nat.cast_ofNat, rpow_inv_natCast_pow (by positivity) two_ne_zero]
+    simpa [trace, mul_apply, RCLike.norm_sq_eq_def] using Finset.sum_comm
 
 @[simp]
-lemma inner_def (A B : Matrix n n ℝ) : ⟪A, B⟫ = (Aᵀ * B).trace := by simpa [inner] using trace_mul_comm _ _
+lemma inner_def (A B : Matrix n n K) : ⟪A, B⟫_K = (Aᴴ * B).trace := rfl
 
 @[simp]
-lemma norm_def (A : Matrix n n ℝ) : ‖A‖ = √(Aᵀ * A).trace := by simp [← inner_def]
+lemma norm_def (A : Matrix n n K) : ‖A‖ = √(RCLike.re (Aᴴ * A).trace) := by simp [← inner_def]
 
 end Zad2_3
 
@@ -36,6 +43,8 @@ open Zad2_3 in
 theorem Zad2_4 : ‖!![(2 : ℝ), 1; 0, 2]‖ = 3 := by norm_num [trace, mul_apply, sqrt_eq_cases]
 
 open MeasureTheory in
+/-- A nonnegative `u` induces an inner product on `C(Set.Icc a b, ℝ)` given by
+`⟪f, g⟫ = ∫ x, f x * g x * u x`. -/
 @[implicit_reducible]
 noncomputable def Zad2_5a {a b : ℝ} (u : C(Set.Icc a b, ℝ)) (hu : ∀ x, 0 ≤ u x) :
     PreInnerProductSpace.Core ℝ C(Set.Icc a b, ℝ) where
