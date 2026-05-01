@@ -1,7 +1,7 @@
 import Mathlib.Combinatorics.Enumerative.Stirling
 import Mathlib.Combinatorics.Enumerative.Bell
 import Mathlib.Order.Partition.Finpartition
-import Mathlib.Combinatorics.Enumerative.Catalan
+import Mathlib.Combinatorics.Enumerative.Catalan.Tree
 
 @[simp]
 theorem Finpartition.card_of_parts [DecidableEq α] (s : Finset α) (k : ℕ) :
@@ -50,8 +50,8 @@ theorem Finpartition.card_of_parts [DecidableEq α] (s : Finset α) (k : ℕ) :
   _ = _ + ∑ t ∈ {P : Finpartition s | P.parts.card = k + 1}, Finset.card {P | P.parts.card = k + 1
       ∧ P.part a ≠ {a} ∧ restrict P (Finset.subset_insert a s) = t} := by
     rw [Finset.card_eq_sum_card_fiberwise (f := fun P => restrict P (Finset.subset_insert a s))]
-    congr! 3 with t ht; simp at ht
-    · ext P; simp [Finpartition.ext_iff, restrict]; tauto
+    congr! 3 with t ht
+    · simp [Finset.filter_filter, and_assoc]
     · simp [Set.MapsTo, restrict]; intro P h₁ h₂
       have : ∀ x ∈ P.parts, (x ∩ s).Nonempty := by
         intro x hx; contrapose! h₂ with this; rw [← Finset.disjoint_iff_inter_eq_empty] at this
@@ -136,7 +136,7 @@ theorem Finpartition.card [DecidableEq α] (s : Finset α) :
     _ = ∑ t ∈ s.powerset, Finset.card {P : Finpartition (insert a s) | P.part a \ {a} = t} :=
       Finset.card_eq_sum_card_fiberwise (by simp; norm_cast; simp)
     _ = ∑ t ∈ s.powerset, Finset.card {P : Finpartition (insert a s) | P.part a = insert a t} := by
-      congr! 4 with t ht P; constructor
+      congr! 3 with t ht P; constructor
       · intro h; subst h; simp
       · intro h; rw [h]; simp [Finset.insert_sdiff_of_mem]
         rw [Finset.mem_powerset] at ht; exact Finset.notMem_mono ht ha
