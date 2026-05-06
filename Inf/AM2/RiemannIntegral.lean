@@ -18,7 +18,7 @@ theorem BoxIntegral.mem_interval (i : Unit → ℝ) : i ∈ interval a b hab ↔
 
 /-- An `i`th subinterval of `intervalPartition hab n`. -/
 noncomputable def BoxIntegral.intervalBox (i : ℕ) : Box Unit :=
-  interval (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n) (by gcongr <;> simp [hab])
+  interval (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n) (by gcongr; simp)
 
 open Classical in
 /-- A partition of `Set.Ioc a b` into `n` intervals of length `(b - a) / n`. -/
@@ -27,7 +27,7 @@ noncomputable def BoxIntegral.intervalPartition : Prepartition (interval a b hab
   le_of_mem' := by
     simp [intervalBox, fun I J => (Box.le_TFAE I J).out 0 3, Pi.le_def]; intro i hi; as_aux_lemma =>
       use (by bound); have : (i + 1 : ℝ) ≤ n := by norm_cast
-      field_simp; rw [← le_sub_iff_add_le', ← sub_mul]; gcongr; bound
+      field_simp; rw [← le_sub_iff_add_le', ← sub_mul]; gcongr
   pairwiseDisjoint := by
     rw [Finset.coe_image, Finset.coe_range]; apply Set.Pairwise.image; unfold Set.Pairwise Function.onFun
     simp_rw [Set.mem_Iio]; intro i hi j hj hne; apply Disjoint.of_image (f := Equiv.funUnique _ _)
@@ -92,7 +92,7 @@ noncomputable abbrev BoxIntegral.taggedIntervalPartition (t : ℕ → ℝ)
     TaggedPrepartition (interval a b hab) :=
   taggedIntervalPartition' hab hn t fun i hi => Set.mem_of_mem_of_subset (ht i) (by
       rw [Set.Icc_subset_Icc_iff (by bound), le_add_iff_nonneg_right]
-      exact intervalPartition._proof_7 hab hn i hi)
+      exact intervalPartition._proof_6 hab hn i hi)
 
 theorem BoxIntegral.intervalPartition_isHenstock (t : ℕ → ℝ)
     (ht : ∀ i : ℕ, t i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
@@ -105,7 +105,7 @@ theorem BoxIntegral.intervalPartition_isHenstock (t : ℕ → ℝ)
     Nat.ceil_natCast, Nat.add_one_sub_one]; exact_mod_cast ht i
   · rw [add_le_iff_nonpos_right, eq_iff_iff, iff_false, not_or, not_lt, not_le]; and_intros
     · bound
-    · exact (intervalPartition._proof_7 hab hn i hi).right
+    · exact (intervalPartition._proof_6 hab hn i hi).right
 
 open Classical in
 theorem BoxIntegral.intervalPartition_isSubordinate (t : ℕ → ℝ)
@@ -178,7 +178,7 @@ theorem tendsto_sum_intervalIntegral {f : ℝ → E}
     simp_rw [intervalBox]
     rw [add_le_iff_nonpos_right, eq_iff_iff, iff_false, not_or, not_lt, not_le]; and_intros
     · bound
-    · exact (intervalPartition._proof_7 hab n.succ_ne_zero i (by simpa using hi)).right
+    · exact (intervalPartition._proof_6 hab n.succ_ne_zero i (by simpa using hi)).right
   · intro i hi j hj h
     apply_fun fun J => intervalPartition_index a b (n + 1) J.upper at h
     rw [index_intervalBox, index_intervalBox] at h; exact h

@@ -6,6 +6,7 @@ import Mathlib.Combinatorics.SetFamily.Intersecting
 import Mathlib.Data.Finset.Sups
 import Mathlib.Tactic.Peel
 import Mathlib.Data.Nat.Log
+import Mathlib.Combinatorics.SetFamily.LYM
 
 open Finset Fintype
 
@@ -162,6 +163,14 @@ theorem Zad5i_exists : ∃ (F : Finset (Finset α)), (Pairwise fun x y => ∃ s 
       rw [Nat.testBit_lt_two_pow, Nat.testBit_lt_two_pow] <;> exact hi.trans_lt' (Fin.is_lt _)
   rw [card_image_of_injOn, card_range]; simp [Set.InjOn, Finset.ext_iff, Nat.lt_clog_iff_pow_lt]
   intro x hx y hy h; contrapose! h; use e.symm ⟨2 ^ x, hx⟩; simp [h]
+
+theorem Zad5ii_le (hF : Pairwise fun x y => ∃ s ∈ F, x ∈ s ∧ y ∉ s) : card α ≤ (#F).choose (#F / 2) := by
+  have : Function.Injective fun x => ({s | x ∈ s.val} : Finset F) := by
+    rw [Function.injective_iff_pairwise_ne]
+    exact hF.mono (by simp [Function.onFun, Finset.ext_iff]; grind only)
+  rw [Fintype.card, ← card_image_of_injective _ this, ← card_coe F]; apply IsAntichain.sperner
+  simp_all [IsAntichain, Set.Pairwise, -univ_eq_attach, this.eq_iff, Finset.subset_iff,
+    Pairwise, and_assoc]
 
 theorem Zad6 (hr : (SetLike.coe F).Sized r) (hs : (Set.Iio s).IsIntersectingOf (SetLike.coe F)) :
     #F * r.choose s ≤ (card α).choose s := calc
