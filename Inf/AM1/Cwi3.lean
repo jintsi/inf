@@ -86,8 +86,8 @@ theorem Zad5d : Tendsto (fun n : ℕ => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ
     apply this.congr; intro n; congr; simp
     rw [neg_pow]; cases neg_one_pow_eq_or ℝ n <;> simp [*]; positivity; bound
   apply Tendsto.squeeze' (g := fun n : ℕ => c₁ ^ (n⁻¹ : ℝ) * 7) (h := fun n : ℕ => c₂ ^ (n⁻¹ : ℝ) * 7)
-  · simpa using ((tendsto_const_rpow_inv c₁ hc₁).comp tendsto_natCast_atTop).mul_const 7
-  · simpa using ((tendsto_const_rpow_inv c₂ hc₂).comp tendsto_natCast_atTop).mul_const 7
+  · simpa using ((tendsto_const_rpow_inv c₁ hc₁.ne').comp tendsto_natCast_atTop).mul_const 7
+  · simpa using ((tendsto_const_rpow_inv c₂ hc₂.ne').comp tendsto_natCast_atTop).mul_const 7
   map_tacs [apply h₁.mp; apply h₂.mp]; all_goals
   · simp; use 1; intro n hn this
     convert Real.rpow_le_rpow (by bound) this (show 0 ≤ (n⁻¹ : ℝ) by simp) using 1

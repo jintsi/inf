@@ -118,10 +118,9 @@ theorem Zad5b : Summable (fun n => ((n - 2) / (n + 2)) ^ (n * (n + 3)) : ℕ →
   apply Summable.congr
     (f := fun (n : ℕ) => ((1 + (-4) / (n + 2)) * (1 + (-4) / ↑(n + 2)) ^ (n + 2) : ℝ) ^ n) ?_
   · intro n; rw [mul_comm n, pow_mul]; push_cast; field_simp; ring
-  apply summable_pow_of_tendsto
-  · exact (((tendsto_natCast_add_atTop 2).const_div_atTop (-4)).const_add_zero 1).one_mul
-      ((tendsto_one_add_div_pow_exp (-4)).comp (tendsto_add_atTop_nat 2))
-  · simp
+  apply summable_pow_of_tendsto (by simp : |exp (-4)| < 1)
+  exact (((tendsto_natCast_add_atTop 2).const_div_atTop (-4)).const_add_zero 1).one_mul
+    ((tendsto_one_add_div_pow_exp (-4)).comp (tendsto_add_atTop_nat 2))
 
 theorem Zad5c : Summable (fun (n : ℕ) => n ^ (n - 1 / n : ℝ) / √(4 * n ^ 2 + 2 * n - 1) ^ (n + 1)) := by
   apply Summable.of_nonneg_atTop_of_le_atTop (f := fun n => n ^ n / √(4 * n ^ 2) ^ n)
@@ -217,7 +216,7 @@ theorem Zad8a : ¬Summable (fun (n : ℕ) => (-1) ^ n / (n + exp 1) ^ (n⁻¹ : 
 
 theorem Zad8b : Summable (fun n => (-1) ^ (n * (n + 1) / 2) * ((4 * n + 1) / (7 * n + 2)) ^ n : ℕ → ℝ) := by
   apply Summable.of_abs; simp only [abs_mul, abs_neg_one_pow, one_mul]; apply Summable.abs
-  apply summable_pow_of_tendsto (l := 4 / 7); swap; norm_num
+  apply summable_pow_of_tendsto (l := 4 / 7); norm_num
   apply Tendsto.congr (f₁ := fun (n : ℕ) => 4 / 7 - (49 * n + 14 : ℝ)⁻¹)
   · intro n; field
   exact ((tendsto_natCast_atTop.const_mul_atTop (by simp)).atTop_add_const _).inv_atTop.const_sub_zero _
