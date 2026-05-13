@@ -1,10 +1,7 @@
 import Mathlib.RingTheory.PowerSeries.Binomial
-import Mathlib.Data.Real.Sqrt
-import Mathlib.Algebra.Group.Even
 import Mathlib.RingTheory.PowerSeries.Expand
 import Mathlib.RingTheory.PowerSeries.Log
-import Mathlib.Algebra.Algebra.Field
-import Mathlib.Data.Nat.Choose.Cast
+import Mathlib.NumberTheory.Real.GoldenRatio
 
 namespace PowerSeries
 
@@ -162,10 +159,180 @@ theorem Zad6b (r n : ℕ) : #(finAntidiagonal (r + 1) n) = (r + n).choose r := b
 theorem Zad7 [Semiring R] (a : R⟦X⟧) : a * mk 1 = mk fun n => ∑ i ∈ range (n + 1), coeff i a := by
   ext n; simp [coeff_mul, Nat.sum_antidiagonal_eq_sum_range_succ_mk]
 
-theorem Zad7a [CommRing R] :
-    (mk fun n => ∑ i ∈ range (n + 1), i ^ 2 : R⟦X⟧) = (X + X ^ 2) * (invOneSubPow R 4).val := by
-  simp only [invOneSubPow, ← mk_one_pow_eq_mk_choose_add, pow_succ _ 3]
-  rw [← mul_assoc, Zad7]; congr! 3 with n i
-  rcases i with _ | _ | i <;> simp [add_mul, mk_one_pow_eq_mk_choose_add, add_assoc]
-  · simp [coeff_X_pow_mul']
-  · norm_cast; congr; apply Nat.cast_injective (R := ℚ); simp [Nat.cast_choose_two]; ring
+theorem Zad7a : (∑ i ∈ range (n + 1), i ^ 2 : ℚ) = n * (n + 1) * (2 * n + 1) / 6 := by
+  induction n
+  · simp
+  rename_i n ih
+  rw [sum_range_succ, ih]; push_cast; ring
+
+theorem Zad7b : (∑ i ∈ range (n + 1), i ^ 3 : ℚ) = n ^ 2 * (n + 1) ^ 2 / 4 := by
+  induction n
+  · simp
+  rename_i n ih
+  rw [sum_range_succ, ih]; push_cast; ring
+
+namespace Zad8
+
+/-- `A 0 = 2, A 1 = 3, A (n + 2) = 3 * A n - 2 * A (n + 1)` -/
+def A : ℕ → ℤ
+  | 0     => 2
+  | 1     => 3
+  | n + 2 => 3 * A n - 2 * A (n + 1)
+
+theorem A_eq : (A n : ℚ) = (9 - (-3) ^ n) / 4 := by
+  induction n using Nat.twoStepInduction
+  case zero => norm_num [A]
+  case one  => norm_num [A]
+  case more n ih₀ ih₁ => simp_all [A]; ring
+
+/-- `B 0 = 0, B 1 = 1, B (n + 2) = 4 * B (n + 1) - 4 * B n` -/
+def B : ℕ → ℕ
+  | 0     => 0
+  | 1     => 1
+  | n + 2 => 4 * B (n + 1) - 4 * B n
+
+theorem B_eq : B n = n * 2 ^ (n - 1) := by
+  induction n using Nat.twoStepInduction
+  case zero => rfl
+  case one  => rfl
+  case more n ih₀ ih₁ => simp_all [B]; cases n <;> simp; ring_nf; omega
+
+/-- `C 0 = 1, C (n + 1) = 2 * C n + 3` -/
+def C : ℕ → ℕ
+  | 0     => 1
+  | n + 1 => 2 * C n + 3
+
+theorem C_eq : C n = 2 ^ (n + 2) - 3 := by
+  rw [eq_tsub_iff_add_eq_of_le (by grw [← n.zero_le] <;> simp)]
+  induction n
+  case zero => rfl
+  case succ n ih => rw [C, add_assoc, ← two_mul, ← mul_add, ih, mul_comm]; rfl
+
+end Zad8
+
+namespace Zad9
+
+/-- `A 0 = A 1 = 4, A (n + 2) = A (n + 1) + 6 * A n` -/
+def A : ℕ → ℕ
+  | 0     => 4
+  | 1     => 4
+  | n + 2 => A (n + 1) + 6 * A n
+
+theorem A_eq : (A n : ℚ) = 4 / 5 * (3 ^ (n + 1) - (-2) ^ (n + 1)) := by
+  induction n using Nat.twoStepInduction
+  case zero => norm_num [A]
+  case one  => norm_num [A]
+  case more n ih₀ ih₁ => simp_all [A]; ring
+
+/-- `B 0 = B 1 = 2, B (n + 2) = 2 * B (n + 1) - B n` -/
+def B : ℕ → ℕ
+  | 0     => 2
+  | 1     => 2
+  | n + 2 => 2 * B (n + 1) - B n
+
+theorem B_eq : B n = 2 := by
+  induction n using Nat.twoStepInduction
+  case zero => rfl
+  case one  => rfl
+  case more n ih₀ ih₁ => simp_all [B]
+
+/-- `C 0 = 0, C 1 = 1, C (n + 2) = C (n + 1) + C n + 1` -/
+def C : ℕ → ℕ
+  | 0     => 0
+  | 1     => 1
+  | n + 2 => C (n + 1) + C n + 1
+
+theorem C_eq_fib : C n = Nat.fib (n + 2) - 1 := by
+  rw [eq_tsub_iff_add_eq_of_le (by rw [← Nat.fib_two]; apply Nat.fib_mono; simp)]
+  induction n using Nat.twoStepInduction
+  case zero => rfl
+  case one  => rfl
+  case more n ih₀ ih₁ => rw [Nat.fib_add_two, C, add_assoc, add_add_add_comm, ih₀, ih₁, add_comm]
+
+theorem C_eq : (C n : ℝ) = (Real.goldenRatio ^ (n + 2) - Real.goldenConj ^ (n + 2)) / √5 - 1 := by
+  rw [C_eq_fib, Nat.cast_sub, Nat.cast_one, Real.coe_fib_eq]
+  rw [← Nat.fib_two]; apply Nat.fib_mono; simp
+
+/-- `D 0 = 0, D 1 = 1, D (n + 2) = 2 * D (n + 1) - D n` -/
+def D : ℕ → ℕ
+  | 0     => 0
+  | 1     => 1
+  | n + 2 => 2 * D (n + 1) - D n
+
+theorem D_eq : D n = n := by
+  induction n using Nat.twoStepInduction
+  case zero => rfl
+  case one  => rfl
+  case more n ih₀ ih₁ => simp_all [D]; omega
+
+/-- `E 0 = 0, E 1 = 1, E (n + 2) = E (n + 1) - E n` -/
+def E : ℕ → ℤ
+  | 0     => 0
+  | 1     => 1
+  | n + 2 => E (n + 1) - E n
+
+theorem E_eq : E n = ![0, 1, 1, 0, -1, -1] (Fin.ofNat 6 n) := by
+  induction n using Nat.twoStepInduction
+  case zero => rfl
+  case one  => rfl
+  case more n ih₀ ih₁ =>
+    simp_all [E, -Fin.ofNat_eq_cast]
+    convert_to ![0, 1, 1, 0, -1, -1] (Fin.ofNat 6 n + 1)
+      - ![0, 1, 1, 0, -1, -1] (Fin.ofNat 6 n)
+      = ![0, 1, 1, 0, -1, -1] (Fin.ofNat 6 n + 2)
+    · rw [Fin.ofNat_add]; simp
+    · rw [Fin.ofNat_add]; simp
+    generalize Fin.ofNat 6 n = i
+    fin_cases i <;> simp
+
+/-- `F 0 = 1, F 1 = 5, F 2 = 11, F (n + 3) = 3 * F (n + 2) + 2 * F (n + 1) - 2 * F n` -/
+def F : ℕ → ℤ
+  | 0     => 1
+  | 1     => 5
+  | 2     => 11
+  | n + 3 => 3 * F (n + 2) + 2 * F (n + 1) - 2 * F n
+
+theorem F_eq : F n = (2 - √2) ^ n + (2 + √2) ^ n - (-1) ^ n := by
+  induction n using Nat.stepInduction 3
+  case base n hn =>
+    revert n
+    norm_num [Nat.forall_lt_succ_right, -Order.lt_two_iff, sub_sq, add_sq, F]; ring
+  case step n ih =>
+    obtain ⟨⟨ih₀, ih₁⟩, ih₂⟩ := by simpa [Nat.forall_lt_succ_right, -Order.lt_two_iff] using ih
+    simp_all [F, pow_succ]; ring_nf; simp [pow_three]; ring
+
+/-- `G 0 = G 1 = 1, G (n + 2) = G (n + 1) + 2 * G n + (-1) ^ n` -/
+def G : ℕ → ℤ
+  | 0     => 1
+  | 1     => 1
+  | n + 2 => G (n + 1) + 2 * G n + (-1) ^ n
+
+theorem G_eq : (G n : ℚ) = (7 * 2 ^ n + (3 * n + 2) * (-1) ^ n) / 9 := by
+  induction n using Nat.twoStepInduction
+  case zero => norm_num [G]
+  case one  => norm_num [G]
+  case more n ih₀ ih₁ => simp_all [G]; ring
+
+/-- `H 0 = H 1 = 1, H (n + 2) = H (n + 1) + 6 * H n - n` -/
+def H : ℕ → ℤ
+  | 0     => 1
+  | 1     => 1
+  | n + 2 => H (n + 1) + 6 * H n - n
+
+theorem H_eq : (H n : ℚ) = 11 / 20 * 3 ^ n + 19 / 45 * (-2) ^ n + n / 6 + 1 / 36 := by
+  induction n using Nat.twoStepInduction
+  case zero => norm_num [H]
+  case one  => norm_num [H]
+  case more n ih₀ ih₁ => simp_all [H]; ring
+
+/-- `I 0 = 1, I (n + 1) = 2 * I n + 4 ^ n` -/
+def I : ℕ → ℕ
+  | 0     => 1
+  | n + 1 => 2 * I n + 4 ^ n
+
+theorem I_eq : 2 * I n = 2 ^ n + 4 ^ n := by
+  induction n
+  case zero => rfl
+  case succ n ih => rw [I, ih]; ring
+
+end Zad9
