@@ -36,7 +36,7 @@ theorem Zad2a : Tendsto (fun x => (√(5 - 2 * x) - √(3 - x)) / (x ^ 3 - 8)) (
     use 1 / 2; simp only [dist_eq, mul_inv]; simp; intro x hx hne; field_simp; rw [div_eq_div_iff]
     · grind
     · rw [mul_ne_zero_iff]; and_intros
-      · convert_to -(3 + (x + 1) ^ 2) ≠ 0; · ring
+      · convert_to (-(3 + (x + 1) ^ 2) ≠ 0); · ring
         rw [neg_ne_zero]; positivity
       · grind
     · rwa [sub_ne_zero, show (8 : ℝ) = 2 ^ 3 by norm_num, ne_eq, Odd.pow_inj (by decide)]

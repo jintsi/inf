@@ -14,7 +14,7 @@ theorem Zad1 (n : ℕ) : n.stirlingSecond 2 = 2 ^ (n - 1) - 1 := by
       cases n <;> simp [Nat.stirlingSecond_one_right]; grind
 
 /-- `Equiv.Perm.cycleType` doesn't include ones, so here `λ₁ = card α - m.sum`,
-  otherwise `λi = m.count i` -/
+  otherwise `λᵢ = m.count i` -/
 theorem Zad2 [Fintype α] [DecidableEq α] (m : Multiset ℕ) (hm : ∀ i ∈ m, 2 ≤ i)
     (hα : m.sum ≤ Fintype.card α) : Finset.card {g : Equiv.Perm α | g.cycleType = m} =
     (Fintype.card α).factorial / (m.prod * (Fintype.card α - m.sum).factorial *
