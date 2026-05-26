@@ -216,6 +216,10 @@ theorem const_rpow_atTop {f : α → ℝ} {b : ℝ} (hb : 1 < b) (h : Tendsto f 
     Tendsto (fun x => b ^ f x) l atTop := by
   simpa [Real.rpow_def_of_pos (one_pos.trans hb)] using h.const_mul_atTop (Real.log_pos hb)
 
+theorem const_rpow_atTop_of_lt_one {f : α → ℝ} {b : ℝ} (hb₀ : -1 < b) (hb₁ : b < 1) (h : Tendsto f l atTop) :
+    Tendsto (fun x => b ^ f x) l (𝓝 0) :=
+  (tendsto_rpow_atTop_of_base_lt_one b hb₀ hb₁).comp h
+
 /-! `Mathlib.Analysis.SpecialFunctions.Pow.Continuity` -/
 
 theorem zero_rpow {f g : α → ℝ} {a : ℝ} (hf : Tendsto f l (𝓝 0)) (hg : Tendsto g l (𝓝 a)) (h : 0 < a) :

@@ -109,7 +109,7 @@ theorem Zad11 : UniformContinuous NNReal.sqrt ∧ ¬∃ K, LipschitzWith K NNRea
     intro e he; exists e ^ 2, sq_pos_of_pos he
     intro (.mk a ha) (.mk b hb) h; simp_rw [NNReal.coe_mk] at *
     wlog hab : b ≤ a generalizing a b
-    · rw [abs_sub_comm]; rw [abs_sub_comm] at h; exact this b hb a ha h (le_of_not_ge hab)
+    · rw [abs_sub_comm] at ⊢ h; exact this b hb a ha h (le_of_not_ge hab)
     rw [← abs_of_pos he, ← sq_lt_sq]; apply h.trans_le'
     rw [sub_sq, sq_sqrt ha, sq_sqrt hb, abs_of_nonneg (sub_nonneg_of_le hab)]
     grw [← Real.sqrt_le_sqrt hab]; simp [mul_assoc, hb]; ring_nf; trivial
