@@ -5,10 +5,10 @@ open Real Topology Filter
 namespace AM2.Zad7
 
 theorem Zad1a : ¬∃ g, Tendsto (fun ((x, y) : ℝ × ℝ) => (2 * x ^ 2 - y ^ 2) / (x ^ 2 + 2 * y ^ 2))
-    (𝓝 (0, 0)) (𝓝 g) := by
+    (𝓝[≠] (0, 0)) (𝓝 g) := by
   apply not_tendsto_nhds_of_seq (x₁ := fun n => ((1 / n, 0) : ℝ × ℝ)) (x₂ := fun n => ((0, 1 / n) : ℝ × ℝ))
-  · simp [Prod.tendsto_iff, tendsto_inv_atTop_nhds_zero_nat]
-  · simp [Prod.tendsto_iff, tendsto_inv_atTop_nhds_zero_nat]
+  any_goals
+    simp [tendsto_nhdsWithin_iff, Prod.tendsto_iff, tendsto_inv_atTop_nhds_zero_nat]; use 1; bound
   all_goals try
     simp [Function.comp_def]
     apply tendsto_atTop_of_eventually_const (i₀ := 1)
@@ -38,13 +38,14 @@ theorem Zad1c : Tendsto (fun (x, y) => arccos ((y * x ^ 2) / (x ^ 2 + y ^ 2))) (
     · simp [abs_div]; rw [abs_of_nonneg (a := _ + _) (by positivity), div_le_iff₀ (by positivity),
         mul_add, le_add_iff_nonneg_right]; positivity
 
-theorem Zad1d : ¬∃ g, Tendsto (fun ((x, y) : ℝ × ℝ) => (x * y ^ 2) / (x ^ 2 - y ^ 4)) (𝓝 (0, 0))
+theorem Zad1d : ¬∃ g, Tendsto (fun ((x, y) : ℝ × ℝ) => (x * y ^ 2) / (x ^ 2 - y ^ 4)) (𝓝[≠] (0, 0))
     (𝓝 g) := by
   apply not_tendsto_nhds_of_seq (x₁ := fun n => ((2 / n ^ 2, 1 / n) : ℝ × ℝ))
       (x₂ := fun n => ((-2 / n ^ 2, 1 / n) : ℝ × ℝ))
   any_goals
-    simp [Prod.tendsto_iff, tendsto_inv_atTop_nhds_zero_nat]
-    exact (tendsto_natCast_atTop.atTop_pow₀ 2).const_div_atTop _
+    simp [tendsto_nhdsWithin_iff, Prod.tendsto_iff, tendsto_inv_atTop_nhds_zero_nat]; constructor
+    · exact (tendsto_natCast_atTop.atTop_pow₀ 2).const_div_atTop _
+    · use 1; bound
   any_goals
     simp [Function.comp_def]
     apply tendsto_atTop_of_eventually_const (i₀ := 1)
@@ -132,13 +133,17 @@ theorem Zad2b : Tendsto (fun y : ℝ => (𝓝 0).limUnder fun x : ℝ => x * y ^
   · subst hy; simp
   apply Continuous.tendsto' (by fun_prop (disch := intro x; positivity)); simp
 
-theorem Zad2c : ¬∃ g, Tendsto (fun ((x, y) : ℝ × ℝ) => x * y ^ 2 / (x ^ 2 + y ^ 4)) (𝓝 (0, 0)) (𝓝 g) := by
-  apply not_tendsto_nhds_of_seq (x₁ := fun _ => (0, 0)) (x₂ := (fun n => (1 / n ^ 2, 1 / n) : ℕ → ℝ × ℝ))
-  · simp
-  · exact (tendsto_const_div_pow 1 2 two_ne_zero).prodMk_nhds tendsto_one_div_atTop_nhds_zero_nat
-  · simp [Function.comp_def]; rfl
+theorem Zad2c : ¬∃ g, Tendsto (fun ((x, y) : ℝ × ℝ) => x * y ^ 2 / (x ^ 2 + y ^ 4)) (𝓝[≠] (0, 0)) (𝓝 g) := by
+  apply not_tendsto_nhds_of_seq (x₁ := (fun n => (1 / n ^ 2, 1 / n) : ℕ → ℝ × ℝ)) (x₂ := (fun n => (-1 / n ^ 2, 1 / n) : ℕ → ℝ × ℝ))
+  · apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within; swap
+    · simp; use 1; bound
+    exact (tendsto_const_div_pow 1 2 two_ne_zero).prodMk_nhds tendsto_one_div_atTop_nhds_zero_nat
+  · apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within; swap
+    · simp; use 1; bound
+    exact (tendsto_const_div_pow (-1) 2 two_ne_zero).prodMk_nhds tendsto_one_div_atTop_nhds_zero_nat
   · apply tendsto_atTop_of_eventually_const (i₀ := 1) (x := 2⁻¹); intro i hi; dsimp; field
-  · simp
+  · apply tendsto_atTop_of_eventually_const (i₀ := 1) (x := -2⁻¹); intro i hi; dsimp; field
+  · norm_num
 
 theorem Zad3a : ¬Continuous fun ((x, y) : ℝ × ℝ) => (x * y ^ 3 - y * x ^ 3) / (x ^ 4 + y ^ 4) := by
   apply mt (Continuous.continuousAt (x := (0, 0)))
