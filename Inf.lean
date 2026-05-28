@@ -37,6 +37,7 @@ import Inf.ALG2.Cwi2
 import Inf.ALG2.Cwi3
 import Inf.ALG2.Cwi4
 import Inf.ALG2.Cwi5
+import Inf.ALG2.Cwi6
 
 /-! ### Status
 
@@ -45,7 +46,7 @@ Term 1:
 - Linear Algebra 1 (ALG1)
 
 Term 2 (current):
-- Analysis 2 (AM2, up to sheet 6)
+- Analysis 2 (AM2, up to sheet 7)
 - Discrete Mathematics 1 (MD1, up to sheet 9)
-- Linear Algebra 2 (ALG2, up to sheet 5)
+- Linear Algebra 2 (ALG2, up to sheet 6)
 -/

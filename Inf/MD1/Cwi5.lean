@@ -28,7 +28,7 @@ theorem Zad1_inf (s : Finset ι) (S : ι → Finset α) :
 open Fintype in
 theorem Zad2 [DecidableEq β] [Fintype β] : #{f : α → β | f.Surjective} =
     ∑ j ∈ range (card β + 1), (-1 : ℤ) ^ j * (card β).choose j * (card β - j) ^ card α := by
-  unfold Function.Surjective
+  simp [Function.Surjective]
   rw [← inf_univ_filter, Zad1_inf]
   simp_rw [powerset_univ, compl_filter, not_exists, inf_filter]
   calc
