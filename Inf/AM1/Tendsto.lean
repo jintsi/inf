@@ -6,6 +6,13 @@ open Topology
 
 namespace Filter.Tendsto
 
+/-! `Mathlib.Topology.Order.OrderClosed` -/
+
+@[to_dual]
+theorem max_self [TopologicalSpace α] [LinearOrder α] [OrderClosedTopology α] {l : Filter β}
+    {f g : β → α} {a : α} (hf : Tendsto f l (𝓝 a)) (hg : Tendsto g l (𝓝 a)) :
+    Tendsto (fun x => max (f x) (g x)) l (𝓝 a) := _root_.max_self a ▸ hf.max hg
+
 /-! `Mathlib.Topology.Algebra.Monoid` -/
 
 section variable [TopologicalSpace M] [MulOneClass M] [ContinuousMul M] {f g : α → M}
@@ -88,6 +95,12 @@ theorem zero_div_const [GroupWithZero G₀] [TopologicalSpace G₀] [SeparatelyC
 theorem const_div [Zero G₀] [DivInvMonoid G₀] [TopologicalSpace G₀] [ContinuousInv₀ G₀] [SeparatelyContinuousMul G₀]
     (C : G₀) {l : Filter α} {f : α → G₀} {a : G₀} (hf : Tendsto f l (𝓝 a)) (h : a ≠ 0) :
     Tendsto (fun x => C / f x) l (𝓝 (C / a)) := by simpa [div_eq_mul_inv] using (hf.inv₀ h).const_mul C
+
+/-! `Mathlib.Topology.Algebra.Order.Group` -/
+
+theorem abs_zero [TopologicalSpace G] [AddCommGroup G] [LinearOrder G] [IsOrderedAddMonoid G]
+    [OrderTopology G] {l : Filter α} {f : α → G} (hf : Tendsto f l (𝓝 0)) :
+    Tendsto (fun x => |f x|) l (𝓝 0) := _root_.abs_zero (α := G) ▸ hf.abs
 
 /-! `Mathlib.Order.Filter.AtTopBot.Basic` -/
 

@@ -147,10 +147,9 @@ theorem Zad2c : ¬∃ g, Tendsto (fun ((x, y) : ℝ × ℝ) => x * y ^ 2 / (x ^ 
 
 theorem Zad3a : ¬Continuous fun ((x, y) : ℝ × ℝ) => (x * y ^ 3 - y * x ^ 3) / (x ^ 4 + y ^ 4) := by
   apply mt (Continuous.continuousAt (x := (0, 0)))
-  apply not_continuousAt_of_tendsto (l₁ := atTop.map fun n : ℝ => (1 / n, 2 / n))
-  · simp [Function.comp_def]; field_simp; ring_nf
-    apply tendsto_const_nhds.congr'; filter_upwards [eventually_ne_atTop 0]; simp +contextual; intros; rfl
-  · exact (tendsto_const_div_atTop 1).prodMk_nhds (tendsto_const_div_atTop 2)
+  apply not_continuousAt_of_tendsto (l₁ := atTop.map (fun n => (1 / (n + 1), 2 / (n + 1)) : ℕ → ℝ × ℝ))
+  · simp [Function.comp_def]; field_simp; ring_nf; exact tendsto_const_nhds
+  · exact tendsto_one_div_add_atTop_nhds_zero_nat.prodMk_nhds ((tendsto_natCast_add_atTop 1).const_div_atTop 2)
   · norm_num
 
 theorem Zad3b : Continuous fun ((x, y) : ℝ × ℝ) => x ^ 2 / (|x| + |y|) := by
