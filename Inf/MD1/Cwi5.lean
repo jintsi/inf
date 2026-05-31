@@ -52,8 +52,8 @@ theorem Zad5a (h : k ≤ n) : Nat.stirlingSecond n k =
   cases k
   · simp [Sym.coe_cons]
   rename_i n ih k; rw [add_le_add_iff_right] at h; rw [show n + 1 - (k + 1) = n - k by simp]
-  rcases h.eq_or_lt with h | h'
-  · subst k; rw [Nat.stirlingSecond_self, n.sub_self]; simp [Sym.eq_nil_of_card_zero]
+  rcases h.eq_or_lt with rfl | h'
+  · rw [Nat.stirlingSecond_self, k.sub_self]; simp [Sym.eq_nil_of_card_zero]
   symm; calc ∑ s ∈ (range (k + 2)).sym (n - k), s.toMultiset.prod
     _ = ∑ s ∈ (range (k + 2)).sym (n - k.succ).succ with h : k + 1 ∈ s, s.toMultiset.prod
       + ∑ s ∈ (range (k + 2)).sym (n - k) with k + 1 ∉ s, s.toMultiset.prod := by
@@ -86,4 +86,4 @@ theorem Zad5b (h : k ≤ n) : Nat.stirlingFirst n k =
   · simp [Set.InjOn, insert_eq, -singleton_union]; intro x hx hx' y hy hy'
     rw [← disjUnion_eq_union, ← disjUnion_eq_union, disjUnion_inj_right]
       <;> simp [notMem_mono hx notMem_range_self, notMem_mono hy notMem_range_self]
-  · simp [Finset.disjoint_right]; intro y x hx hx' h; subst h; simp [insert_subset_iff]
+  · simp [Finset.disjoint_right]; intro y x hx hx' rfl; simp [insert_subset_iff]

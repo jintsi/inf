@@ -68,14 +68,14 @@ theorem Finpartition.card_of_parts [DecidableEq α] (s : Finset α) (k : ℕ) :
       (t.parts.image fun x => if x = p then insert a x else x)
       (by simp; intro x hx; have := t.subset hx; split <;> grind) (by
         simp; and_intros
-        · use! insert a p, p, hp, by simp, (by simp); intro y ⟨⟨y', hy', hy⟩, hay⟩; subst hy
-          suffices y' = p by simp [this]
-          by_contra; simp_all; grind [t.subset hy']
+        · use! insert a p, p, hp, by simp, (by simp); rintro _ ⟨⟨y, hy, rfl⟩, hay⟩
+          suffices y = p by simp [this]
+          by_contra; simp_all; grind [t.subset hy]
         · intro x hx; use! (fun x => if x = p then insert a x else x) (t.part x), t.part x,
-            by simp [hx], (by dsimp; split <;> simp [hx]); intro y ⟨⟨y', hy', hy⟩, hxy⟩; subst hy
-          suffices y' = t.part x by simp [this]
-          have : x ∈ y' := by split at hxy <;> simp_all [ne_of_mem_of_not_mem hx ha]
-          symm; exact t.part_eq_of_mem hy' this)
+            by simp [hx], (by dsimp; split <;> simp [hx]); rintro _ ⟨⟨y, hy, rfl⟩, hxy⟩
+          suffices y = t.part x by simp [this]
+          have : x ∈ y := by split at hxy <;> simp_all [ne_of_mem_of_not_mem hx ha]
+          symm; exact t.part_eq_of_mem hy this)
       (by simp; intro x hx; split <;> simp [t.ne_empty hx])
     · simp; intro P hP hPa hPt; rw! [← hPt]; ext1; simp [restrict]; rw [Finset.erase_eq_of_notMem]
       · simp [Finset.image_image]; rw [Finset.image_congr]; exact Finset.image_id'
@@ -137,7 +137,7 @@ theorem Finpartition.card [DecidableEq α] (s : Finset α) :
       Finset.card_eq_sum_card_fiberwise (by simp; norm_cast; simp)
     _ = ∑ t ∈ s.powerset, Finset.card {P : Finpartition (insert a s) | P.part a = insert a t} := by
       congr! 3 with t ht P; constructor
-      · intro h; subst h; simp
+      · intro rfl; simp
       · intro h; rw [h]; simp [Finset.insert_sdiff_of_mem]
         rw [Finset.mem_powerset] at ht; exact Finset.notMem_mono ht ha
     _ = ∑ t ∈ s.powerset, Fintype.card (Finpartition (insert a s \ insert a t)) := by

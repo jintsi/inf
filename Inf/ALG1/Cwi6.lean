@@ -27,7 +27,7 @@ theorem Zad6_2 (s : ℚ) : LinearIndependent ℚ ![![2, 1, 0, s], ![0, 1, 2, 2],
         Submodule.mem_span_triple]; apply and_congr
   · exact ⟨fun h hs => (h hs (1 / 2) (by norm_num)).right hs, Not.elim⟩
   · constructor
-    · contrapose!; intro hs; subst hs; exists 1 / 2; norm_num; exists 3, -2; norm_num
+    · contrapose!; intro rfl; exists 1 / 2; norm_num; exists 3, -2; norm_num
     · intro hs x hx a b h1 h2 h3; grind
 
 theorem Zad6_3a : LinearIndependent ℝ ![id, Real.sin, Real.cos] := by
@@ -36,7 +36,7 @@ theorem Zad6_3a : LinearIndependent ℝ ![id, Real.sin, Real.cos] := by
   · exists 0; simp
   · intro x; exists Real.pi / 2; simp
   · intro x y; by_cases x = 0
-    · subst_vars; exists Real.pi; simp; exact Real.pi_ne_zero.symm
+    · subst x; exists Real.pi; simp; exact Real.pi_ne_zero.symm
     · exists 0; simpa
 
 theorem Zad6_3b : LinearIndependent ℝ ![Real.sin, Real.cos, fun r => Real.sin (2 * r), fun r => Real.cos (2 * r)] := by
@@ -44,15 +44,15 @@ theorem Zad6_3b : LinearIndependent ℝ ![Real.sin, Real.cos, fun r => Real.sin 
         Submodule.mem_span_triple, funext_iff, Real.sin_two_mul, Real.cos_two_mul]; and_intros
   · exists 0; norm_num
   · intro x; by_cases x = 0
-    · subst_vars; exists Real.pi / 3; simp
+    · subst x; exists Real.pi / 3; simp
     · exists 0; norm_num; assumption
   · intro x y; by_cases x = 0
-    · subst_vars; exists 0; simp
+    · subst x; exists 0; simp
     · exists Real.pi / 2; simpa
   · intro x y z; by_cases x = -1
     · by_cases z = 1
-      · exists Real.pi; subst_vars; norm_num
-      · exists 0; subst_vars; norm_num; grind
+      · exists Real.pi; subst x z; norm_num
+      · exists 0; subst x; norm_num; grind
     · exists Real.pi / 2; simp; rwa [neg_eq_iff_eq_neg]
 
 theorem Zad6_3c : ¬LinearIndependent ℝ ![fun r => Real.cos (2 * r), fun r => r.sin ^ 2, fun r => r.cos ^ 2] := by
@@ -85,7 +85,7 @@ theorem Zad6_4 (r : ℚ) : ![r, 8, 6] ∈ Submodule.span ℚ
     {![3, 4, 5], ![1, 4, 4], ![7, 4, 7]} ↔ r = -2 := by
   simp [Submodule.mem_span_triple]; constructor
   · intro ⟨a, b, c, h1, h2, h3⟩; linarith
-  · intro hr; subst hr; exists -2, 4, 0; norm_num
+  · intro rfl; exists -2, 4, 0; norm_num
 
 variable {x₁ x₂ x₃ x₄ : ℚ}
 
@@ -110,7 +110,7 @@ theorem Zad6_7a : (w ∈ degreeLE ℝ 2 ∧ w.eval 1 = w.eval 2) ↔ w ∈ Submo
     · simp [sub_eq_add_neg, mul_add, ← mul_assoc, ← neg_mul]
       have h : w.coeff 2 * -3 = w.coeff 1 := by linarith
       convert Polynomial.C_inj.mpr h; simp; left; rfl
-  · intro ⟨a, b, h⟩; subst h; norm_num; simp [sub_eq_add_neg, mul_add]
+  · rintro ⟨a, b, rfl⟩; norm_num; simp [sub_eq_add_neg, mul_add]
     convert degree_quadratic_le using 4
     swap; exact a * -3; simp [mul_assoc]; left; rfl
 
@@ -118,7 +118,7 @@ theorem Zad6_7b : (w ∈ degreeLE ℝ 2 ∧ w.eval 1 = w.eval (-1)) ↔ w ∈ Su
   simp [Submodule.mem_span_pair, mem_degreeLE, smul_eq_C_mul]; constructor
   · intro ⟨hd, hw⟩; apply eq_quadratic_of_degree_le_two at hd; rw [hd] at ⊢ hw; norm_num at hw
     exists w.coeff 2, w.coeff 0; simp; linarith
-  · intro ⟨a, b, h⟩; subst h; simp; convert degree_quadratic_le using 3
+  · rintro ⟨a, b, rfl⟩; simp; convert degree_quadratic_le using 3
     rw [left_eq_add]; simp; rfl
 
 theorem Zad6_7c : (w ∈ degreeLE ℝ 2 ∧ w.eval 1 = w.eval 0 ∧ w.eval 0 = w.eval (-1)) ↔
@@ -126,7 +126,7 @@ theorem Zad6_7c : (w ∈ degreeLE ℝ 2 ∧ w.eval 1 = w.eval 0 ∧ w.eval 0 = w
   simp [Submodule.mem_span_singleton, mem_degreeLE, smul_eq_C_mul]; constructor
   · intro ⟨hd, h1, h2⟩; apply eq_quadratic_of_degree_le_two at hd; rw [hd] at ⊢ h1 h2; norm_num at h1 h2
     exists w.coeff 0; simp [show w.coeff 2 = 0 by linarith]; linarith
-  · intro ⟨a, h⟩; subst h; grw [Polynomial.degree_C_le]; simp
+  · rintro ⟨a, rfl⟩; grw [Polynomial.degree_C_le]; simp
 
 theorem Zad6_D1a : !![(1 : ℚ), 2, 1; 2, 1, 3] ∉ Submodule.span ℚ
     {!![1, 3, 1; 2, 5, 3], !![4, 5, 1; 3, 3, 2]} := by simp [Submodule.mem_span_pair]; grind
@@ -141,7 +141,7 @@ theorem Zad6_D2 {x₁ x₂ x₃ : ZMod 2} : LinearIndependent (ZMod 2) ![![x₁,
     x₁ ≠ x₃ := by
   simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   constructor
-  · contrapose!; intro h; subst h; exists x₁ - x₂; simp
+  · contrapose!; intro rfl; exists x₁ - x₂; simp
   · contrapose!; intro ⟨x, h1, h2⟩; exact h1.symm.trans h2
 
 theorem Zad6_D3a : ∀ v, v ∈ Submodule.span ℝ {![(1 : ℝ), 3, 5], ![2, 7, 5], ![1, 1, 9]} := by
@@ -162,14 +162,14 @@ theorem Zad6_D4 : ![1, I, I] ∈ Submodule.span ℂ {![c, -1+I, 1+I], ![I, -1, -
       simp [add_mul, mul_assoc] at h1; nth_rw 2 [← h1] at h2; simp [ha] at h2
       replace h2 := (mul_eq_mul_right_iff (c := -I)).mpr (Or.inl h2); simp [add_mul, mul_assoc] at h2
       right; symm; exact h2
-  · apply Or.rec <;> (intro hc; subst hc)
+  · rintro (rfl | rfl)
     · exists 0, -I; simp
     · exists (3 - I) / 10, (-1 - 3 * I) / 5; ring_nf; norm_num
 
 open Complex in
 theorem Zad6_D5 {x₁ x₂ x₃ x₄ : ℂ} : ![x₁, x₂, x₃, x₄] ∈ Submodule.span ℂ
     {![I, 1, -I, -1], ![I, -I, -1, 1], ![1, 0, 0, -1]} → x₁ + x₂ + x₃ + x₄ = 0 := by
-  simp [Submodule.mem_span_triple]; intro a b c h1 h2 h3 h4; subst_vars; ring
+  simp [Submodule.mem_span_triple]; intro a b c rfl rfl rfl rfl; ring
 
 theorem Zad6_D6a : ∀ v, v ∈ Submodule.span ℚ {![(1 : ℚ), 1, 1, 1], ![1, 2, 1, 2], ![1, 0, 0, 0], ![0, 1, 0, 0]} := by
   simp [Submodule.mem_span_insert, Submodule.mem_span_singleton]; intro v
@@ -242,7 +242,7 @@ theorem Zad6_D8 {s t : ℝ} : Submodule.span ℝ {![10, 3, 9 + s, 1, 2 - s], ![4
     simp [Set.ext_iff]; exists ![2, 1, -1, -1, -2]; apply mt Iff.mp; simp; and_intros
     · apply Submodule.mem_span_of_mem; simp
     · intros; grind
-  · intro ⟨hs, ht⟩; subst t; simp
+  · rintro ⟨hs, rfl⟩; simp
     suffices Submodule.span ℝ {![10, 3, 9 + s, 1, 2 - s], ![4, 1, 6, 1, 1], ![2, 1, -1, -1, -2]} =
         Submodule.span ℝ {x | 3 * x 0 - 11 * x 1 + 1 * x 2 - 8 * x 3 + x 4 = 0 ∧ 2 * x 0 - 4 * x 1 - x 2 + 3 * x 3 - x 4 = 0
                             ∧ x 0 - 5 * x 1 + x 2 - 6 * x 3 + x 4 = 0} by

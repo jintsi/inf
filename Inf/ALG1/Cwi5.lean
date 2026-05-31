@@ -99,7 +99,7 @@ theorem Zad5_D2d : ¬IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 1)
 
 theorem Zad5_D2e : IsSubmodule ℝ (Set.range Finsupp.toFun : Set (ℕ → ℝ)) where
   zero_mem := ⟨0, rfl⟩
-  add_mem := by simp; intros; subst_vars; rename_i f g; exists f + g
+  add_mem := by simp; intro _ _ f rfl g rfl; exists f + g
   smul_mem := by simp; intro c f; exists c • f
 theorem Zad5_D3b : IsSubmodule ℝ {f : ℝ → ℝ | Continuous f} where
   zero_mem := continuous_zero

@@ -185,13 +185,13 @@ theorem Zad7a {a : ℝ} (ha : 0 < a) : Summable (fun n => a ^ n * Nat.factorial 
       · rw [Nat.factorial_succ]; push_cast; field
       · rw [pow_add, pow_one, div_pow]; ring
     _ = a / (1 + 1 / n) ^ n := by cases n; simp; field_simp
-  rcases lt_trichotomy a (exp 1) with h | h | h
+  rcases lt_trichotomy a (exp 1) with h | rfl | h
   · rw [iff_true_right h]; apply summable_of_ratio_test_tendsto_lt_one (l := a / exp 1)
     · bound
     · simp [ha.ne', Nat.factorial_ne_zero]
     simp only [norm_div, norm_mul, norm_pow, norm_eq_abs, abs_of_pos ha, RCLike.norm_natCast]; push_cast
     simp_rw [ratio]; exact (tendsto_one_add_div_pow_exp 1).const_div a (by simp)
-  · subst h; rw [iff_false_right (lt_irrefl _)]
+  · rw [iff_false_right (lt_irrefl _)]
     apply mt (Summable.of_nonneg_of_le (g := fun _ => 1) (by simp) _)
     · simp [summable_const_iff]
     intro n; grw [exp_one_pow, ← pow_div_factorial_le_exp n (by simp) n]; field_simp; rfl

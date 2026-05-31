@@ -129,8 +129,7 @@ theorem Zad10 (n k : ℕ) : ∑ i ≤ k, n.choose i * (n - i).choose (k - i) = 2
       congr! with i hi t ht; apply Finset.card_nbij fun st => st.1 \ t <;> try first | infer_instance |
         simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def, Finset.disjoint_sdiff, F]
       · intro s t hs h ht; simp_all [Finset.card_sdiff_of_subset]
-      · intro s t' hs ht' h' s' t hs' ht'' h'' h; subst h' h''; simp; apply_fun (· ∪ t) at h
-        simp [Finset.sdiff_union_of_subset ht', Finset.sdiff_union_of_subset ht''] at h; assumption
+      · intro s t' hs ht' rfl s' t hs' ht'' rfl h; simp; rw [← sdiff_left_inj ht' ht'']; assumption
       · intro s hs hd; exists t ∪ s; simp_all [Finset.union_sdiff_cancel_left]
     _ = ∑ i ≤ k, ∑ t ∈ .powersetCard i .univ, ((Finset.univ \ t).powersetCard (k - i)).card := by
       congr!; ext s; simp [Finset.disjoint_right, Finset.subset_iff]; tauto

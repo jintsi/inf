@@ -116,8 +116,7 @@ noncomputable def SkewSymmMatrix.basis (R : Type*) [Ring R] [IsAddTorsionFree R]
     left_inv := fun ⟨M, h⟩ => by
       simp; ext i j; split; rfl; split
       · rw [← Matrix.neg_apply, ← h, Matrix.transpose_apply]
-      · have : i = j := by order
-        subst j; symm; rw [← neg_eq_self, ← Matrix.neg_apply, ← h, Matrix.transpose_apply]
+      · symm; rw [← neg_eq_self, ← Matrix.neg_apply, ← h, Matrix.transpose_apply]; congr <;> order
     right_inv := fun c => by simp; ext ⟨⟨i, j⟩, le⟩; simp [le]
   }
 
@@ -286,8 +285,7 @@ noncomputable def Zad7_5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
     constructor
     · intro ⟨a, b, c, d, e, h⟩; exists m 1 1 - m 0 1, m 1 0, m 0 1 - m 1 0
       subst h; simp; ring_nf; simp
-    · intro ⟨a, b, c, h⟩; exists 7 / 11 * c, c / 11, b, -a / 5, 2 / 5 * a
-      subst h; simp; ring_nf; simp
+    · rintro ⟨a, b, c, rfl⟩; exists 7 / 11 * c, c / 11, b, -a / 5, 2 / 5 * a; simp; ring_nf; simp
   rw [this]; apply Module.Basis.span
   simp [v, linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
   apply_fun fun m => m 0 0; simp

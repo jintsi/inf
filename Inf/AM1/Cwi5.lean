@@ -20,7 +20,7 @@ open scoped Classical in
 /-- This one reuses `AM1.Cwi4.Zad8` to not duplicate proofs. -/
 theorem Zad2 {x : ℝ} : DifferentiableAt ℝ (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
   use fun h => Cwi4.Zad8.mp h.continuousAt
-  intro h; subst h
+  intro rfl
   apply HasDerivAt.differentiableAt (f' := 0)
   rw [hasDerivAt_iff_tendsto_slope_zero, Metric.tendsto_nhdsWithin_nhds]
   intro e he; exists e, he; intro x hx hb
@@ -28,10 +28,10 @@ theorem Zad2 {x : ℝ} : DifferentiableAt ℝ (fun x => if Irrational x then 0 e
 
 theorem Zad3 {x : ℝ} : DifferentiableAt ℝ (fun x => x / (1 + (1 / x).exp)) x ↔ x ≠ 0 := by
   constructor
-  · contrapose; intro; subst x
+  · contrapose; intro rfl
     rw [← hasDerivAt_deriv_iff, hasDerivAt_iff_tendsto_slope, slope_fun_def_field]; ring_nf
     apply mt (Tendsto.congr' ?_ (f₂ := fun x => (1 + x⁻¹.exp)⁻¹)) ?_
-    · apply eventuallyEq_nhdsWithin_of_eqOn; grind [Set.EqOn]
+    · filter_upwards [eventually_mem_nhdsWithin]; simp +contextual
     intro h
     have hl : Tendsto (fun x : ℝ => (1 + x⁻¹.exp)⁻¹) (𝓝[<] 0) (𝓝 1) :=
       ((tendsto_exp_comp_nhds_zero.mpr tendsto_inv_nhdsLT_zero).const_add_zero 1).inv_one

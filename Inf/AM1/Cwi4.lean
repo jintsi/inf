@@ -80,7 +80,7 @@ theorem Zad4 [Field α] [LinearOrder α] [IsStrictOrderedRing α] [TopologicalSp
 open Classical in
 theorem Zad8 {x : ℝ} : ContinuousAt (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
   constructor; swap
-  · intro h; subst h; simp [Metric.continuousAt_iff]
+  · intro rfl; simp [Metric.continuousAt_iff]
     intro e he; exists sqrt e, sqrt_pos.mpr he; intro x hb
     split <;> simpa [sq_lt, ← abs_lt]
   intro h

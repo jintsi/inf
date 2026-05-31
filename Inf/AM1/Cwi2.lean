@@ -65,13 +65,11 @@ theorem Zad3_pos (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, 0 < x i) :
 
 theorem Zad3_bernoulli (n : ℕ) (x : ℝ) (hx : -1 < x) : 1 + n * x ≤ (1 + x) ^ n := by
   by_cases! hn : n > 1
-  · rcases lt_trichotomy x 0 with h | h | h
+  · rcases lt_trichotomy x 0 with h | rfl | h
     · convert (Zad3_neg hn (fun _ => x) fun _ _ => Set.mem_Ioo.mpr ⟨hx, h⟩).le <;> simp
-    · subst h; simp
+    · simp
     · convert (Zad3_pos hn (fun _ => x) fun _ _ => h).le <;> simp
-  · cases n
-    case neg.zero => simp
-    case neg.succ n => simp at hn; subst hn; simp
+  · cases n <;> simp_all
 
 theorem Zad4 [CommSemiring R] (a b : R) (n : ℕ) :
     (a + b) ^ n = ∑ k ≤ n, n.choose k * a ^ (n - k) * b ^ k := by
@@ -80,7 +78,7 @@ theorem Zad4 [CommSemiring R] (a b : R) (n : ℕ) :
 theorem Zad5a_inf : sInf { 4 + 1 / (n : ℝ) | n : PNat } = 4 := by
   refine ge_antisymm (le_csInf ?nonempty ?bound) (Real.sInf_le_iff ?bdd ?nonempty |>.mpr ?kres)
   · exists 5, 1; norm_num
-  · rintro b ⟨n, hb⟩; subst hb; simp
+  · simp
   · simp [bddBelow_def]
     exists 4; simp
   · intro e he
@@ -99,7 +97,7 @@ theorem Zad5a_inf : sInf { 4 + 1 / (n : ℝ) | n : PNat } = 4 := by
 theorem Zad5a_sup : sSup { 4 + 1 / (n : ℝ) | n : PNat } = 5 := by
   refine le_antisymm (csSup_le ?nonempty ?bound) (Real.le_sSup_iff ?bdd ?nonempty |>.mpr ?kres)
   · exists 5, 1; norm_num
-  · rintro b ⟨n, hb⟩; subst hb; simp
+  · simp; intro n
     have h := Nat.cast_inv_le_one (α := ℝ) n; grind
   · simp [bddAbove_def]
     exists 5; intro n;
@@ -111,7 +109,7 @@ theorem Zad5a_sup : sSup { 4 + 1 / (n : ℝ) | n : PNat } = 5 := by
 theorem Zad5b_inf : sInf {x / (x ^ 2 + 1) | (x : Real) (_ : x > 0)} = 0 := by
   refine ge_antisymm (le_csInf ?nonempty ?bound) (Real.sInf_le_iff ?bdd ?nonempty |>.mpr ?kres)
   · exists 1 / 2, 1, (by norm_num); norm_num
-  · rintro b ⟨x, hx, hb⟩; subst hb; field_simp; simp; exact hx.le
+  · rintro _ ⟨x, hx, rfl⟩; field_simp; simp [hx.le]
   · simp [bddBelow_def]
     exists 0; intro x hx; field_simp; simp; exact hx.le
   · intro e he; simp
@@ -123,11 +121,11 @@ theorem Zad5b_inf : sInf {x / (x ^ 2 + 1) | (x : Real) (_ : x > 0)} = 0 := by
 theorem Zad5b_sup : sSup {x / (x ^ 2 + 1) | (x : Real) (_ : x > 0)} = 1 / 2 := by
   refine le_antisymm (csSup_le ?nonempty ?bound) (Real.le_sSup_iff ?bdd ?nonempty |>.mpr ?kres)
   · exists 1 / 2, 1, (by norm_num); norm_num
-  · rintro b ⟨x, hx, hb⟩; subst hb; field_simp
-    convert two_mul_le_add_sq x 1 using 1 <;> field
+  · rintro _ ⟨x, hx, rfl⟩; field_simp
+    convert two_mul_le_add_sq x 1 using 1 <;> ring
   · simp [bddAbove_def]
     exists 1 / 2; intro x hx; field_simp
-    convert two_mul_le_add_sq x 1 using 1 <;> field
+    convert two_mul_le_add_sq x 1 using 1 <;> ring
   · intro e he; simp
     exists 1; grind
 
