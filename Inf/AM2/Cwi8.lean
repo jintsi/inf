@@ -4,7 +4,7 @@ import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.Deriv.Abs
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 import Mathlib.Analysis.Calculus.Deriv.MeanValue
---import Inf.AM2.LocalExtr
+import Inf.AM2.LocalExtr
 
 open Real Topology Filter
 
@@ -101,3 +101,26 @@ theorem Zad5_th {f : ℝ × ℝ → ℝ} (hf : Differentiable ℝ f) (r θ : ℝ
     deriv (fun θ => f (r * cos θ, r * sin θ)) θ = fderiv ℝ f (r * cos θ, r * sin θ) (-r * sin θ, r * cos θ) := by
   apply HasDerivAt.deriv; apply hf.differentiableAt.hasFDerivAt.comp_hasDerivAt; rw [neg_mul_comm]
   apply HasDerivAt.prodMk <;> apply HasDerivAt.const_mul <;> simp [hasDerivAt_cos, hasDerivAt_sin]
+
+theorem Zad6c : IsLocalExtr (fun (x : Fin n → ℝ) => ∑ i, x i ^ 4 - 4 * ∑ i, x i) x ↔ x = 1 := by
+  constructor; intro h
+  · have := h.fderiv_eq_zero; simp [Finset.mul_sum, ← Finset.sum_sub_distrib] at this
+    simp (maxDischargeDepth := 3) [-Finset.sum_sub_distrib, fderiv_fun_sum, fderiv_fun_sub,
+      fderiv_fun_pow, fderiv_apply, fderiv_const_mul, differentiableAt_apply] at this
+    simp [← sub_smul, ← ContinuousLinearMap.coe_inj, LinearMap.pi_ext'_iff] at this
+    simp [LinearMap.ext_iff, ← mul_sub_one,
+      ← Pi.single_mul_right_apply (f := fun j => 4 * (x j ^ 3 - 1)), sub_eq_zero,
+      pow_eq_one_iff_of_ne_zero, show ¬Even 3 from Nat.not_even_two_mul_add_one 1] at this
+    ext i; exact (this i 1).resolve_right one_ne_zero
+  · intro rfl; apply Or.inl; apply isLocalMin_of_hessian (Pi.basisFun ℝ (Fin n)) (by fun_prop)
+    · simp (maxDischargeDepth := 3) [fderiv_fun_sub, fderiv_fun_sum, fderiv_fun_pow, fderiv_apply,
+        fderiv_const_mul, differentiableAt_apply, Finset.smul_sum]
+    convert Matrix.PosDef.ofNat (R := ℝ) (n := Fin n) 12; ext i j
+    simp (maxDischargeDepth := 3) [hessian, fderiv_fun_sub, fderiv_const_mul, fderiv_fun_sum,
+      fderiv_fun_pow, fderiv_apply, differentiableAt_apply]
+    rw [fderiv_sub_const, fderiv_fun_sum (by fun_prop), Fintype.sum_congr]
+    case h =>
+      intro k; rw [fderiv_smul_const (f := ContinuousLinearMap.proj (R := ℝ) (φ := fun _ => ℝ) k)]
+      fun_prop
+    norm_num [fderiv_const_mul, fderiv_fun_pow, differentiableAt_apply, fderiv_apply, Pi.single_apply,
+      Matrix.ofNat_apply]
