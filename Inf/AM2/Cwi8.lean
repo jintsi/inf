@@ -3,8 +3,8 @@ import Mathlib.Analysis.Calculus.LineDeriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.Deriv.Abs
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
-import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Inf.AM2.LocalExtr
+import Mathlib.Analysis.Calculus.Deriv.Pi
 
 open Real Topology Filter
 
@@ -102,25 +102,67 @@ theorem Zad5_th {f : ℝ × ℝ → ℝ} (hf : Differentiable ℝ f) (r θ : ℝ
   apply HasDerivAt.deriv; apply hf.differentiableAt.hasFDerivAt.comp_hasDerivAt; rw [neg_mul_comm]
   apply HasDerivAt.prodMk <;> apply HasDerivAt.const_mul <;> simp [hasDerivAt_cos, hasDerivAt_sin]
 
+/-
+theorem Zad6b : IsLocalExtr (fun (x, y, z) => x ^ 2 + y ^ 2 + z ^ 3 + 2 * x + 6 * y * z) (x, y, z)
+    ↔ ((x, y, z) : ℝ × ℝ × ℝ) = (-1, -18, 6) := by
+  constructor
+  · intro h; have := h.fderiv_eq_zero; congr 1
+    · have hx := congr($this (1, 0, 0)); rw [fderiv_apply_eq_deriv (by fun_prop)] at hx
+      simp [add_right_comm _ (z ^ 3)] at hx; simp [add_right_comm _ (y ^ 2),
+        deriv_comp_const_add (f := fun t => t ^ 2 + 2 * t) (a := x)] at hx
+      rw [deriv_fun_add (g := fun t => 2 * t) (by simp) (by fun_prop)] at hx; simp at hx; linarith
+    have hy := congr($this (0, 1, 0)); rw [fderiv_apply_eq_deriv (by fun_prop)] at hy
+    simp [add_right_comm _ (2 * x), add_comm (x ^ 2), add_assoc _ (x ^ 2)] at hy
+    simp [add_right_comm _ (_ + _), deriv_comp_const_add (f := fun t => t ^ 2 + 6 * t * z)] at hy
+    rw [deriv_fun_add (by simp) (by fun_prop)] at hy; simp at hy
+    have hz := congr($this (0, 0, 1)); rw [fderiv_apply_eq_deriv (by fun_prop)] at hz
+    simp [add_assoc] at hz; simp [← add_assoc, add_right_comm _ (2 * x), deriv_comp_const_add
+      (f := fun t => t ^ 3 + 6 * y * t)] at hz
+    rw [deriv_fun_add (g := (6 * y * ·)) (by simp) (by fun_prop)] at hz; simp at hz
+    have : 3 * z * (z - 6) = 0 := by linear_combination hz - 3 * hy
+    simp [sub_eq_zero] at this; rcases this with rfl | rfl; swap
+    · norm_num [← eq_neg_iff_add_eq_zero, mul_comm, ← eq_div_iff_mul_eq] at hy; simpa
+    simp at hy; subst y; sorry
+  · intro h; simp at h; rcases h with ⟨rfl, rfl, rfl⟩; apply Or.inl
+    let b : Module.Basis (Fin 3) ℝ (ℝ × ℝ × ℝ) := .ofEquivFun {
+      toFun := fun (x, y, z) => ![x, y, z], map_add' := by simp, map_smul' := by simp
+      invFun := fun v => (v 0, v 1, v 2), right_inv := by intro v; simp; ext i; fin_cases i <;> rfl}
+    apply isLocalMin_of_hessian b (by fun_prop)
+    · simp; repeat rw [fderiv_fun_add (by fun_prop) (by fun_prop)]
+      rw [fderiv_fun_pow, fderiv_fun_pow, fderiv_fun_pow, fderiv_const_mul, fderiv_fun_mul,
+        fderiv_const_mul] <;> try fun_prop
+      simp [fderiv.fst, fderiv.snd]; rw [← ContinuousLinearMap.coe_inj]; apply b.ext
+      intro i; fin_cases i <;> norm_num [b]
+    simp; have : ContDiffAt ℝ 2 (fun x : (ℝ × ℝ × ℝ) => x.1 ^ 2 + x.2.1 ^ 2 + x.2.2 ^ 3 + 2 * x.1 + 6 * x.2.1 * x.2.2) (-1, -18, 6) :=
+      by fun_prop
+    use this.isSymm_hessian; simp [hessian, this.fderiv_fderiv_apply_same]; sorry
+-/
+
 theorem Zad6c : IsLocalExtr (fun (x : Fin n → ℝ) => ∑ i, x i ^ 4 - 4 * ∑ i, x i) x ↔ x = 1 := by
-  constructor; intro h
-  · have := h.fderiv_eq_zero; simp [Finset.mul_sum, ← Finset.sum_sub_distrib] at this
-    simp (maxDischargeDepth := 3) [-Finset.sum_sub_distrib, fderiv_fun_sum, fderiv_fun_sub,
-      fderiv_fun_pow, fderiv_apply, fderiv_const_mul, differentiableAt_apply] at this
-    simp [← sub_smul, ← ContinuousLinearMap.coe_inj, LinearMap.pi_ext'_iff] at this
-    simp [LinearMap.ext_iff, ← mul_sub_one,
-      ← Pi.single_mul_right_apply (f := fun j => 4 * (x j ^ 3 - 1)), sub_eq_zero,
-      pow_eq_one_iff_of_ne_zero, show ¬Even 3 from Nat.not_even_two_mul_add_one 1] at this
-    ext i; exact (this i 1).resolve_right one_ne_zero
+  constructor
+  · intro h; have := h.fderiv_eq_zero
+    ext i; apply_fun fun f => f (Pi.single i 1) at this
+    rw [fderiv_apply_eq_deriv (by fun_prop)] at this
+    simp [Pi.single_apply, Finset.mul_sum, ← Finset.sum_sub_distrib, add_ite, ite_sub_ite] at this
+    simp [Finset.sum_ite, Finset.filter_eq', deriv_comp_const_add (fun x : ℝ => x ^ 4 - 4 * x),
+      deriv_fun_sub, differentiableAt_fun_id.const_mul (E := ℝ), ← mul_sub_one, sub_eq_zero,
+      pow_eq_one_iff_of_ne_zero, show ¬Even 3 from Nat.not_even_two_mul_add_one 1] at this; simpa
   · intro rfl; apply Or.inl; apply isLocalMin_of_hessian (Pi.basisFun ℝ (Fin n)) (by fun_prop)
     · simp (maxDischargeDepth := 3) [fderiv_fun_sub, fderiv_fun_sum, fderiv_fun_pow, fderiv_apply,
         fderiv_const_mul, differentiableAt_apply, Finset.smul_sum]
-    convert Matrix.PosDef.ofNat (R := ℝ) (n := Fin n) 12; ext i j
-    simp (maxDischargeDepth := 3) [hessian, fderiv_fun_sub, fderiv_const_mul, fderiv_fun_sum,
-      fderiv_fun_pow, fderiv_apply, differentiableAt_apply]
-    rw [fderiv_sub_const, fderiv_fun_sum (by fun_prop), Fintype.sum_congr]
-    case h =>
-      intro k; rw [fderiv_smul_const (f := ContinuousLinearMap.proj (R := ℝ) (φ := fun _ => ℝ) k)]
-      fun_prop
-    norm_num [fderiv_const_mul, fderiv_fun_pow, differentiableAt_apply, fderiv_apply, Pi.single_apply,
-      Matrix.ofNat_apply]
+    convert Matrix.PosDef.ofNat (R := ℝ) (n := Fin n) 12; ext i j; simp [hessian]
+    simp [Matrix.ofNat_apply]; split_ifs with h
+    · subst j; rw [fderiv_fderiv_apply_same (by filter_upwards; fun_prop) (by fun_prop)]; eta_expand
+      simp [Pi.single_apply, add_ite, Finset.sum_ite, Finset.filter_eq', Finset.filter_ne']
+      conv_lhs =>
+        arg 1; ext x; rw [deriv_fun_sub (by fun_prop) (by fun_prop)]; simp
+        rw [deriv_fun_pow (f := (1 + ·)) (by fun_prop)]
+      simp; rw [deriv_fun_pow (by fun_prop)]; eta_expand; norm_num
+    rw [fderiv_apply_eq_deriv (by fun_prop),
+      ← sub_eq_of_eq_add (deriv_clm_apply (by fun_prop) (differentiableAt_const _))]; simp
+    convert funext_iff.mp deriv_zero (0 : ℝ) with x
+    rw [fderiv_apply_eq_deriv (by fun_prop)]
+    simp [Finset.mul_sum, ← Finset.sum_sub_distrib]; rw [deriv_fun_sum (by fun_prop)]
+    simp [Pi.single_apply j, add_ite, ite_sub_ite, h,
+      ← fun P [Decidable P] (f g : ℝ → ℝ) => funext (ite_apply P f g), apply_ite deriv, ite_apply]
+    rw [deriv_fun_sub (by fun_prop) (by fun_prop), deriv_fun_pow (f := (1 + ·)) (by fun_prop)]; simp
