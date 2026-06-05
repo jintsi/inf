@@ -69,10 +69,10 @@ theorem Zad10_D1 [DecidableEq n] [Fintype n] [CommRing R] [DecidableEq R] {A : M
     (h : Fintype.card n ^ 2 - Fintype.card n < #{(i, j) | A i j = 0}) : A.det = 0 := by
   have : #{(i, j) | A i j ≠ 0} < Fintype.card n := by
     simp_rw [Ne, ← compl_filter, card_compl]; rw [tsub_lt_iff_tsub_lt (card_le_univ _)]
-    · convert h; simp [sq]
+    · convert! h; simp [sq]
     · simpa using Nat.le_mul_self _
   have : #{i | ∃ j, A i j ≠ 0} < Fintype.card n := by
-    apply this.trans_le'; convert card_image_le (β := n) (f := Prod.fst)
+    apply this.trans_le'; convert! card_image_le (β := n) (f := Prod.fst)
     ext i; simp
   have ⟨i, hi⟩ : ∃ i, ∀ j, A i j = 0 := by simpa using exists_mem_notMem_of_card_lt_card this
   exact det_eq_zero_of_row_eq_zero i hi

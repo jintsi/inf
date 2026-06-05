@@ -67,8 +67,6 @@ theorem Zad5a (h : k ≤ n) : Nat.stirlingSecond n k =
     _ = (k + 1) * n.stirlingSecond (k + 1) + n.stirlingSecond k := by
       simp [Sym.coe_cons, ← mul_sum, ih h', ih h] ; congr; ext s; simp; grind
 
-
-
 theorem Zad5b (h : k ≤ n) : Nat.stirlingFirst n k =
     ∑ s ∈ (range n).powersetCard (n - k), ∏ m ∈ s, m := by
   induction n generalizing k

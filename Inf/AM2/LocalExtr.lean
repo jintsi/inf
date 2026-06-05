@@ -8,7 +8,8 @@ import Mathlib.Analysis.Calculus.DerivativeTest
 
 open Module Matrix Topology Filter
 
-section variable [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
+section
+variable [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
   {f : E → F} {a v : E}
 
 theorem fderiv_apply_eq_deriv (hf : DifferentiableAt ℝ f a) :
@@ -27,7 +28,7 @@ theorem fderiv_fderiv_apply_same (hf : ∀ᶠ x in nhds a, DifferentiableAt ℝ 
     · fun_prop
   have : Tendsto (fun x : ℝ => a + x • v) (𝓝 0) (𝓝 a) := by apply Continuous.tendsto'; fun_prop; simp
   apply EventuallyEq.deriv_eq; filter_upwards [this.eventually hf] with x hx
-  convert fderiv_comp_deriv (l := f) (f := (a + · • v)) x hx (by fun_prop)
+  convert! fderiv_comp_deriv (l := f) (f := (a + · • v)) x hx (by fun_prop)
   simp; rw [deriv_smul_const] <;> simp
 
 theorem ContDiffAt.fderiv_fderiv_apply_same (hf : ContDiffAt ℝ 2 f a) :

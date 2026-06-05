@@ -160,7 +160,7 @@ theorem Zad6c : IsLocalExtr (fun (x : Fin n → ℝ) => ∑ i, x i ^ 4 - 4 * ∑
       simp; rw [deriv_fun_pow (by fun_prop)]; eta_expand; norm_num
     rw [fderiv_apply_eq_deriv (by fun_prop),
       ← sub_eq_of_eq_add (deriv_clm_apply (by fun_prop) (differentiableAt_const _))]; simp
-    convert funext_iff.mp deriv_zero (0 : ℝ) with x
+    convert! funext_iff.mp deriv_zero (0 : ℝ) with x
     rw [fderiv_apply_eq_deriv (by fun_prop)]
     simp [Finset.mul_sum, ← Finset.sum_sub_distrib]; rw [deriv_fun_sum (by fun_prop)]
     simp [Pi.single_apply j, add_ite, ite_sub_ite, h,

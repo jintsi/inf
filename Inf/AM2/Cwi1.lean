@@ -20,7 +20,7 @@ theorem Zad1 : ∫ x in 1..3, 2 * x - 1 = 6 := by
   simp_rw [smul_eq_mul, sub_eq_add_neg, ← sum_add_card_nsmul, mul_add, ← card_nsmul_add_sum,
     div_eq_inv_mul, ← mul_sum, card_range, nsmul_eq_mul, sum_range_natCast]
   field_simp; ring_nf
-  convert (tendsto_atTop_of_eventually_const (X := ℝ) (i₀ := 1) ?_).sub
+  convert! (tendsto_atTop_of_eventually_const (X := ℝ) (i₀ := 1) ?_).sub
     (tendsto_natCast_atTop_atTop.inv_tendsto_atTop.mul_const 4)
   · simp; rfl
   · intro i hi; field_simp
@@ -34,7 +34,7 @@ theorem Zad2a : Tendsto (fun n => ∑ i ∈ range n, n / (n ^ 2 + (i + 1) ^ 2 : 
 
 theorem Zad2b : Tendsto (fun n => π / n * ∑ i ∈ range n, sin ((i + 1) * π / n)) atTop (𝓝 2) := by
   simp_rw [mul_comm]
-  convert tendsto_sum_right_intervalIntegral_zero pi_pos continuousOn_sin
+  convert! tendsto_sum_right_intervalIntegral_zero pi_pos continuousOn_sin
   norm_num
 
 theorem Zad2c : Tendsto (fun n : ℕ => (n * √n)⁻¹ * ∑ i ∈ range n, √(2 * i + 1)) atTop (𝓝 (2 * √2 / 3)) := by
@@ -49,7 +49,7 @@ theorem Zad2c : Tendsto (fun n : ℕ => (n * √n)⁻¹ * ∑ i ∈ range n, √
 theorem Zad2d : Tendsto (fun n : ℕ => ∑ i ∈ range n, (2 * i + 1 + n : ℝ)⁻¹) atTop (𝓝 (log 3 / 2)) := by
   apply Tendsto.congr' (f₁ := fun n : ℕ => (n : ℝ)⁻¹ * ∑ i ∈ range n, ((2 * i + 1) / n + 1 : ℝ)⁻¹)
   · simp_rw [mul_sum]; filter_upwards [eventually_ne_atTop 0] with n hn; field_simp
-  convert tendsto_sum_midpoint_intervalIntegral zero_lt_one
+  convert! tendsto_sum_midpoint_intervalIntegral zero_lt_one
     (f := fun x => (2 * x + 1)⁻¹) (by fun_prop (disch := grind)) using 6
   · funext; simp
   · ring
@@ -66,7 +66,7 @@ theorem Zad2e : Tendsto (fun n : ℕ => ∑ i ∈ range n, (√(2 * n ^ 2 - (i +
   apply Tendsto.congr' (f₁ := fun n : ℕ => (n : ℝ)⁻¹ * ∑ i ∈ range n, (√(2 - ((i + 1) / n) ^ 2))⁻¹)
   · filter_upwards [eventually_ne_atTop 0] with n hn; nth_rw 1 [← Real.sqrt_sq (n.cast_nonneg)]
     simp_rw [mul_sum, ← mul_inv, ← Real.sqrt_mul (sq_nonneg _)]; field_simp
-  convert ←  tendsto_sum_right_intervalIntegral_zero_one (f := fun x => (√(2 - x ^ 2))⁻¹)
+  convert! ←  tendsto_sum_right_intervalIntegral_zero_one (f := fun x => (√(2 - x ^ 2))⁻¹)
     (ContinuousOn.inv₀ (by fun_prop) ?_)
   · calc ∫ x in 0..1, (√(2 - x ^ 2))⁻¹
     _ = ∫ x in 0..1, (√2 * √(1 - (x / √ 2) ^ 2))⁻¹ := by
@@ -96,7 +96,7 @@ theorem Zad2f : Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ((2 * n).factorial / n.
   convert_to Tendsto _ _ (𝓝 (exp (log 2 * 2 - 1)))
   · norm_num [exp_sub, exp_mul, exp_log]
   apply Tendsto.rexp; simp_rw [mul_comm]
-  convert tendsto_sum_right_intervalIntegral_zero_one (f := fun x => log (1 + x))
+  convert! tendsto_sum_right_intervalIntegral_zero_one (f := fun x => log (1 + x))
     (by fun_prop (disch := simp; bound))
   norm_num; linarith
 
@@ -175,7 +175,7 @@ theorem Zad10 : ∫ x in π..2 * π, exp (-x ^ 2) * cos x ^ 2 < ∫ x in 0..π, 
 
 theorem Zad11 : Tendsto (fun n => ∫ x in 0..1, x ^ n / (1 + x)) atTop (𝓝 0) := by
   apply Tendsto.squeeze tendsto_const_nhds (h := fun n => ∫ x in 0..1, x ^ n)
-  · simpa using (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop).inv_tendsto_atTop
+  · simpa using! (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop).inv_tendsto_atTop
   · intro n; apply integral_nonneg zero_le_one; simp_rw [Set.mem_Icc, and_imp]; intro x hl hu; positivity
   · intro n; apply integral_mono_on zero_le_one
       (ContinuousOn.intervalIntegrable (by fun_prop (disch := simp; intros; linarith)))

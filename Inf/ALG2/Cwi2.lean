@@ -11,7 +11,6 @@ namespace ALG2
 
 alias Zad2_1a := inner_zero_right
 alias Zad2_1b := inner_zero_left
-
 alias ⟨Zad2_2, _⟩ := trace_conjTranspose_mul_self_eq_zero_iff
 
 namespace Zad2_3

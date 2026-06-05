@@ -73,7 +73,7 @@ theorem Zad6a : Tendsto (fun x => (arcsin (3 * x) - 3 * arcsin x) / x ^ 3) (𝓝
     · exact (differentiableAt_arcsin.mpr (by grind)).const_mul 3
   apply deriv.lhopital_zero_nhdsNE
   · apply h.mono; simp +contextual
-  · simpa using eventually_mem_nhdsWithin
+  · simpa using! eventually_mem_nhdsWithin
   · exact tendsto_nhdsWithin_of_tendsto_nhds (Continuous.tendsto' (by fun_prop) _ _ (by simp))
   · exact tendsto_nhdsWithin_of_tendsto_nhds (Continuous.tendsto' (by fun_prop) _ _ (by simp))
   · apply Tendsto.congr' (f₁ := fun x => 8 / ((1 - 9 * x ^ 2) * (1 - x ^ 2) * (√(1 - 9 * x ^ 2)⁻¹ + √(1 - x ^ 2)⁻¹)))

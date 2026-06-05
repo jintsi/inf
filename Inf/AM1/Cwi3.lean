@@ -10,16 +10,16 @@ namespace AM1.Cwi3
 
 /-- Here, it's significant that we're working with `PNat` and not `ℕ` -/
 theorem Zad1a : Antitone fun (n : ℕ+) => (4 ^ n.val : ℚ) / (n.val + 2).factorial := by
-  apply antitone_of_succ_le; rw [Equiv.pnatEquivNat.forall_congr_left]; dsimp
-  intro n _; rw [Nat.factorial]; field_simp; norm_cast; ring_nf; grind
+  apply antitone_of_succ_le; rw [Equiv.pnatEquivNat.forall_congr_left]; simp
+  intro n; rw [Nat.factorial]; field_simp; norm_cast; ring_nf; grind
 
 theorem Zad1b_below : BddBelow (Set.range fun (n : ℕ) => 1 + (n : ℝ) ^ (3⁻¹ : ℝ)) := by
   exists 1; simpa [lowerBounds] using fun n => by positivity
 
 theorem Zad1b_above : ¬BddAbove (Set.range fun (n : ℕ) => 1 + (n : ℝ) ^ (3⁻¹ : ℝ)) := by
   simp [bddAbove_def]; intro x; exists ⌈x⌉₊ ^ 3; simp
-  rw [←Real.rpow_ofNat, Real.rpow_rpow_inv] <;> try simp
-  grw [←Nat.le_ceil x]; simp
+  rw [← Real.rpow_ofNat, Real.rpow_rpow_inv] <;> try simp
+  grw [← Nat.le_ceil x]; simp
 
 /-- The definition of convergence we're working with is `Metric.tendsto_atTop` with `Real.dist_eq` -/
 theorem Zad2a : Tendsto (fun n => (2 * n - 1) / (4 * n + 1) : ℕ → ℝ) atTop (𝓝 (1 /2)) := by

@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
 import Mathlib.Data.Nat.Choose.Sum
-import Mathlib.Data.Real.Archimedean
+import Mathlib.Algebra.Order.Archimedean.Real.Basic
 import Mathlib.Data.Nat.Cast.Order.Field
 import Mathlib.Order.ConditionallyCompleteLattice.Group
 
@@ -66,9 +66,9 @@ theorem Zad3_pos (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, 0 < x i) :
 theorem Zad3_bernoulli (n : ℕ) (x : ℝ) (hx : -1 < x) : 1 + n * x ≤ (1 + x) ^ n := by
   by_cases! hn : n > 1
   · rcases lt_trichotomy x 0 with h | rfl | h
-    · convert (Zad3_neg hn (fun _ => x) fun _ _ => Set.mem_Ioo.mpr ⟨hx, h⟩).le <;> simp
+    · convert! (Zad3_neg hn (fun _ => x) fun _ _ => Set.mem_Ioo.mpr ⟨hx, h⟩).le <;> simp
     · simp
-    · convert (Zad3_pos hn (fun _ => x) fun _ _ => h).le <;> simp
+    · convert! (Zad3_pos hn (fun _ => x) fun _ _ => h).le <;> simp
   · cases n <;> simp_all
 
 theorem Zad4 [CommSemiring R] (a b : R) (n : ℕ) :
@@ -122,10 +122,10 @@ theorem Zad5b_sup : sSup {x / (x ^ 2 + 1) | (x : Real) (_ : x > 0)} = 1 / 2 := b
   refine le_antisymm (csSup_le ?nonempty ?bound) (Real.le_sSup_iff ?bdd ?nonempty |>.mpr ?kres)
   · exists 1 / 2, 1, (by norm_num); norm_num
   · rintro _ ⟨x, hx, rfl⟩; field_simp
-    convert two_mul_le_add_sq x 1 using 1 <;> ring
+    convert! two_mul_le_add_sq x 1 using 1 <;> ring
   · simp [bddAbove_def]
     exists 1 / 2; intro x hx; field_simp
-    convert two_mul_le_add_sq x 1 using 1 <;> ring
+    convert! two_mul_le_add_sq x 1 using 1 <;> ring
   · intro e he; simp
     exists 1; grind
 

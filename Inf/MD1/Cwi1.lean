@@ -1,5 +1,6 @@
 import Mathlib.Combinatorics.Pigeonhole
 import Mathlib.Data.Nat.Fib.Basic
+import Mathlib.Combinatorics.Digraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.UniversalVerts
 import Mathlib.Order.Interval.Finset.Fin
 import Mathlib.Data.Int.Interval
@@ -9,7 +10,7 @@ import Mathlib.Tactic.Peel
 `Finset.exists_ne_map_eq_of_card_lt_of_maps_to` -/
 theorem Fintype.exists_ne_map_eq_of_card_lt_of_maps_to [Fintype α] {s : Finset β}
     (hc : s.card < card α) {f : α → β} (hf : ∀ x, f x ∈ s) : ∃ x y, x ≠ y ∧ f x = f y := by
-  convert Finset.univ.exists_ne_map_eq_of_card_lt_of_maps_to hc ?hf <;> try simp; trivial
+  convert Finset.univ.exists_ne_map_eq_of_card_lt_of_maps_to hc ?hf <;> try simp [hf] <;> rfl
 
 /-- Pigeonhole principle, halfway between `Fintype.exists_le_card_fiber_of_mul_le_card`
 and `Finset.exists_le_card_fiber_of_mul_le_card_of_maps_to` -/
@@ -23,8 +24,7 @@ and `Fintype.exists_le_card_fiber_of_mul_le_card` -/
 theorem Finset.exists_le_card_fiber_of_mul_le_card {α β : Type*} [DecidableEq β] [Fintype β]
     {s : Finset α} (f : α → β) {n : ℕ} [Nonempty β] (hn : Fintype.card β * n ≤ s.card) :
     ∃ y, n ≤ card {x ∈ s | f x = y} := by
-  convert s.exists_le_card_fiber_of_mul_le_card_of_maps_to ?hf Finset.univ_nonempty hn
-    <;> try simp <;> trivial
+  convert s.exists_le_card_fiber_of_mul_le_card_of_maps_to ?hf univ_nonempty hn <;> try simp <;> rfl
 
 namespace MD1.Cwi1
 
@@ -44,8 +44,6 @@ theorem Zad2iii (n : ℕ) : Nat.fib n < 2 ^ n := by
   grind [Nat.fib_add_two]
 
 end MD1.Cwi1
-
--- TODO: tournaments
 
 theorem SimpleGraph.mem_universalVerts_iff_card (G : SimpleGraph V) (v : V) [Fintype V]
     [DecidableRel G.Adj] [DecidableEq V] : v ∈ G.universalVerts ↔ G.degree v = Fintype.card V - 1 := by

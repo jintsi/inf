@@ -3,9 +3,9 @@ import Mathlib.Data.Set.Card
 import Mathlib.Data.Fin.Tuple.Reflection
 import Mathlib.Data.Nat.Choose.Vandermonde
 
---TODO: rooks
+-- TODO: rooks
 
---TODO: Zad3
+-- TODO: Zad3
 
 theorem composition_length_card (n k : ℕ) [NeZero n] :
     Finset.card {c : Composition n | c.length = k + 1} = (n - 1).choose k :=
@@ -105,7 +105,7 @@ theorem Zad8 (n : ℕ) : Finset.card {f : Fin n → Fin n | Monotone f} = (2 * n
     · intro s h; exists s.orderEmbOfFin h; simp [StrictMono]
   _ = (2 * n - 1).choose n := by simp
 
---  TODO: Zad9
+-- TODO: Zad9
 
 theorem Zad10 (n k : ℕ) : ∑ i ≤ k, n.choose i * (n - i).choose (k - i) = 2 ^ k * n.choose k := by
   let F : Finset (Finset (Fin n) × Finset (Fin n)) := {(s, t) : _ | s.card = k ∧ t ⊆ s}
@@ -148,7 +148,7 @@ theorem Zad11a (n : ℕ) : ∑ k ≤ n, k * n.choose k = n * 2 ^ (n - 1) := by
         congr with s; apply Finset.card_nbij Prod.snd
           <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def, F] <;> grind only
       _ = ∑ k ≤ n, n.choose k * k := by
-        convert Finset.sum_powerset_apply_card id using 2 with _ _ k hk
+        convert! Finset.sum_powerset_apply_card id using 2 with _ _ k hk
           <;> simp [Nat.range_succ_eq_Iic]
       _ = ∑ k ≤ n, k * n.choose k := by congr! 1; ring
     have h2 := calc F.card
@@ -172,7 +172,7 @@ theorem Zad11b {n : ℕ} (hn : 1 < n) : ∑ k ≤ n, k ^ 2 * n.choose k = (n + n
         congr with s; apply Finset.card_nbij Prod.snd
           <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def, F] <;> grind only
       _ = ∑ k ≤ n, n.choose k * k ^ 2 := by
-        convert Finset.sum_powerset_apply_card (· ^ 2) using 2 with _ _ k hk
+        convert! Finset.sum_powerset_apply_card (· ^ 2) using 2 with _ _ k hk
           <;> simp [sq, Nat.range_succ_eq_Iic]
       _ = ∑ k ≤ n, k ^ 2 * n.choose k := by grind
     have h2 := calc F.card
@@ -206,7 +206,7 @@ theorem Zad11b {n : ℕ} (hn : 1 < n) : ∑ k ≤ n, k ^ 2 * n.choose k = (n + n
       _ = ∑ k ∈ Finset.Icc 1 (n + 1), k ^ 2 * n.choose (k - 1) +
           ∑ k ∈ Finset.Icc 1 (n + 1), k ^ 2 * n.choose k := by simp [mul_add, Finset.sum_add_distrib]
       _ = ∑ k ≤ n, (k + 1) ^ 2 * n.choose k + ∑ k ∈ Finset.Icc 1 (n + 1), k ^ 2 * n.choose k := by
-        congr 1; symm; convert Finset.sum_Ico_add _ _ _ 1 using 2; simp [add_comm]
+        congr 1; symm; convert! Finset.sum_Ico_add _ _ _ 1 using 2; simp [add_comm]
       _ = ∑ k ≤ n, (k + 1) ^ 2 * n.choose k + ∑ k ≤ n, k ^ 2 * n.choose k := by
         simp [Finset.Iic_eq_Icc, ← Finset.insert_Icc_add_one_left_eq_Icc (a := 0),
           ← Finset.insert_Icc_right_eq_Icc_add_one, Nat.choose_eq_zero_of_lt]

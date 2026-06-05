@@ -70,7 +70,7 @@ theorem Zad2 : SummableUniformlyOn (fun (n : ℕ) x => x ^ 2 * exp (-n ^ 2 * x))
   filter_upwards [eventually_cofinite_ne 0] with n hn
   simp only [neg_mul, norm_mul, norm_pow, norm_eq_abs, sq_abs, abs_exp]
   suffices IsMaxOn (fun x => x ^ 2 * rexp (-(↑n ^ 2 * x))) (Set.Ici 0) (2 / n ^ 2) by
-    rw [isMaxOn_iff] at this; convert this using 3; grind
+    rw [isMaxOn_iff] at this; convert! this using 3; grind
   apply isMaxOn_Ici_of_deriv <;> try fun_prop
   · simp_rw [Set.mem_Ioo, and_imp]; intro x hl hu
     rw [deriv_fun_mul, deriv_pow_field, _root_.deriv_exp] <;> try fun_prop

@@ -153,9 +153,9 @@ theorem ContinuousOn.hasBoxIntegral_dim1 {f : ℝ → E} (hc : ContinuousOn f (S
     (l : IntegrationParams := IntegrationParams.Riemann) :
     HasIntegral (interval hab) l (fun x => f (x ())) BoxAdditiveMap.volume
     (∫ x in a..b, f x) := by
-  convert ContinuousOn.hasBoxIntegral (E := E) (volume : Measure (Unit → ℝ)) ?_ l
+  convert! ContinuousOn.hasBoxIntegral (E := E) (volume : Measure (Unit → ℝ)) ?_ l
   · simp [Box.toSet, Unique.forall_iff, intervalIntegral.integral_of_le hab.le]
-    convert setIntegral_map_equiv (MeasurableEquiv.funUnique Unit ℝ) f _
+    convert! setIntegral_map_equiv (MeasurableEquiv.funUnique Unit ℝ) f _
     exact (volume_preserving_funUnique Unit ℝ).map_eq.symm
   · apply hc.comp (continuousOn_apply () _)
     simp [Set.MapsTo, Box.Icc]; tauto

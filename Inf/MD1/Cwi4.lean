@@ -58,7 +58,6 @@ theorem Zad4 (n : ℕ) : ∑ i ∈ Finset.range (n + 1), i * n.stirlingFirst i =
       rw [Finset.sum_range_succ, Finset.sum_range_succ']
       simp [Nat.stirlingFirst_eq_zero_of_lt]
 
-
 open Polynomial
 
 theorem Zad5a [Ring R] (n : ℕ) : X ^ n =

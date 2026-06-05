@@ -96,8 +96,8 @@ noncomputable def SymmMatrix.basis (R : Type*) [Semiring R] (n : ℕ) :
       by ext i j; simp [max_comm, min_comm]⟩
     left_inv := fun ⟨M, h⟩ => by
       simp; ext i j; cases Fin.le_total i j
-      case a.inl le => rw [min_eq_left le, max_eq_right le]
-      case a.inr le => nth_rw 1 [← h, min_eq_right le, max_eq_left le, Matrix.transpose_apply]
+      case inl le => rw [min_eq_left le, max_eq_right le]
+      case inr le => nth_rw 1 [← h, min_eq_right le, max_eq_left le, Matrix.transpose_apply]
     right_inv := fun c => by simp; ext ⟨⟨i, j⟩, le⟩; simp [min_eq_left le, max_eq_right le]
   }
 

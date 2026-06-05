@@ -125,7 +125,7 @@ lemma Zad3_7.mem_X : x ∈ X ↔ x.ofLp 0 + 2 * x.ofLp 1 - x.ofLp 2 = 0 := by
 `!₂[-(√3)⁻¹, (√3)⁻¹, (√3)⁻¹]`. -/
 noncomputable def Zad3_7.basis : OrthonormalBasis (Fin 2) ℝ X :=
   gramSchmidtOrthonormalBasis (by
-    simp only [X]; convert finrank_span_set_eq_card ?_
+    simp only [X]; convert! finrank_span_set_eq_card ?_
     · simp
     · infer_instance
     · infer_instance

@@ -213,7 +213,7 @@ theorem Zad7 [CommRing R] (k : ℕ) :
   case isTrue hk =>
     simp [coeff_prod]; norm_cast; congr; rw [Cwi5.Zad5a hk]
     apply sum_bij' (fun s _ => s.toMultiset.toFinsupp) (fun f hf => ⟨f.toMultiset, by
-        rw [mem_finsuppAntidiag'] at hf; simpa using hf.left⟩)
+        rw [mem_finsuppAntidiag'] at hf; simpa using! hf.left⟩)
     · simp [Sym.ext_iff] --left_neg (epic @[to_additive] fail)
     · simp --right_neg
     · simp [Multiset.prod_eq_prod_toEnumFinset, Multiset.toEnumFinset]
