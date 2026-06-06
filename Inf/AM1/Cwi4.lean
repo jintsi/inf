@@ -100,7 +100,7 @@ theorem Zad9 : ∃ x ∈ Set.Ioo 0 1, exp (-x) = sin (π * x / 2) := by
   have h := intermediate_value_Ioo' zero_le_one
     (by fun_prop : ContinuousOn (fun x => rexp (-x) - sin (π * x / 2)) _)
   simp [Set.subset_def] at h
-  convert h 0 (by grw [exp_neg_one_lt_half]; norm_num) zero_lt_one using 3
+  convert! h 0 (by grw [exp_neg_one_lt_half]; norm_num) zero_lt_one using 3
   exact sub_eq_zero.symm
 
 theorem Zad11 : UniformContinuous NNReal.sqrt ∧ ¬∃ K, LipschitzWith K NNReal.sqrt := by

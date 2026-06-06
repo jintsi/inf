@@ -90,7 +90,7 @@ theorem Zad5d : Tendsto (fun n : ℕ => (7 ^ n + (-3) ^ n : ℝ) ^ (n⁻¹ : ℝ
   · simpa using ((tendsto_const_rpow_inv c₂ hc₂.ne').comp tendsto_natCast_atTop).mul_const 7
   map_tacs [apply h₁.mp; apply h₂.mp]; all_goals
   · simp; use 1; intro n hn this
-    convert Real.rpow_le_rpow (by bound) this (show 0 ≤ (n⁻¹ : ℝ) by simp) using 1
+    convert! Real.rpow_le_rpow (by bound) this (show 0 ≤ (n⁻¹ : ℝ) by simp) using 1
     rw [Real.mul_rpow, Real.pow_rpow_inv_natCast] <;> bound
 
 theorem Zad6 {a : ℕ → ℤ} {g : ℤ} (h : Tendsto a atTop (𝓝 g)) : ∃ n₀, ∀ n ≥ n₀, a n = g := by

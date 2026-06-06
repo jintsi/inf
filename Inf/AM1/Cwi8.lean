@@ -17,7 +17,7 @@ theorem hasDerivAt_log_sub_const {x C : ℝ} (h : x ≠ C) : HasDerivAt (fun x =
 
 theorem HasDerivAt.tan {f : ℝ → ℝ} {f' x : ℝ} (hf : HasDerivAt f f' x) (hx : Real.cos (f x) ≠ 0) :
     HasDerivAt (fun x => tan (f x)) (f' / Real.cos (f x) ^ 2) x := by
-  convert (hasDerivAt_tan hx).comp x hf using 1; ring
+  convert! (hasDerivAt_tan hx).comp x hf using 1; ring
 
 namespace AM1.Cwi8
 

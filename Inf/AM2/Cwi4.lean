@@ -110,7 +110,7 @@ theorem Zad5a : ¬Summable
           show 2 * n - 1 + 1 = 2 * n by lia]; push_cast; field
       · rw [pow_add, mul_div_assoc, ← div_pow, add_div, div_self]; simpa
     _ = 8 * (2 - (3 - (n + 1 : ℝ)⁻¹) / (n + 1)) / ((1 + 1 / n : ℝ) ^ n) ^ 2 := by field
-  convert ((tendsto_natCast_add_atTop 1).inv_atTop.const_sub 3).div_atTop (tendsto_natCast_add_atTop 1)
+  convert! ((tendsto_natCast_add_atTop 1).inv_atTop.const_sub 3).div_atTop (tendsto_natCast_add_atTop 1)
     |>.const_sub_zero 2 |>.const_mul 8 |>.div ((tendsto_one_add_div_pow_exp 1).pow 2) (by simp)
   norm_num
 

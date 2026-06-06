@@ -49,7 +49,7 @@ theorem Zad1d : ∫ (x : ℝ), 8 * x / (x ^ 4 + 4 * x ^ 2 + 3) = 0 := by
   have h : ∫ x in Set.Ioi 0, 8 * x / (x ^ 4 + 4 * x ^ 2 + 3) = 0 - (2 * log (1 - 2 / (0 ^ 2 + 3))) := by
     apply MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonneg' (g := fun x => 2 * log (1 - 2 / (x ^ 2 + 3)))
     · intro x _;
-      convert (((((hasDerivAt_pow 2 x).add_const 3).const_div 2 (by positivity)).const_sub 1
+      convert! (((((hasDerivAt_pow 2 x).add_const 3).const_div 2 (by positivity)).const_sub 1
         ).log (by field_simp; apply div_ne_zero <;> nlinarith)).const_mul 2 using 1
       field (disch := nlinarith)
     · simp_rw [Set.mem_Ioi]; bound

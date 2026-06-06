@@ -44,7 +44,7 @@ theorem Zad3 {x : ℝ} : DifferentiableAt ℝ (fun x => x / (1 + (1 / x).exp)) x
 /-- Zad. 5 -/
 theorem _root_.Real.hasDerivAt_cot {x : ℝ} (h : sin x ≠ 0) : HasDerivAt cot (-1 / sin x ^ 2) x := by
   rw [funext Real.cot_eq_cos_div_sin]
-  convert HasDerivAt.fun_div (Real.hasDerivAt_cos x) (Real.hasDerivAt_sin x) h using 2
+  convert! HasDerivAt.fun_div (Real.hasDerivAt_cos x) (Real.hasDerivAt_sin x) h using 2
   simp [← neg_add', -neg_add_rev, ← sq]
 
 /-- Zad.6 -/
@@ -52,7 +52,7 @@ theorem _root_.Real.hasDerivAt_arccot (x : ℝ) : HasDerivAt arccot (-1 / (1 + x
   rw [← div_neg_eq_neg_div', one_div]
   apply HasDerivAt.of_local_left_inverse (f := cot)
   · fun_prop [Real.arccot]
-  · convert hasDerivAt_cot _ using 1
+  · convert! hasDerivAt_cot _ using 1
       <;> simp [arccot, sin_pi_div_two_sub, cos_sq_arctan, (cos_arctan_pos x).ne']
   · rw [neg_ne_zero]; positivity
   · apply Eventually.of_forall; intro y
@@ -68,7 +68,7 @@ theorem Zad8 {f : ℝ → ℝ} {f' x : ℝ} (h : HasDerivAt f f' x) :
 
 theorem Zad9_ne_zero {x : ℝ} (hne : x ≠ 0) :
     HasDerivAt (fun x => x ^ 2 * sin x⁻¹) (2 * x * sin (1 / x) - cos (1 / x)) x := by
-  convert (hasDerivAt_pow 2 x).fun_mul (hasDerivAt_inv hne).sin using 1; simp; field
+  convert! (hasDerivAt_pow 2 x).fun_mul (hasDerivAt_inv hne).sin using 1; simp; field
 
 theorem Zad9_zero : HasDerivAt (fun x => x ^ 2 * sin x⁻¹) 0 0 := by
   rw [hasDerivAt_iff_tendsto_slope, slope_fun_def_field]; ring_nf
@@ -95,6 +95,6 @@ theorem Zad10 (n : ℕ) : iteratedDeriv n (fun x => x ^ 2 * exp (-x)) =
       -neg_sub, neg_sub']
     funext x; congr; apply HasDerivAt.deriv
     have h := (hasDerivAt_neg x).exp
-    convert ((h.const_mul _).sub (((hasDerivAt_id' x).const_mul _).fun_mul h)).add
+    convert! ((h.const_mul _).sub (((hasDerivAt_id' x).const_mul _).fun_mul h)).add
       ((hasDerivAt_pow 2 x).mul h) using 1
     ring

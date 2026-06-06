@@ -117,7 +117,7 @@ theorem Zad1h : Tendsto (fun ((x, y) : ℝ × ℝ) => (x ^ 2 * y ^ 2 / (x ^ 4 + 
   · filter_upwards with (x, y); positivity
   · filter_upwards [(eventually_gt_atTop 0).prod_inr _] with (x, y) hy; dsimp at *
     apply rpow_le_rpow <;> try positivity
-    field_simp; convert two_mul_le_add_sq (x ^ 2) (y ^ 2) using 1 <;> ring
+    field_simp; convert! two_mul_le_add_sq (x ^ 2) (y ^ 2) using 1 <;> ring
 
 theorem Zad2a : Tendsto (fun x : ℝ => (𝓝 0).limUnder fun y : ℝ => x * y ^ 2 / (x ^ 2 + y ^ 4))
     (𝓝 0) (𝓝 0) := by
