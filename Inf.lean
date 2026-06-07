@@ -23,6 +23,7 @@ import Inf.MD1.Cwi5
 import Inf.MD1.Cwi6
 import Inf.MD1.Cwi8
 import Inf.MD1.Cwi9
+import Inf.MD1.Cwi11
 
 import Inf.AM2.Cwi1
 import Inf.AM2.Cwi2
@@ -48,6 +49,6 @@ Term 1:
 
 Term 2 (current):
 - Analysis 2 (AM2, up to sheet 8)
-- Discrete Mathematics 1 (MD1, up to sheet 9)
+- Discrete Mathematics 1 (MD1, up to sheet 11)
 - Linear Algebra 2 (ALG2, up to sheet 6)
 -/
