@@ -1,6 +1,6 @@
-import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
 
 open MeasureTheory intervalIntegral Real Topology Filter
 
@@ -74,11 +74,6 @@ theorem integral_normal_domain_cc' {F : ℝ × ℝ → β} [NormedAddCommGroup �
   · apply integral_normal_domain_cc hf hg hab hfg
     apply ContinuousOn.image_comp_continuous ?_ continuous_swap
     simpa [Set.image_swap_eq_preimage_swap] using hF
-
-theorem ContinuousLinearMap.det_dim2 [CommRing R] [TopologicalSpace R] (f : R × R →L[R] R × R) :
-    f.det = (f (1, 0)).1 * (f (0, 1)).2 - (f (0, 1)).1 * (f (1, 0)).2 := by
-  simp [ContinuousLinearMap.det, ← LinearMap.det_toMatrix (Module.Basis.finTwoProd R),
-    -LinearMap.det_toMatrix, Matrix.det_fin_two, LinearMap.toMatrix_apply]
 
 namespace AM2.Cwi9
 
@@ -237,3 +232,77 @@ theorem Zad1d : ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ x + y}, p.1 - 
     ← MeasureTheory.integral_indicator (by simp; fun_prop), Measure.volume_eq_prod,
     ← integral_prod_swap, ← MeasureTheory.integral_indicator (by simp; fun_prop)]
   simp [Set.indicator, add_comm]; rfl
+
+theorem _root_.region_between_cc_ae_eq_regionBetween' [MeasurableSpace α] {μ : Measure α}
+    [SFinite μ] (hf : Measurable f) (hg : Measurable g) :
+    {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)} =ᵐ[μ.prod volume] regionBetween f g s := by
+  apply EventuallyEq.rfl.inter; unfold EventuallyEq
+  rw [Measure.ae_prod_iff_ae_ae (by rw [measurableSet_setOf]; simp [Set.Icc, Set.Ioo, setOf]; fun_prop)]
+  filter_upwards with x; exact Ioo_ae_eq_Icc.symm
+
+theorem Zad2a : volume {(x, y) : ℝ × ℝ | y ^ 2 ≤ 1 - x ∧ y ^ 2 ≤ x / 2 + 1} = 4 := calc
+  volume {(x, y) : ℝ × ℝ | y ^ 2 ≤ 1 - x ∧ y ^ 2 ≤ x / 2 + 1}
+  _ = volume {(x, y) : ℝ × ℝ | y ∈ Set.Icc (-1) 1 ∧ x ∈ Set.Icc (2 * y ^ 2 - 2) (1 - y ^ 2)} := by
+    apply congrArg; ext p; simp; constructor
+    · intro ⟨h1, h2⟩; and_intros <;> nlinarith
+    · intro ⟨⟨h1, h2⟩, h3, h4⟩; and_intros <;> linarith
+  _ = volume {(y, x) : ℝ × ℝ | y ∈ Set.Icc (-1) 1 ∧ x ∈ Set.Icc (2 * y ^ 2 - 2) (1 - y ^ 2)} := by
+    rw [Measure.volume_eq_prod, ← Measure.measurePreserving_swap.measure_preimage]; simp
+    apply MeasurableSet.nullMeasurableSet; simp; fun_prop
+  _ = volume (regionBetween (fun y => 2 * y ^ 2 - 2) (fun y => 1 - y ^ 2) (Set.Icc (-1) 1)) := by
+    apply measure_congr; rw [Measure.volume_eq_prod]
+    convert region_between_cc_ae_eq_regionBetween' ?_ ?_; rfl
+    infer_instance; all_goals fun_prop
+  _ = .ofReal (∫ y in Set.Icc (-1) 1, 1 - y ^ 2 - (2 * y ^ 2 - 2)) :=
+    volume_regionBetween_eq_integral (Continuous.integrableOn_Icc (by fun_prop))
+      (Continuous.integrableOn_Icc (by fun_prop)) measurableSet_Icc fun y ⟨h1, h2⟩ => by nlinarith
+  _ = .ofReal (∫ y in -1..1, 1 - y ^ 2 - (2 * y ^ 2 - 2)) := by
+    rw [integral_of_le, integral_Icc_eq_integral_Ioc]; simp
+  _ = 4 := by ring_nf; norm_num
+
+theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧
+    z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)} = 120 * NNReal.pi := calc
+  volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)}
+  _ = volume {((x, y), z) : (ℝ × ℝ) × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)} := by
+    symm; convert volume_preserving_prodAssoc.measure_preimage_equiv _; rfl
+    all_goals infer_instance
+  _ = volume {(p, z) : (ℝ × ℝ) × ℝ | p ∈ {(x, y) | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36} ∧
+        z ∈ Set.Icc 0 (4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2)} := rfl
+  _ = volume (regionBetween (fun _ => 0) (fun p => 4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2)
+        {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36}) := by
+    apply measure_congr; rw [Measure.volume_eq_prod]
+    convert region_between_cc_ae_eq_regionBetween' ?_ ?_; rfl
+    infer_instance; all_goals fun_prop
+  _ = .ofReal (∫ p in {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36}, 4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2 - 0) := by
+    have : IsCompact {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36} := by
+      apply Metric.isCompact_of_isClosed_isBounded
+      · apply isClosed_le <;> fun_prop
+      rw [← Bornology.isBounded_image_fst_and_snd]; and_intros; all_goals
+        rw [Metric.isBounded_iff_subset_closedBall 0]; use 3
+        simp [Set.subset_def, abs_le]; intro x y h; and_intros <;> nlinarith
+    exact volume_regionBetween_eq_integral integrableOn_zero
+      (ContinuousOn.integrableOn_compact this (by fun_prop)) (by simp; fun_prop) (by intros; nlinarith)
+  _ = .ofReal (∫ p in (3 : ℝ →L[ℝ] ℝ).prodMap 2 '' {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1},
+        4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2) := by
+    simp; congr; simp [funext_iff, mul_comm, ← eq_div_iff_mul_eq]; field_simp; norm_num
+  _ = .ofReal (∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1}, 216 * (p.1 ^ 2 + p.2 ^ 2) + 12) := by
+    rw [integral_image_eq_integral_abs_det_fderiv_smul]
+    case hs => simp; fun_prop
+    case hf => simp
+    case hf' => intro x hx; apply ContinuousLinearMap.hasFDerivWithinAt
+    simp [ContinuousLinearMap.det, LinearMap.det_prodMap]; ring_nf
+  _ = .ofReal (∫ p in Set.Ioc 0 1 ×ˢ Set.Ioo (-π) π, 216 * p.1 ^ 3 + 12 * p.1) := by
+    rw [← MeasureTheory.integral_indicator (by simp; fun_prop), ← integral_comp_polarCoord_symm,
+      ← MeasureTheory.integral_indicator (by exact measurableSet_Ioi.prod measurableSet_Ioo),
+      ← MeasureTheory.integral_indicator (measurableSet_Ioc.prod measurableSet_Ioo)]
+    simp [Set.indicator, ← ite_and, mul_pow, ← mul_add]; grind
+  _ = .ofReal (∫ r in 0..1, 2 * π * (216 * r ^ 3 + 12 * r)) := by
+    rw [integral_of_le zero_le_one, Measure.volume_eq_prod, setIntegral_prod]; simp [← two_mul, pi_nonneg]
+    apply ContinuousOn.integrableOn_of_subset_isCompact (K := Set.Icc 0 1 ×ˢ Set.Icc (-π) π)
+    · fun_prop
+    · simp [isCompact_Icc]
+    · exact measurableSet_Ioc.prod measurableSet_Ioo
+    · rw [Set.prod_subset_prod_iff]; left; exact ⟨Set.Ioc_subset_Icc_self, Set.Ioo_subset_Icc_self⟩
+    · simp
+  _ = 120 * NNReal.pi := by
+    norm_num [mul_comm, mul_assoc, pi_nonneg]; congr; simp [← ENNReal.ofReal_coe_nnreal]
