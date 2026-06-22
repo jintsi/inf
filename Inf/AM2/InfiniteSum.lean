@@ -19,7 +19,7 @@ theorem summable_conditional_iff [AddCommMonoid α] [TopologicalSpace α] {f : �
 /-- For the unconditional version, see `summable_congr_atTop`. -/
 theorem summable_congr_atTop' [AddCommGroup α] [TopologicalSpace α] [IsTopologicalAddGroup α]
     {f g : ℕ → α} (h : f =ᶠ[Filter.atTop] g) : Summable f (conditional ℕ) ↔ Summable g (conditional ℕ) := by
-  simp only [EventuallyEq, eventually_atTop, ge_iff_le] at h; obtain ⟨n₀, hn₀⟩ := h
+  simp only [EventuallyEq, eventually_atTop] at h; obtain ⟨n₀, hn₀⟩ := h
   exact summable_iff_of_summable_sub (summable_of_ne_finset_zero (s := range n₀) (by simpa [sub_eq_zero]))
 
 alias ⟨Summable.congr_atTop', _⟩ := summable_congr_atTop'
@@ -71,7 +71,7 @@ theorem not_summable_of_eventually_gt_one' [SeminormedAddCommGroup α] {f : ℕ 
   rcases by simpa [one_lt_div_iff, not_lt_of_ge] using h with ⟨a, ha⟩
   apply mt Summable.tendsto_atTop_zero'; rw [tendsto_zero_iff_norm_tendsto_zero]
   apply mt (Tendsto.eventually_lt_const (ha a le_rfl).1)
-  rw [not_eventually]; apply Eventually.frequently; simp only [not_lt, eventually_atTop, ge_iff_le]
+  rw [not_eventually]; apply Eventually.frequently; simp only [not_lt, eventually_atTop]
   use a; peel ha with b hb ha'; clear ha'; induction b, hb using Nat.le_induction
   case base => rfl
   case succ n hn ih => exact ih.trans (ha n hn).2.le

@@ -56,7 +56,7 @@ end MD1.Cwi11
 @[simps]
 def SimpleGraph.hypercubeGraph (d : Type*) [DecidableEq d] : SimpleGraph (d → Fin 2) where
   Adj v w := ∃ i, w = v + Pi.single i 1
-  symm v w := by rintro ⟨i, rfl⟩; use i; simp [add_assoc, ← Pi.single_add]
+  symm.symm v w := by rintro ⟨i, rfl⟩; use i; simp [add_assoc, ← Pi.single_add]
 
 instance [Fintype d] [DecidableEq d] : DecidableRel (hypercubeGraph d).Adj :=
   inferInstanceAs (DecidableRel fun v w => ∃ i, w = v + Pi.single i 1)

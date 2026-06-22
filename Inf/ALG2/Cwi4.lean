@@ -13,7 +13,7 @@ theorem Zad4_1 [RCLike K] {A : Matrix (Fin n) (Fin n) K} (hA : A.IsHermitian) :
     using posDef_sylvester hA.neg
 
 theorem Zad4_2 : !![(1 : ℝ), 1, -1; 1, 2, 1; -1, 1, 6].PosDef := by
-  simp [IsHermitian.ext_iff]; norm_num
+  simp [IsSymm.ext_iff]; norm_num
 
 theorem Zad4_4b : MeasureTheory.volume (parallelepiped
     ![!₂[(1 : ℝ), 0, 0], !₂[1, 1, 0], !₂[1, 1, 1]]) = 1 := by

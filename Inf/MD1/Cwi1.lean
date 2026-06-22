@@ -109,8 +109,8 @@ theorem Zad9 [Nonempty α] [Fintype α] {F : Set (Set α)}
       by_contra!; by_cases ha : a ∈ s; apply_fun insert a at h
       all_goals simp [ha, this] at h; exact hne h
     cases this with
-    | inl ha => simp [ha] at h; subst h; exact ⟨s \ {a}, ht, s, hs, Set.diff_subset⟩
-    | inr ha => simp [ha] at h; subst h; exact ⟨t \ {a}, hs, t, ht, Set.diff_subset⟩
+    | inl ha => simp [ha] at h; subst h; exact ⟨s \ {a}, ht, s, hs, Set.sdiff_subset⟩
+    | inr ha => simp [ha] at h; subst h; exact ⟨t \ {a}, hs, t, ht, Set.sdiff_subset⟩
   · simp [Nat.pow_sub_one] at ⊢ h; assumption
   · simp
 

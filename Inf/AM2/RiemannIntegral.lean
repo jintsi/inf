@@ -142,7 +142,7 @@ theorem tendsto_intervalPartition_toFilteriUnion (t : ℕ → ℕ → ℝ)
   convert intervalPartition_isSubordinate hab n.succ_ne_zero (t n.succ) (ht n.succ n.succ_ne_zero)
     (r 0 0) (r 0 0).property ?_ using 2
   · apply hr
-  · rw [ge_iff_le, Nat.ceil_le, div_le_iff₀ (r 0 0).property] at hn; field_simp; simp; grind
+  · rw [Nat.ceil_le, div_le_iff₀ (r 0 0).property] at hn; field_simp; simp; grind
 
 end BoxIntegral
 

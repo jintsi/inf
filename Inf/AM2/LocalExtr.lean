@@ -74,7 +74,7 @@ theorem eventually_posDef_hessian (hf : ContDiffAt ℝ 2 f a) (h : (hessian b f 
     intro b h; specialize this (b.reindex ei)
     have posDef_reindex_iff v : (hessian b f v).PosDef ↔ (hessian (b.reindex ei) f v).PosDef := by
       rw [posDef_iff_dotProduct_mulVec, posDef_iff_dotProduct_mulVec]; apply and_congr
-      · simp [IsHermitian.ext_iff]; refine ei.forall_congr fun _ => ei.forall_congr fun _ => ?_
+      · simp [IsSymm.ext_iff]; refine ei.forall_congr fun _ => ei.forall_congr fun _ => ?_
         simp [hessian]
       apply (ei.piCongrLeft fun _ => ℝ).forall_congr; intro x; congr!
       · simp [funext_iff]; apply ei.forall_congr; simp

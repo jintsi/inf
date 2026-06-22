@@ -10,7 +10,7 @@ open Real Matrix InnerProductSpace RealInnerProductSpace
 
 namespace ALG2.Zad3_1
 
-lemma posDef : !![1, 0, 1; 0, 2, 0; 1, 0, (3 : ℝ)].PosDef := by simp [IsHermitian.ext_iff]
+lemma posDef : !![1, 0, 1; 0, 2, 0; 1, 0, (3 : ℝ)].PosDef := by simp [IsSymm.ext_iff]
 
 noncomputable scoped instance normedAddCommGroup : NormedAddCommGroup (Fin 3 → ℝ) :=
   toNormedAddCommGroup _ posDef

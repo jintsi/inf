@@ -135,7 +135,7 @@ theorem Zad10 (n k : ℕ) : ∑ i ≤ k, n.choose i * (n - i).choose (k - i) = 2
       congr!; ext s; simp [Finset.disjoint_right, Finset.subset_iff]; tauto
     _ = ∑ i ≤ k, n.choose i * (n - i).choose (k - i) := by
       congr! with i hi; convert Finset.sum_const_nat ?_ <;> simp
-      intro t ht; simp [Finset.card_univ_diff, ht]
+      intro t ht; simp [Finset.card_univ_sdiff, ht]
   simp_all
 
 theorem Zad11a (n : ℕ) : ∑ k ≤ n, k * n.choose k = n * 2 ^ (n - 1) := by
@@ -158,7 +158,7 @@ theorem Zad11a (n : ℕ) : ∑ k ≤ n, k * n.choose k = n * 2 ^ (n - 1) := by
             <;> simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def] <;> try grind
           intro s h; exists sᶜ; simpa [F]
         · simp [Set.mapsTo_univ]
-      _ = n * 2 ^ (n - 1) := by convert Finset.sum_const_nat ?_ <;> simp [Finset.card_univ_diff]
+      _ = n * 2 ^ (n - 1) := by convert Finset.sum_const_nat ?_ <;> simp [Finset.card_univ_sdiff]
     simp_all
   · rw [← Nat.sum_range_mul_choose]; congr; ext; simp
 
@@ -189,7 +189,7 @@ theorem Zad11b {n : ℕ} (hn : 1 < n) : ∑ k ≤ n, k ^ 2 * n.choose k = (n + n
         have : Finset.card {xy : Fin n × Fin n | xy.1 = xy.2} = n := by
           apply Finset.card_eq_of_bijective fun i h => (⟨i, h⟩, ⟨i, h⟩) <;> simp [← Fin.val_inj]
         congr <;> convert Finset.sum_const_nat ?_ <;>
-          simp [this, Finset.filter_not, Finset.card_univ_diff]; intro a b h; simp [h]
+          simp [this, Finset.filter_not, Finset.card_univ_sdiff]; intro a b h; simp [h]
       _ = 2 * n * 2 ^ (n - 2) + (n ^ 2 - n) * 2 ^ (n - 2) := by
         conv => rhs; lhs; rw [mul_comm 2, mul_assoc, show n - 2 = n - 1 - 1 by lia,
           mul_pow_sub_one (by lia)]

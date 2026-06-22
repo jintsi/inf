@@ -39,7 +39,7 @@ theorem Zad2a : ¬Summable (fun (n : ℕ) => arccos (√n)⁻¹) (conditional �
 theorem Zad2b : Summable (fun (n : ℕ) => (n * √n + sin n.factorial) / (3 * n ^ 3 - 2)) := by
   apply Summable.of_nonneg_atTop_of_le_atTop (f := fun n => 2 * n ^ (3 / 2 : ℝ) / (2 * n ^ 3))
   · filter_upwards [eventually_ge_atTop 2] with n hn; apply div_nonneg
-    · grw [← neg_one_le_sin, ← hn]; simp; bound
+    · grw [← neg_one_le_sin, ← hn, ← hn]; simp; bound
     · grw [← hn]; norm_num
   · filter_upwards [eventually_ge_atTop 2] with n hn; rw [two_mul]
     refine div_le_div₀ (by bound) (add_le_add ?_ ?_) (by bound) ?_
