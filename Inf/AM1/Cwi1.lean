@@ -7,7 +7,7 @@ alias Zad1_inc := StrictMono.comp
 
 alias Zad1_dec := StrictAnti.comp
 
-theorem Zad2a : (fun (⟨k, l⟩ : ℤ × ℤ) => min k l).Surjective := by
+theorem Zad2a [LinearOrder Z] : (fun (⟨k, l⟩ : Z × Z) => min k l).Surjective := by
   simp [Function.Surjective]
   exact fun b => ⟨b, b, min_self b⟩
 
@@ -15,7 +15,7 @@ theorem Zad2b : ¬(fun (⟨k, l⟩ : ℤ × ℤ) => min k l).Injective := by
   simp [Function.Injective]
   exact ⟨0, 1, 0, 2, rfl, fun _ => nofun⟩
 
-theorem Zad3_inj : Set.InjOn (fun x : ℝ => x^2 - 4*x + 1) (Set.Iio 2) := by
+theorem Zad3_inj : Set.InjOn (fun x : ℝ => x ^ 2 - 4 * x + 1) (Set.Iio 2) := by
   simp [Set.InjOn]
   intro x hx y hy heq
   rw [← sub_right_inj, ← pow_left_inj₀]
@@ -25,7 +25,7 @@ theorem Zad3_inj : Set.InjOn (fun x : ℝ => x^2 - 4*x + 1) (Set.Iio 2) := by
   · norm_num
 
 theorem Zad3_inv : Set.LeftInvOn (fun y : ℝ => 2 - (y + 3).sqrt)
-    (fun x : ℝ => x^2 - 4*x + 1) (Set.Iio 2) := by
+    (fun x : ℝ => x ^ 2 - 4 * x + 1) (Set.Iio 2) := by
   simp [Set.LeftInvOn]
   intro x hx
   apply sub_eq_of_eq_add'; apply eq_add_of_sub_eq
@@ -54,7 +54,7 @@ noncomputable def _root_.Real.arccot (x : ℝ) : ℝ := π / 2 - arctan x
 
 theorem Zad5e : arccot 0 = π / 2 := by simp [arccot]
 
-theorem Zad5f : arccot (-sqrt 3) = (5/6)*π := by simp [arccot]; ring_nf
+theorem Zad5f : arccot (-sqrt 3) = (5 / 6) * π := by simp [arccot]; ring_nf
 
 theorem Zad5g : arccot (tan (7 / 8 * π)) = (5 / 8) * π := by
   rw [arccot, ← tan_sub_pi, sub_eq_of_eq_add]

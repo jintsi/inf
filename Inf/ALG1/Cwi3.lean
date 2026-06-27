@@ -1,9 +1,9 @@
-import Mathlib.Data.Rat.Init
+import Mathlib.Algebra.Field.Basic
 import Mathlib.Data.ZMod.Basic
 
 namespace ALG1.Cwi3
 
-variable {x y z t x1 x2 x3 x4 x5 x6 : ℚ}
+variable [Field K] [CharZero K] {x y z t x1 x2 x3 x4 x5 x6 : K}
 
 theorem Zad1a : 2 * x - y - z = 4 ∧ 3 * x + 4 * y - 2 * z = 11 ∧ 3 * x + 2 * y + 4 * z = 11 ↔
     x = 21 / 8 ∧ y = 15 / 16 ∧ z = 5 / 16 := by grind only

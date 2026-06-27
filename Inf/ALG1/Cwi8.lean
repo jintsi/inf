@@ -8,18 +8,18 @@ open LinearMap
 namespace ALG1.Cwi8
 
 set_option linter.unusedVariables false in
-theorem Zad1a : IsLinearMap ℝ fun ((x₁, x₂, x₃) : ℝ × ℝ × ℝ) => (x₁, x₂) :=
+theorem Zad1a [Semiring R] : IsLinearMap R fun ((x₁, x₂, x₃) : R × R × R) => (x₁, x₂) :=
   isLinear ((fst _ _ _).prod (fst _ _ _ ∘ₗ snd _ _ _))
 
 theorem Zad1b : ¬IsLinearMap ℝ fun ((x₁, x₂) : ℝ × ℝ) => x₁ * x₂ :=
   fun h => by simpa [self_eq_neg] using h.map_neg 1
 
-theorem Zad1c : IsLinearMap ℝ fun ((x, y, z) : ℝ × ℝ × ℝ) => (2 * x - 2 * y, z - x, y - x) where
-  map_add x y := by dsimp; ring_nf
-  map_smul c x := by dsimp; ring_nf
+theorem Zad1c [Ring R] : IsLinearMap R fun ((x, y, z) : R × R × R) => (2 * x - 2 * y, z - x, y - x) where
+  map_add x y := by dsimp; noncomm_ring
+  map_smul c x := by dsimp; noncomm_ring
 
 open Polynomial in
-theorem Zad1d : IsLinearMap ℝ fun (p : ℝ[X]) => derivative^[2] ((X ^ 2 - X - 1) * p) where
+theorem Zad1d [CommRing R] : IsLinearMap R fun (p : R[X]) => derivative^[2] ((X ^ 2 - X - 1) * p) where
   map_add p q := by simp [-derivative_mul, mul_add]
   map_smul c p := by simp [-derivative_mul]
 

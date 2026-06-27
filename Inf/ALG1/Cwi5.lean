@@ -25,9 +25,10 @@ namespace ALG1.Cwi5
 theorem Zad1a : ¬IsSubmodule ℝ {(x, _, _) : ℝ × ℝ × ℝ | x ≠ 0} := by
   simp [mt IsSubmodule.zero_mem]
 
-theorem Zad1b : IsSubmodule ℝ {(x, y, z) : ℝ × ℝ × ℝ | x + 3 * y = z} := by
+theorem Zad1b [Semiring R] : IsSubmodule R {(x, y, z) : R × R × R | x + 3 * y = z} := by
   apply IsSubmodule.mk <;>
-    simp +contextual [mul_add, ← add_assoc, add_right_comm _ _ (_ * _), mul_left_comm]
+    simp +contextual [mul_add, ← add_assoc, add_right_comm _ _ (_ * _)]
+  simp [(show (3 : R) = 1 + 1 + 1 by norm_num), add_mul, mul_add]
 
 theorem Zad1c : ¬IsSubmodule ℝ {(x, y, _) : ℝ × ℝ × ℝ | y = x ^ 2} :=
  fun this => by simpa [sq] using this.smul_mem 2 (show (1, 1, 1) ∈ _ by simp)
@@ -35,10 +36,10 @@ theorem Zad1c : ¬IsSubmodule ℝ {(x, y, _) : ℝ × ℝ × ℝ | y = x ^ 2} :=
 theorem Zad1d : ¬IsSubmodule ℝ {(x, _, z) : ℝ × ℝ × ℝ | x * z = 0} :=
  fun this => by simpa using this.add_mem (a := (1, 0, 0)) (b := (0, 0, 1))
 
-theorem Zad1e : IsSubmodule ℝ {(x, y, z) : ℝ × ℝ × ℝ | x = 0 ∧ y = 2 * z} := by
-  apply IsSubmodule.mk <;> simp +contextual [mul_add, mul_left_comm]
+theorem Zad1e [Semiring R] : IsSubmodule R {(x, y, z) : R × R × R | x = 0 ∧ y = 2 * z} := by
+  apply IsSubmodule.mk <;> simp +contextual [mul_add]; simp [two_mul, mul_add]
 
-theorem Zad1f : IsSubmodule ℝ {(a, b) : ℝ × ℝ | a + b = 0} := by
+theorem Zad1f [Semiring R] : IsSubmodule R {(a, b) : R × R | a + b = 0} := by
   apply IsSubmodule.mk <;> simp +contextual [add_add_add_comm, ← mul_add]
 
 theorem Zad1g : ¬IsSubmodule ℝ {(a, b, c) : ℝ × ℝ × ℝ | 4 * a + 2 * b + c = 1} :=
@@ -72,10 +73,11 @@ theorem Zad7 : (X ^ 2 + 1 : ℤ[X]) ∈ Submodule.span ℤ {X, X ^ 2 - 3, X + 2,
   simp [Submodule.mem_span_insert, Submodule.mem_span_singleton]; exists -2, 1, 2, 0; ring
 
 open Polynomial in
-theorem ZadD1a (r : ℝ) : IsSubmodule ℝ {p : ℝ[X] | p.IsRoot r} := by
+theorem ZadD1a [Semiring R] (r : R) : IsSubmodule R {p : R[X] | p.IsRoot r} := by
   apply IsSubmodule.mk <;> simp +contextual
 
-theorem ZadD2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧ BddBelow (Set.range f)} where
+theorem ZadD2a [Ring R] [LinearOrder R] [IsOrderedRing R] :
+    IsSubmodule R {f : ℕ → R | BddAbove (Set.range f) ∧ BddBelow (Set.range f)} where
   zero_mem := by simp
   add_mem := by simp +contextual [Pi.add_def, BddAbove.range_add, BddBelow.range_add]
   smul_mem := by
@@ -84,13 +86,15 @@ theorem ZadD2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧ B
     · exact ⟨hb.smul_of_nonpos ‹_›, ha.smul_of_nonpos ‹_›⟩
 
 open Topology Filter in
-theorem ZadD2b : IsSubmodule ℝ {f : ℕ → ℝ | ∃ g, Tendsto f atTop (𝓝 g)} where
+theorem ZadD2b [Semiring R] [TopologicalSpace R] [ContinuousAdd R] [SeparatelyContinuousMul R] :
+    IsSubmodule R {f : ℕ → R | ∃ g, Tendsto f atTop (𝓝 g)} where
   zero_mem := ⟨0, tendsto_const_nhds⟩
   add_mem := fun ⟨ga, ha⟩ ⟨gb, hb⟩ => ⟨ga + gb, ha.add hb⟩
   smul_mem := fun c _ ⟨g, h⟩ => ⟨c * g, h.const_mul c⟩
 
 open Topology Filter in
-theorem ZadD2c : IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 0)} where
+theorem ZadD2c [Semiring R] [TopologicalSpace R] [ContinuousAdd R] [SeparatelyContinuousMul R] :
+    IsSubmodule R {f : ℕ → R | Tendsto f atTop (𝓝 0)} where
   zero_mem := tendsto_const_nhds
   add_mem := fun ha hb => by simpa using! Tendsto.add ha hb
   smul_mem := fun c a h => by simpa using! Tendsto.const_mul c h
@@ -99,20 +103,22 @@ open Topology Filter in
 theorem ZadD2d : ¬IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 1)} :=
   fun this => one_ne_zero (tendsto_nhds_unique this.zero_mem tendsto_const_nhds)
 
-theorem ZadD2e : IsSubmodule ℝ (Set.range Finsupp.toFun : Set (ℕ → ℝ)) where
+theorem ZadD2e [Semiring R] : IsSubmodule R (Set.range Finsupp.toFun : Set (ℕ → R)) where
   zero_mem := ⟨0, rfl⟩
   add_mem := by rintro _ _ ⟨f, rfl⟩ ⟨g, rfl⟩; exists f + g
   smul_mem := by rintro c _ ⟨f, rfl⟩; exists c • f
 
-theorem ZadD3b : IsSubmodule ℝ {f : ℝ → ℝ | Continuous f} where
+theorem ZadD3b [TopologicalSpace X] [Semiring R] [TopologicalSpace R] [ContinuousAdd R]
+    [SeparatelyContinuousMul R] : IsSubmodule R {f : X → R | Continuous f} where
   zero_mem := continuous_zero
   add_mem := Continuous.add
   smul_mem c _ h := h.const_smul c
 
-theorem ZadD3c : IsSubmodule ℝ {f : ℝ → ℝ | Differentiable ℝ f} where
+theorem ZadD3c [NontriviallyNormedField K] [NormedAddCommGroup E] [NormedSpace K E]
+    [NormedAddCommGroup F] [NormedSpace K F] : IsSubmodule K {f : E → F | Differentiable K f} where
   zero_mem := differentiable_zero
   add_mem := Differentiable.add
-  smul_mem c _ h := h.const_mul c
+  smul_mem c _ h := h.const_smul c
 
 local instance ZadD4_group {T : Type u} : AddCommGroup (Set T) where
   add := symmDiff

@@ -77,14 +77,17 @@ theorem Zad3 {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f n) (h : Summable f) : Summab
 
 /-- **Zad. 4**, the form from the exercise sheet can be recovered from the fact that
 for nonnegative series, absolute and conditional convergence are the same (`summable_iff_conditional_of_nonneg`) -/
-theorem _root_.Summable.of_tendsto_div {f g : ℕ → ℝ} (hgf : Tendsto (fun n => g n / f n) atTop (𝓝 a))
-    (hf : ∀ᶠ n in atTop, f n ≠ 0) (h : Summable f) : Summable g := by
+theorem _root_.Summable.of_tendsto_div [NormedField F] [NormMulClass F] [NormOneClass F]
+    [NormedSpace ℝ F] [CompleteSpace F] [FiniteDimensional ℝ F] {f g : ℕ → F}
+    (hgf : Tendsto (fun n => g n / f n) atTop (𝓝 a)) (hf : ∀ᶠ n in atTop, f n ≠ 0) (h : Summable f)
+    : Summable g := by
   rw [← Nat.cofinite_eq_atTop] at hgf
   have : Summable (fun n => f n * (g n / f n)) := by
-    apply Summable.mul_tendsto_const ?_ hgf; exact h.abs
+    apply Summable.mul_tendsto_const ?_ hgf; exact h.norm --todo: get rid of commutativity (i.e. so that it works for `NormedDivisionField F`)
   apply this.congr_atTop; filter_upwards [hf] with n hn; field
 
-theorem Zad4 {f g : ℕ → ℝ} (hfg : Tendsto (fun n => f n / g n) atTop (𝓝 a))
+theorem Zad4 [NormedField F] [NormMulClass F] [NormOneClass F] [NormedSpace ℝ F] [CompleteSpace F]
+    [FiniteDimensional ℝ F] {f g : ℕ → F} (hfg : Tendsto (fun n => f n / g n) atTop (𝓝 a))
     (ha : a ≠ 0) (hg : ∀ᶠ n in atTop, g n ≠ 0) : Summable f ↔ Summable g := by
   constructor; case mpr => exact .of_tendsto_div hfg hg
   apply Summable.of_tendsto_div ((hfg.inv₀ ha).congr (by simp))
