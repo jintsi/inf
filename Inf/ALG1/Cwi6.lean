@@ -88,19 +88,21 @@ theorem Zad4 (r : ℚ) : ![r, 8, 6] ∈ span ℚ {![3, 4, 5], ![1, 4, 4], ![7, 4
   · intro ⟨a, b, c, h1, h2, h3⟩; linarith
   · intro rfl; exists -2, 4, 0; norm_num
 
-variable {x₁ x₂ x₃ x₄ : ℚ}
+variable [Ring R] {x₁ x₂ x₃ x₄ : R}
 
-theorem Zad5a : 2 * x₁ + x₂ - 2 * x₃ - x₄ = 0 ↔ ![x₁, x₂, x₃, x₄] ∈ span ℚ
-    {![1, 0, 0, 2], ![0, 1, 0, 1], ![0, 0, 1, -2]} := by simp [mem_span_triple]; grind only
+theorem Zad5a : 2 * x₁ + x₂ - 2 * x₃ - x₄ = 0 ↔ ![x₁, x₂, x₃, x₄] ∈ span R
+    {![1, 0, 0, 2], ![0, 1, 0, 1], ![0, 0, 1, -2]} := by
+  simp [mem_span_triple, sub_eq_zero]; noncomm_ring
 
-theorem Zad5b : (x₁ + x₂ - x₃ = 0 ∧ x₁ + 2 * x₂ + x₄ = 0) ↔ ![x₁, x₂, x₃, x₄] ∈ span ℚ
-    {![1, 0, 1, -1], ![0, 1, 1, -2]} := by simp [mem_span_pair]; grind only
+theorem Zad5b : (x₁ + x₂ - x₃ = 0 ∧ x₁ + 2 * x₂ + x₄ = 0) ↔ ![x₁, x₂, x₃, x₄] ∈ span R
+    {![1, 0, 1, -1], ![0, 1, 1, -2]} := by
+  simp [mem_span_pair, sub_eq_zero, ← neg_add_rev, neg_eq_iff_add_eq_zero]; noncomm_ring; simp
 
-theorem Zad5c : (x₁ - x₂ = 0 ∧ x₂ - x₃ = 0 ∧ x₃ - x₄ = 0) ↔ ![x₁, x₂, x₃, x₄] ∈ span ℚ
+theorem Zad5c : (x₁ - x₂ = 0 ∧ x₂ - x₃ = 0 ∧ x₃ - x₄ = 0) ↔ ![x₁, x₂, x₃, x₄] ∈ span R
     {![1, 1, 1, 1]} := by simp [mem_span_singleton]; grind only
 
 theorem Zad5d : (x₁ + x₂ = 0 ∧ x₂ + x₃ = 0 ∧ x₃ + x₄ = 0 ∧ x₁ + x₄ = 0)
-    ↔ ![x₁, x₂, x₃, x₄] ∈ span ℚ {![1, -1, 1, -1]} := by simp [mem_span_singleton]; grind only
+    ↔ ![x₁, x₂, x₃, x₄] ∈ span R {![1, -1, 1, -1]} := by simp [mem_span_singleton]; grind only
 
 open Polynomial
 
@@ -136,9 +138,9 @@ theorem ZadD1c : !![(3 : ℚ), 2, 0; 2, 4, 1] ∉ span ℚ
 theorem ZadD2 {x₁ x₂ x₃ : ZMod 2} :
     LinearIndependent (ZMod 2) ![![x₁, x₂, x₃], ![1, 0, 1], ![1, 1, 1]] ↔ x₁ ≠ x₃ := by
   simp [linearIndependent_finSucc, Fin.tail_def, mem_span_singleton, mem_span_pair]
-  constructor
-  · contrapose!; intro rfl; exists x₁ - x₂; simp
-  · contrapose!; rintro ⟨x, rfl, rfl⟩; rfl
+  contrapose!; constructor
+  · rintro ⟨x, rfl, rfl⟩; rfl
+  · intro rfl; exists x₁ - x₂; simp
 
 theorem ZadD3a : ∀ v, v ∈ span ℝ {![(1 : ℝ), 3, 5], ![2, 7, 5], ![1, 1, 9]} := by
   simp [mem_span_triple]; intro v

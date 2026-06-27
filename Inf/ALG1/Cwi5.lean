@@ -108,6 +108,8 @@ theorem ZadD2e [Semiring R] : IsSubmodule R (Set.range Finsupp.toFun : Set (ℕ 
   add_mem := by rintro _ _ ⟨f, rfl⟩ ⟨g, rfl⟩; exists f + g
   smul_mem := by rintro c _ ⟨f, rfl⟩; exists c • f
 
+alias ZadD3a := Pi.Function.module
+
 theorem ZadD3b [TopologicalSpace X] [Semiring R] [TopologicalSpace R] [ContinuousAdd R]
     [SeparatelyContinuousMul R] : IsSubmodule R {f : X → R | Continuous f} where
   zero_mem := continuous_zero
@@ -133,7 +135,7 @@ local instance ZadD4_group {T : Type u} : AddCommGroup (Set T) where
   zsmul := @zsmulRec _ ⟨∅⟩ ⟨symmDiff⟩ ⟨id⟩ (@nsmulRec _ ⟨∅⟩ ⟨symmDiff⟩)
 
 set_option backward.isDefEq.respectTransparency false in
-local instance Zad5_D4 {T : Type u} : Module (ZMod 2) (Set T) where
+local instance ZadD4 {T : Type u} : Module (ZMod 2) (Set T) where
   smul a s := a.val • s
   smul_zero := fun a => smul_zero a.val
   smul_add := fun a => smul_add a.val

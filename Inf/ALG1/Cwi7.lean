@@ -13,12 +13,14 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
 namespace ALG1.Cwi7
 
+open Submodule
+
 theorem Zad1a : Module.finrank ℂ (ℂ × ℂ) = 2 := by simp
 
 theorem Zad1b : Module.finrank ℝ (ℂ × ℂ) = 4 := by simp
 
-theorem Zad2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
-  simp [Submodule.mem_span_pair, Rat.smul_def]
+theorem Zad2a : ¬∀ v : ℝ, v ∈ span ℚ {1, √2} := by
+  simp [mem_span_pair, Rat.smul_def]
   exists √3
   intro a b
   by_cases! hb : b = 0
@@ -36,7 +38,7 @@ theorem Zad2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
 theorem Zad2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (Nat.nth Nat.Prime i) := by
   induction n; · simp
   rename_i n ih
-  simp [linearIndependent_finSucc', Fin.init_def, ih, Submodule.mem_span_range_iff_exists_fun, Rat.smul_def]
+  simp [linearIndependent_finSucc', Fin.init_def, ih, mem_span_range_iff_exists_fun, Rat.smul_def]
   intro x
   let den := Finset.univ.lcm fun i => (x i).den
   have h : ∀ i, (x i).den ∣ den := fun i => Finset.dvd_lcm (Finset.mem_univ i)
@@ -115,7 +117,8 @@ noncomputable def _root_.SkewSymmMatrix.basis (n : Type*) [Fintype n] [LinearOrd
     left_inv := fun ⟨M, h⟩ => by
       simp; ext i j; simp; split; simp_all [le_of_lt]; split
       · rw [← Matrix.neg_apply, ← h, Matrix.transpose_apply]; simp_all
-      · symm; rw [← neg_eq_self, ← Matrix.neg_apply, ← h, Matrix.transpose_apply]; congr <;> order
+      · symm; rw [← _root_.neg_eq_self, ← Matrix.neg_apply, ← h, Matrix.transpose_apply]
+        congr <;> order
     right_inv := fun c => by
       simp [funext_iff, Sym2.forall]; intro x y h; simp [eq_comm, h]; congr 2; simp [le_total]
   }
@@ -136,7 +139,7 @@ instance Zad3b (R : Type*) [Field R] [CharZero R] [DecidableEq R] (n : ℕ) :
     intro m; apply DFinsupp.equivFunOnFintype.invFun; intro k; constructor
     case val => exact ![(2⁻¹ : R) • (m + m.transpose), (2⁻¹ : R) • (m - m.transpose)] k
     case property =>
-      fin_cases k <;> (dsimp; apply Submodule.smul_mem; ext i j; simp [add_comm])
+      fin_cases k <;> (dsimp; apply smul_mem; ext i j; simp [add_comm])
   case left_inv =>
     intro m; ext i j; simp [DirectSum.coeAddMonoidHom_eq_dfinsuppSum, DFinsupp.equivFunOnFintype]; ring
   case right_inv =>
@@ -184,7 +187,7 @@ x 0 + x 1 - 2 * x 2 + x 3 = 0
 x 0 + 2 * x 1 - 3 * x 2 = 0
 ``` -/
 def Zad5a.V1 : Submodule ℚ (Fin 4 → ℚ) := by
-  apply Submodule.ofLinearComb {x | x 0 + x 1 - 2 * x 2 + x 3 = 0 ∧ x 0 + 2 * x 1 - 3 * x 2 = 0}
+  apply ofLinearComb {x | x 0 + x 1 - 2 * x 2 + x 3 = 0 ∧ x 0 + 2 * x 1 - 3 * x 2 = 0}
   · exists 0; simp
   · simp; grind
 
@@ -194,28 +197,28 @@ x 0 - 3 * x 1 + x 2 - x 3 = 0
 2 * x 0 + 3 * x 1 - 5 * x 2 + x 3 = 0
 ``` -/
 def Zad5a.V2 : Submodule ℚ (Fin 4 → ℚ) := by
-  apply Submodule.ofLinearComb
+  apply ofLinearComb
     {x : Fin 4 → ℚ | x 0 - 3 * x 1 + x 2 - x 3 = 0 ∧ 2 * x 0 + 3 * x 1 - 5 * x 2 + x 3 = 0}
   · exists 0; simp
   · simp; grind
 
 /-- `![1, 1, 1, 0]` and `![0, 3, 2, 1]` are a basis for V1. -/
 noncomputable def Zad5a.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
-  apply Module.Basis.mk (v := ![⟨![1, 1, 1, 0], by simp [V1, Submodule.ofLinearComb]; norm_num⟩,
-    ⟨![0, 3, 2, 1], by simp [V1, Submodule.ofLinearComb]; norm_num⟩])
+  apply Module.Basis.mk (v := ![⟨![1, 1, 1, 0], by simp [V1, ofLinearComb]; norm_num⟩,
+    ⟨![0, 3, 2, 1], by simp [V1, ofLinearComb]; norm_num⟩])
   · simp [LinearIndependent.pair_iff']
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_pair]
-    simp [V1, Submodule.ofLinearComb]
+  · simp [eq_top_iff', mem_span_pair]
+    simp [V1, ofLinearComb]
     intro x h1 h2; exists x 3, x 0; ext i; fin_cases i <;> simp <;> grind
 
 set_option backward.isDefEq.respectTransparency false in
 /-- `![0, 1, 0, -3]` and `![1, 0, 3 / 4, 7 / 4]` are a basis for V2. -/
 noncomputable def Zad5a.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
-  apply Module.Basis.mk (v := ![⟨![0, 1, 0, -3], by simp [V2, Submodule.ofLinearComb]⟩,
-    ⟨![1, 0, 3 / 4, 7 / 4], by simp [V2, Submodule.ofLinearComb]; norm_num⟩])
+  apply Module.Basis.mk (v := ![⟨![0, 1, 0, -3], by simp [V2, ofLinearComb]⟩,
+    ⟨![1, 0, 3 / 4, 7 / 4], by simp [V2, ofLinearComb]; norm_num⟩])
   · simp [LinearIndependent.pair_iff']
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_pair]
-    simp [V2, Submodule.ofLinearComb]
+  · simp [eq_top_iff', mem_span_pair]
+    simp [V2, ofLinearComb]
     intro x h1 h2; exists x 0, x 1; ext i; fin_cases i <;> simp <;> grind
 
 /-- `![1, 1, 1, 0]`, `![0, 1, 1, 2]`, and `![0, 0, 1, 5]` are a basis V1 + V2. -/
@@ -223,29 +226,27 @@ noncomputable def Zad5a.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
   apply Module.Basis.mk
   case v =>
     refine ![⟨![1, 1, 1, 0], ?_⟩, ⟨![0, 1, 1, 2], ?_⟩, ⟨![0, 0, 1, 5], ?_⟩] <;>
-      simp [Submodule.mem_sup, V1, V2, Submodule.ofLinearComb]
+      simp [mem_sup, V1, V2, ofLinearComb]
     · exists ![1, 1, 1, 0]; simp; norm_num; exists 0; simp
     · exists ![0, 3 / 2, 1, 1 / 2]; simp; norm_num; exists ![0, -1 / 2, 0, 3 / 2]; simp; norm_num
     · exists ![0, 3 / 2, 1, 1 / 2]; simp; norm_num; exists ![0, -3 / 2, 0, 9 / 2]; simp; norm_num
-  · simp [linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_triple, Submodule.mem_sup]
-    simp [V1, V2, Submodule.ofLinearComb]
+  · simp [linearIndependent_finSucc, Fin.tail_def, mem_span_singleton, mem_span_pair]
+  · simp [eq_top_iff', mem_span_triple, mem_sup]
+    simp [V1, V2, ofLinearComb]
     intro v x h1 h2 y h3 h4 h; exists v 2 - v 1, v 1 - v 0, v 0; subst h
     ext i; fin_cases i <;> simp; grind
 
 /-- `![8, 5, 6, -1]` spans `V1 ⊓ V2`. -/
 noncomputable def Zad5a.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := by
-  apply Module.Basis.mk (v := ![⟨![8, 5, 6, -1], by simp [V1, V2, Submodule.ofLinearComb]; norm_num⟩])
+  apply Module.Basis.mk (v := ![⟨![8, 5, 6, -1], by simp [V1, V2, ofLinearComb]; norm_num⟩])
   · simp
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_singleton]
-    simp [V1, V2, Submodule.ofLinearComb]
+  · simp [eq_top_iff', mem_span_singleton]
+    simp [V1, V2, ofLinearComb]
     intro v h1 h2 h3 h4; exists -v 3; ext i; fin_cases i <;> simp <;> grind
 
-/-- Span of `!![2, 1; 0, 2]` and `!![-3, 4; 0, -3]`. -/
-abbrev Zad5b.V1 := Submodule.span ℚ {!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]}
+abbrev Zad5b.V1 := span ℚ {!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]}
 
-/-- Span of `!![0, 1; 1, 1]`, `!![-1, 2; 2, 1]`, and `!![2, 1; 1, 3]`. -/
-abbrev Zad5b.V2 := Submodule.span ℚ {!![(0 : ℚ), 1; 1, 1], !![-1, 2; 2, 1], !![2, 1; 1, 3]}
+abbrev Zad5b.V2 := span ℚ {!![(0 : ℚ), 1; 1, 1], !![-1, 2; 2, 1], !![2, 1; 1, 3]}
 
 /-- `!![2, 1; 0, 2]` and `!![-3, 4; 0, -3]` are a basis for V1. -/
 noncomputable def Zad5b.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
@@ -259,25 +260,25 @@ noncomputable def Zad5b.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
 noncomputable def Zad5b.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
   apply Module.Basis.mk
   case v =>
-    refine ![⟨!![0, 1; 1, 1], ?_⟩, ⟨!![1, 0; 0, 1], ?_⟩] <;> simp [V2, Submodule.mem_span_triple]
+    refine ![⟨!![0, 1; 1, 1], ?_⟩, ⟨!![1, 0; 0, 1], ?_⟩] <;> simp [V2, mem_span_triple]
     · exists 1, 0, 0; simp
     · exists 2, -1, 0; norm_num
   · simp [LinearIndependent.pair_iff]
     rw [show 0 = !![(0 : ℚ), 0; 0, 0] from (Matrix.etaExpand_eq _).symm]; simp
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_pair, V2, Submodule.mem_span_triple]
+  · simp [eq_top_iff', mem_span_pair, V2, mem_span_triple]
     intro m x y z h; exists m 0 0, m 0 1; subst h; simp; ring
 
 /-- `!![1, 1; 0, 1]`, `!![0, 1; 1, 1]`, and `!![1, 0; 0, 1]` are a basis for V1 + V2. -/
 noncomputable def Zad5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
   let v : Fin 3 → Matrix _ _ ℚ := ![!![1, 1; 0, 1], !![0, 1; 1, 1], !![1, 0; 0, 1]]
-  have : V1 + V2 = Submodule.span ℚ (Set.range v) := by
-    ext m; simp [Submodule.mem_sup, v, V1, V2, Submodule.mem_span_pair, Submodule.mem_span_triple]
+  have : V1 + V2 = span ℚ (Set.range v) := by
+    ext m; simp [mem_sup, v, V1, V2, mem_span_pair, mem_span_triple]
     constructor
     · intro ⟨a, b, c, d, e, h⟩; exists m 1 1 - m 0 1, m 1 0, m 0 1 - m 1 0
       subst h; simp; ring_nf; simp
     · rintro ⟨a, b, c, rfl⟩; exists 7 / 11 * c, c / 11, b, -a / 5, 2 / 5 * a; simp; ring_nf; simp
   rw [this]; apply Module.Basis.span
-  simp [v, linearIndependent_finSucc, Fin.tail_def, Submodule.mem_span_singleton, Submodule.mem_span_pair]
+  simp [v, linearIndependent_finSucc, Fin.tail_def, mem_span_singleton, mem_span_pair]
   apply_fun fun m => m 0 0; simp
 
 /-- `!![1, 0; 0, 1]` spans `V1 ⊓ V2`. -/
@@ -285,53 +286,69 @@ noncomputable def Zad5b.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := b
   apply Module.Basis.mk
   case v =>
     refine ![⟨!![1, 0; 0, 1], ?_⟩]
-    simpa [V1, V2, Submodule.mem_span_pair, Submodule.mem_span_triple] using
+    simpa [V1, V2, mem_span_pair, mem_span_triple] using
       ⟨⟨4 / 11, -1 / 11, by norm_num⟩, 2, -1, 0, by norm_num⟩
   · simp [Matrix.eta_fin_two 0]
-  · simp [Submodule.eq_top_iff', Submodule.mem_span_singleton,
-      V1, V2, Submodule.mem_span_pair, Submodule.mem_span_triple]
+  · simp [eq_top_iff', mem_span_singleton,
+      V1, V2, mem_span_pair, mem_span_triple]
     intro m a b h1 c d e h2; exists m 0 0
     rw [m.eta_fin_two] at *; simp at *; grind
 
 theorem Zad6 {R : Type*} {M : Type*} [Ring R] [AddCommGroup M] [Module R M] {s t : Submodule R M}
     (h : s + t = ⊤) : s ⊓ t = ⊥ ↔ ∀ v : M, ∃! v' : s × t, v = v'.1 + v'.2 := by
   simp at h; constructor
-  · convert fun hb => Submodule.existsUnique_add_of_isCompl_prod (IsCompl.of_eq hb h) using 4
+  · convert fun hb => existsUnique_add_of_isCompl_prod (IsCompl.of_eq hb h) using 4
     simp [Eq.comm]
-  · simp [← disjoint_iff, Submodule.disjoint_def]; intro h x hs ht
+  · simp [← disjoint_iff, disjoint_def]; intro h x hs ht
     replace h := (h x).unique (y₁ := ⟨⟨x, hs⟩, 0⟩) (y₂ := ⟨0, x, ht⟩); simp at h; tauto
 
 theorem Zad7.directSum_V1_V2 : DirectSum.IsInternal (M := ℚ × ℚ) ![ℚ ∙ (1, 0), ℚ ∙ (0, 1)] := by
   rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by ext i; fin_cases i <;> simp)]
-  simp [isCompl_iff, Submodule.disjoint_span_singleton', Submodule.codisjoint_iff_exists_add_eq,
-      Submodule.mem_span_singleton]
+  simp [isCompl_iff, disjoint_span_singleton', codisjoint_iff_exists_add_eq, mem_span_singleton]
 
 theorem Zad7.directSum_V1_V3 : DirectSum.IsInternal (M := ℚ × ℚ) ![ℚ ∙ (1, 0), ℚ ∙ (1, 1)] := by
   rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by ext i; fin_cases i <;> simp)]
-  simp [isCompl_iff, Submodule.disjoint_span_singleton', Submodule.codisjoint_iff_exists_add_eq,
-      Submodule.mem_span_singleton]
+  simp [isCompl_iff, disjoint_span_singleton', codisjoint_iff_exists_add_eq, mem_span_singleton]
   intro a b; exists a - b; simp
 
 theorem Zad7.V2_ne_V3 : ℚ ∙ ((0, 1) : ℚ × ℚ) ≠ ℚ ∙ (1, 1) := by
-  simp [Submodule.ext_iff, Submodule.mem_span_singleton]; exists 1, 1
+  simp [Submodule.ext_iff, mem_span_singleton]; exists 1, 1
 
 /-- The submodule `{(x, y, z) | z = x + y}`. -/
 def Zad8.A : Submodule ℚ (ℚ × ℚ × ℚ) := by
-  apply Submodule.ofLinearComb {(x, y, z) | z = x + y}
+  apply ofLinearComb {(x, y, z) | z = x + y}
   · exists 0; simp
   · simp; grind
 
 /-- The submodule `{(x, y, z) | x = y = z}`. -/
 def Zad8.B : Submodule ℚ (ℚ × ℚ × ℚ) := by
-  apply Submodule.ofLinearComb {(x, x, x) | (x : ℚ)}
+  apply ofLinearComb {(x, x, x) | (x : ℚ)}
   · exists 0; simp
   · simp
+
 theorem Zad8.directSum : DirectSum.IsInternal ![A, B] := by
-  rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by ext i; fin_cases i <;> simp)]
-  simp [isCompl_iff, Submodule.disjoint_def, Submodule.codisjoint_iff_exists_add_eq, A, B, Submodule.ofLinearComb]
+  rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by simp [Set.ext_iff])]
+  simp [isCompl_iff, disjoint_def, codisjoint_iff_exists_add_eq, A, B, ofLinearComb]
   intro a b c; exists c - b, c - a, a + b - c; simp; ring
+
+def Zad9.A : Submodule ℚ (ℚ × ℚ × ℚ × ℚ) := span ℚ {(2, 3, 11, 5), (1, 1, 5, 2), (0, 1, 1, 1)}
+--(0, 1, 1, 1) and (1, 0, 4, 1)
+def Zad9.B : Submodule ℚ (ℚ × ℚ × ℚ × ℚ) := span ℚ {(2, 1, 3, 2), (1, 4, 3, 4), (5, -1, 6, 2)}
+--(1, 4, 3, 4) and (1, -3, 0, -2) or (0, 7, 3, 6)
+
+set_option backward.isDefEq.respectTransparency false
+theorem Zad9.directSum : DirectSum.IsInternal ![A, B] := by
+  rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by simp [Set.ext_iff]), isCompl_iff_disjoint]
+  · simp [disjoint_def, A, B, mem_span_triple]; grind only
+  simp [A, B]; grw [← LinearIndependent.fintype_card_le_finrank (b := ![
+      ⟨(1, 1, 5, 2), mem_span_of_mem (by simp)⟩, ⟨(0, 1, 1, 1), mem_span_of_mem (by simp)⟩]),
+    ← LinearIndependent.fintype_card_le_finrank (b := ![
+      ⟨(2, 1, 3, 2), mem_span_of_mem (by simp)⟩, ⟨(1, 4, 3, 4), mem_span_of_mem (by simp)⟩])]
+  · simp
+  · simp [linearIndependent_fin2]
+  · simp [linearIndependent_fin2]
 
 theorem ZadD1 {K : Type u} {V : Type v} [DivisionRing K] [AddCommGroup V] [Module K V]
     (s t : Submodule K V) [FiniteDimensional K s] [FiniteDimensional K t] :
     Module.finrank K (s + t) = Module.finrank K s + Module.finrank K t - Module.finrank K ↥(s ⊓ t) := by
-  rw [← Submodule.finrank_sup_add_finrank_inf_eq s t, add_tsub_cancel_right, Submodule.add_eq_sup]
+  rw [← finrank_sup_add_finrank_inf_eq s t, add_tsub_cancel_right, Submodule.add_eq_sup]

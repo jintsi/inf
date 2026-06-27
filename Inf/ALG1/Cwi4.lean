@@ -115,12 +115,13 @@ theorem ZadD1c : !![2; 1; 3] * !![1, 2, 3] = !![2, 4, 6; 1, 2, 3; 3, 6, 9] := by
 
 theorem ZadD1c' : !![1, 2, 3] * !![2; 1; 3] = !![13] := by simp
 
-theorem ZadD2a : !![0, a, b, c; a, 0, d, e; b, d, 0, f; c, e, f, 0] *
-                 !![0, f, e, d; f, 0, c, b; e, c, 0, a; d, b, a, 0] =
-                 !![a * f + b * e + c * d, 2 * b * c, 2 * a * c, 2 * a * b;
-                    2 * d * e, a * f + d * c + e * b, 2 * a * e, 2 * a * d;
-                    2 * d * f, 2 * b * f, b * e + d * c + f * a, 2 * b * d;
-                    2 * e * f, 2 * c * f, 2 * c * e, c * d + e * b + f * a] := by simp; ring_nf; simp
+theorem ZadD2a [CommSemiring R] {a b c d e f : R} :
+    !![0, a, b, c; a, 0, d, e; b, d, 0, f; c, e, f, 0] *
+    !![0, f, e, d; f, 0, c, b; e, c, 0, a; d, b, a, 0] =
+    !![a * f + b * e + c * d, 2 * b * c, 2 * a * c, 2 * a * b;
+       2 * d * e, a * f + d * c + e * b, 2 * a * e, 2 * a * d;
+       2 * d * f, 2 * b * f, b * e + d * c + f * a, 2 * b * d;
+       2 * e * f, 2 * c * f, 2 * c * e, c * d + e * b + f * a] := by simp; ring_nf; simp
 
 theorem ZadD2b : !![3, 2; -4, -2] ^ 5 = !![3, -2; 4, 8] := by simp [pow_succ]
 
@@ -145,3 +146,10 @@ alias ZadD4a := Matrix.diagonal_mul_diagonal
 `M.BlockTriangular OrderDual.toDual` gives lower triangular. -/
 
 alias ZadD4bc := Matrix.BlockTriangular.mul
+
+theorem ZadD5a : !![(2 : ℚ), 5; 1, 3]⁻¹ * !![4, -6; 2, 1] = !![2, -23; 0, 8] := by
+  simp [Matrix.inv_def]; norm_num
+
+theorem ZadD5b : !![(1 : ℚ), 2, -1; 2, -1, 0; 1, 2, 1]⁻¹ * !![1, -1, 3; 4, 3, 2; 1, -2, 5] =
+    !![9 / 5, 9 / 10, 8 / 5; -2 / 5, -6 / 5, 6 / 5; 0, -1 / 2, 1] := by
+  simp [Matrix.inv_def, Matrix.det_fin_three]; norm_num
