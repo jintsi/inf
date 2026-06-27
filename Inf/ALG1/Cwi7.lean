@@ -4,18 +4,20 @@ import Mathlib.Tactic.NormNum.IsSquare
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.NumberTheory.PrimeCounting
 import Mathlib.LinearAlgebra.Matrix.Symmetric
+import Mathlib.Data.Sym.Card
+import Mathlib.Data.Sym.Sym2.Order
 import Mathlib.Algebra.DirectSum.Decomposition
 import Mathlib.Algebra.Field.ZMod
 import Mathlib.Data.Matrix.Reflection
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
-namespace ALG1
+namespace ALG1.Cwi7
 
-theorem Zad7_1a : Module.finrank ℂ (ℂ × ℂ) = 2 := by simp
+theorem Zad1a : Module.finrank ℂ (ℂ × ℂ) = 2 := by simp
 
-theorem Zad7_1b : Module.finrank ℝ (ℂ × ℂ) = 4 := by simp
+theorem Zad1b : Module.finrank ℝ (ℂ × ℂ) = 4 := by simp
 
-theorem Zad7_2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
+theorem Zad2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
   simp [Submodule.mem_span_pair, Rat.smul_def]
   exists √3
   intro a b
@@ -31,7 +33,7 @@ theorem Zad7_2a : ¬∀ v : ℝ, v ∈ Submodule.span ℚ {1, √2} := by
   have h : Irrational √6 := by rw [irrational_sqrt_ofNat_iff]; norm_num
   exact ((h.mul_natCast two_ne_zero).mul_ratCast hb).natCast_sub 3
 
-theorem Zad7_2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (Nat.nth Nat.Prime i) := by
+theorem Zad2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (Nat.nth Nat.Prime i) := by
   induction n; · simp
   rename_i n ih
   simp [linearIndependent_finSucc', Fin.init_def, ih, Submodule.mem_span_range_iff_exists_fun, Rat.smul_def]
@@ -72,74 +74,62 @@ theorem Zad7_2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (N
   exact (Nat.nth_injective Nat.infinite_setOf_prime).ne i.isLt.ne'
 
 /-- Symmetric matrices form a submodule. -/
-def SymmMatrix (n : Type*) (R : Type*) [Semiring R] : Submodule R (Matrix n n R) where
+def _root_.SymmMatrix (n : Type*) (R : Type*) [Semiring R] : Submodule R (Matrix n n R) where
   carrier := setOf Matrix.IsSymm
   add_mem' := Matrix.IsSymm.add
   zero_mem' := Matrix.isSymm_zero
   smul_mem' := fun c _ h => Matrix.IsSymm.smul h c
 
 /-- Skew-symmetric matrices form a submodule. -/
-def SkewSymmMatrix (n : Type*) (R : Type*) [Ring R] : Submodule R (Matrix n n R) where
+def _root_.SkewSymmMatrix (n : Type*) (R : Type*) [Ring R] : Submodule R (Matrix n n R) where
   carrier := {A | A.transpose = -A}
   add_mem' := fun ha hb => (Matrix.transpose_add _ _).trans (ha ▸ hb ▸ (neg_add _ _).symm)
   zero_mem' := Matrix.transpose_zero.trans neg_zero.symm
   smul_mem' := fun c _ h => (Matrix.transpose_smul c _).trans (h ▸ smul_neg c _)
 
 /-- Basis for `SymmMatrix`. -/
-noncomputable def SymmMatrix.basis (R : Type*) [Semiring R] (n : ℕ) :
-    Module.Basis {⟨i, j⟩ : Fin n × Fin n | i ≤ j} R (SymmMatrix (Fin n) R) :=
+noncomputable def _root_.SymmMatrix.basis (n : Type*) [Finite n] (R : Type*) [Semiring R] :
+    Module.Basis (Sym2 n) R (SymmMatrix n R) :=
   Module.Basis.ofEquivFun {
-    toFun := fun ⟨M, h⟩ ⟨⟨i, j⟩, le⟩ => M i j
-    map_add' := fun ⟨a, ha⟩ ⟨b, hb⟩ => rfl
-    map_smul' := fun r ⟨M, h⟩ => rfl
-    invFun c := ⟨fun i j => c ⟨⟨min i j, max i j⟩, min_le_max (a := i)⟩,
-      by ext i j; simp [max_comm, min_comm]⟩
-    left_inv := fun ⟨M, h⟩ => by
-      simp; ext i j; cases Fin.le_total i j
-      case inl le => rw [min_eq_left le, max_eq_right le]
-      case inr le => nth_rw 1 [← h, min_eq_right le, max_eq_left le, Matrix.transpose_apply]
-    right_inv := fun c => by simp; ext ⟨⟨i, j⟩, le⟩; simp [min_eq_left le, max_eq_right le]
+    toFun M := Sym2.lift ⟨M.val, M.prop.transpose.apply⟩
+    map_add' := by simp [funext_iff, Sym2.forall]
+    map_smul' := by simp [funext_iff, Sym2.forall]
+    invFun c := ⟨.of fun i j => c s(i, j), by simp [SymmMatrix, Matrix.IsSymm.ext_iff, Sym2.eq_swap]⟩
+    left_inv M := by ext; simp
+    right_inv c := by simp [funext_iff, Sym2.forall]
   }
 
 /-- Basis for `SkewSymmMatrix`. -/
-noncomputable def SkewSymmMatrix.basis (R : Type*) [Ring R] [IsAddTorsionFree R] (n : ℕ) :
-    Module.Basis {⟨i, j⟩ : Fin n × Fin n | j < i} R (SkewSymmMatrix (Fin n) R) :=
+noncomputable def _root_.SkewSymmMatrix.basis (n : Type*) [Fintype n] [LinearOrder n] (R : Type*) [Ring R]
+    [IsAddTorsionFree R] : Module.Basis (Sym2.diagSetᶜ : Set (Sym2 n)) R (SkewSymmMatrix n R) :=
   Module.Basis.ofEquivFun {
-    toFun := fun ⟨M, h⟩ ⟨⟨i, j⟩, lt⟩ => M i j
-    map_add' := fun ⟨a, ha⟩ ⟨b, hb⟩ => rfl
-    map_smul' := fun r ⟨M, h⟩ => rfl
-    invFun c := ⟨fun i j => if h : j < i then c ⟨⟨i, j⟩, h⟩ else if h : i < j then -c ⟨⟨j, i⟩, h⟩ else 0, by
+    toFun M s := M.val s.val.sup s.val.inf
+    map_add' _ _ := rfl
+    map_smul' _ _ := rfl
+    invFun c := ⟨.of fun i j => if h : j < i then c ⟨s(i, j), by simp [h.ne']⟩ else if h : i < j
+        then -c ⟨s(j, i), by simp [h.ne']⟩ else 0, by
       ext i j; rcases lt_trichotomy i j with h | h | h
       · simp [h, h.asymm]
       · simp [h.not_lt, h.not_gt]
       · simp [h, h.asymm]⟩
     left_inv := fun ⟨M, h⟩ => by
-      simp; ext i j; split; rfl; split
-      · rw [← Matrix.neg_apply, ← h, Matrix.transpose_apply]
+      simp; ext i j; simp; split; simp_all [le_of_lt]; split
+      · rw [← Matrix.neg_apply, ← h, Matrix.transpose_apply]; simp_all
       · symm; rw [← neg_eq_self, ← Matrix.neg_apply, ← h, Matrix.transpose_apply]; congr <;> order
-    right_inv := fun c => by simp; ext ⟨⟨i, j⟩, le⟩; simp [le]
+    right_inv := fun c => by
+      simp [funext_iff, Sym2.forall]; intro x y h; simp [eq_comm, h]; congr 2; simp [le_total]
   }
 
-theorem Zad7_3a_symm (R : Type*) [Semiring R] [StrongRankCondition R] (n : ℕ) :
-    Module.finrank R (SymmMatrix (Fin n) R) = n * (n + 1) / 2 := by
-  rw [Module.finrank_eq_nat_card_basis (SymmMatrix.basis R n)]
-  simp only [Set.coe_setOf, Nat.card_eq_fintype_card, Fintype.card_subtype]
-  nth_rw 1 [Finset.card_eq_sum_card_fiberwise (f := Prod.snd) (t := .univ) (by simp), eq_comm,
-    ← Nat.add_one_sub_one n, mul_comm, ← Finset.sum_range_id, Finset.sum_range_succ', add_zero,
-    Finset.sum_range]
-  congr; funext j; rw [← j.card_Iic]; apply Finset.card_nbij' (·, j) (·.fst)
-    <;> simp +contextual [Set.MapsTo, Set.LeftInvOn, eq_comm]
+theorem Zad3a_symm (n : Type*) [Fintype n] (R : Type*) [Semiring R] [StrongRankCondition R] :
+    Module.finrank R (SymmMatrix n R) = (Fintype.card n + 1).choose 2 := by
+  rw [Module.finrank_eq_card_basis (SymmMatrix.basis n R), Sym2.card]
 
-theorem Zad7_3a_skewSymm (R : Type*) [Ring R] [IsAddTorsionFree R] [StrongRankCondition R] (n : ℕ) :
-    Module.finrank R (SkewSymmMatrix (Fin n) R) = n * (n - 1) / 2 := by
-  rw [Module.finrank_eq_nat_card_basis (SkewSymmMatrix.basis R n)]
-  simp only [Set.coe_setOf, Nat.card_eq_fintype_card, Fintype.card_subtype]
-  rw [Finset.card_eq_sum_card_fiberwise (f := Prod.fst) (t := .univ) (by simp),
-    ← Finset.sum_range_id, Finset.sum_range]
-  congr; funext i; rw [← i.card_Iio]; apply Finset.card_nbij' (·.snd) (i, ·)
-    <;> simp +contextual [Set.MapsTo, Set.LeftInvOn, eq_comm]
+theorem Zad3a_skewSymm (n : Type*) [Fintype n] [LinearOrder n] (R : Type*) [Ring R]
+    [IsAddTorsionFree R] [StrongRankCondition R] :
+    Module.finrank R (SkewSymmMatrix n R) = (Fintype.card n).choose 2 := by
+  rw [Module.finrank_eq_card_basis (SkewSymmMatrix.basis n R), Sym2.card_diagSet_compl]
 
-instance Zad7_3b (R : Type*) [Field R] [CharZero R] [DecidableEq R] (n : ℕ) :
+instance Zad3b (R : Type*) [Field R] [CharZero R] [DecidableEq R] (n : ℕ) :
     DirectSum.Decomposition ![SymmMatrix (Fin n) R, SkewSymmMatrix (Fin n) R] := by
   constructor
   case decompose' =>
@@ -157,7 +147,7 @@ instance Zad7_3b (R : Type*) [Field R] [CharZero R] [DecidableEq R] (n : ℕ) :
     · rw [sub_eq_add_neg, neg_add]; nth_rw 2 [← (ds 0).property, ← Matrix.neg_apply]
       rw [← (ds 1).property]; simp; ring
 
-theorem Zad7_3c : (fun k => (DirectSum.decompose ![SymmMatrix (Fin 2) ℚ, SkewSymmMatrix (Fin 2) ℚ]
+theorem Zad3c : (fun k => (DirectSum.decompose ![SymmMatrix (Fin 2) ℚ, SkewSymmMatrix (Fin 2) ℚ]
     !![3, 4; 5, -2] k).val) = ![!![3, 9 / 2; 9 / 2, -2], !![0, -(1 / 2); 1 / 2, 0]] := by
   ext k i j
   simp [DirectSum.decompose, DirectSum.Decomposition.decompose', DFinsupp.equivFunOnFintype,
@@ -166,34 +156,34 @@ theorem Zad7_3c : (fun k => (DirectSum.decompose ![SymmMatrix (Fin 2) ℚ, SkewS
 
 /-- The subspace of vectors in `Fin n → ZMod 2` with an even number of 1s (or alternatively, whose
 coordinates sum to 0 mod 2). -/
-def Zad7_4_A (n : ℕ) : Submodule (ZMod 2) (Fin n → ZMod 2) where
+def Zad4.A (n : ℕ) : Submodule (ZMod 2) (Fin n → ZMod 2) where
   carrier := {v | Finset.univ.sum v = 0}
   add_mem' := fun ha hb => Finset.sum_add_distrib.trans (ha ▸ hb ▸ add_zero _)
   zero_mem' := Finset.sum_const_zero
   smul_mem' := by intro c _ h; simp [← Finset.mul_sum]; right; exact h
 
 /-- The basis given by vectors `![1, 0, 0, ..., 1, ..., 0]`. -/
-noncomputable def Zad7_4_basis (n : ℕ) : Module.Basis (Fin n) (ZMod 2) (Zad7_4_A (n + 1)) :=
+noncomputable def Zad4.basis (n : ℕ) : Module.Basis (Fin n) (ZMod 2) (A (n + 1)) :=
   Module.Basis.ofEquivFun {
     toFun := fun ⟨v, h⟩ i => v i.succ
     map_add' := fun ⟨a, ha⟩ ⟨b, hb⟩ => rfl
     map_smul' := fun r ⟨v, h⟩ => rfl
-    invFun c := ⟨Fin.cons (Finset.univ.sum c) c, by simp [Zad7_4_A]; grind⟩
+    invFun c := ⟨Fin.cons (Finset.univ.sum c) c, by simp [A]; grind⟩
     left_inv := fun ⟨v, h⟩ => by
       simp; ext i; cases i using Fin.cases
       case succ i => simp
       case zero => simp; rw [← add_right_inj (v 0), ← Fin.sum_univ_succ, h]; grind
   }
 
-theorem Zad7_4_rank (n : ℕ) : Module.finrank (ZMod 2) (Zad7_4_A (n + 1)) = n := by
-  simp [Module.finrank_eq_nat_card_basis (Zad7_4_basis n)]
+theorem Zad4.rank (n : ℕ) : Module.finrank (ZMod 2) (A (n + 1)) = n := by
+  simp [Module.finrank_eq_nat_card_basis (basis n)]
 
 /-- Solution set of equations:
 ```lean
 x 0 + x 1 - 2 * x 2 + x 3 = 0
 x 0 + 2 * x 1 - 3 * x 2 = 0
 ``` -/
-def Zad7_5a.V1 : Submodule ℚ (Fin 4 → ℚ) := by
+def Zad5a.V1 : Submodule ℚ (Fin 4 → ℚ) := by
   apply Submodule.ofLinearComb {x | x 0 + x 1 - 2 * x 2 + x 3 = 0 ∧ x 0 + 2 * x 1 - 3 * x 2 = 0}
   · exists 0; simp
   · simp; grind
@@ -203,14 +193,14 @@ def Zad7_5a.V1 : Submodule ℚ (Fin 4 → ℚ) := by
 x 0 - 3 * x 1 + x 2 - x 3 = 0
 2 * x 0 + 3 * x 1 - 5 * x 2 + x 3 = 0
 ``` -/
-def Zad7_5a.V2 : Submodule ℚ (Fin 4 → ℚ) := by
+def Zad5a.V2 : Submodule ℚ (Fin 4 → ℚ) := by
   apply Submodule.ofLinearComb
     {x : Fin 4 → ℚ | x 0 - 3 * x 1 + x 2 - x 3 = 0 ∧ 2 * x 0 + 3 * x 1 - 5 * x 2 + x 3 = 0}
   · exists 0; simp
   · simp; grind
 
 /-- `![1, 1, 1, 0]` and `![0, 3, 2, 1]` are a basis for V1. -/
-noncomputable def Zad7_5a.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
+noncomputable def Zad5a.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
   apply Module.Basis.mk (v := ![⟨![1, 1, 1, 0], by simp [V1, Submodule.ofLinearComb]; norm_num⟩,
     ⟨![0, 3, 2, 1], by simp [V1, Submodule.ofLinearComb]; norm_num⟩])
   · simp [LinearIndependent.pair_iff']
@@ -220,7 +210,7 @@ noncomputable def Zad7_5a.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
 
 set_option backward.isDefEq.respectTransparency false in
 /-- `![0, 1, 0, -3]` and `![1, 0, 3 / 4, 7 / 4]` are a basis for V2. -/
-noncomputable def Zad7_5a.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
+noncomputable def Zad5a.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
   apply Module.Basis.mk (v := ![⟨![0, 1, 0, -3], by simp [V2, Submodule.ofLinearComb]⟩,
     ⟨![1, 0, 3 / 4, 7 / 4], by simp [V2, Submodule.ofLinearComb]; norm_num⟩])
   · simp [LinearIndependent.pair_iff']
@@ -229,7 +219,7 @@ noncomputable def Zad7_5a.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
     intro x h1 h2; exists x 0, x 1; ext i; fin_cases i <;> simp <;> grind
 
 /-- `![1, 1, 1, 0]`, `![0, 1, 1, 2]`, and `![0, 0, 1, 5]` are a basis V1 + V2. -/
-noncomputable def Zad7_5a.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
+noncomputable def Zad5a.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
   apply Module.Basis.mk
   case v =>
     refine ![⟨![1, 1, 1, 0], ?_⟩, ⟨![0, 1, 1, 2], ?_⟩, ⟨![0, 0, 1, 5], ?_⟩] <;>
@@ -244,7 +234,7 @@ noncomputable def Zad7_5a.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
     ext i; fin_cases i <;> simp; grind
 
 /-- `![8, 5, 6, -1]` spans `V1 ⊓ V2`. -/
-noncomputable def Zad7_5a.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := by
+noncomputable def Zad5a.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := by
   apply Module.Basis.mk (v := ![⟨![8, 5, 6, -1], by simp [V1, V2, Submodule.ofLinearComb]; norm_num⟩])
   · simp
   · simp [Submodule.eq_top_iff', Submodule.mem_span_singleton]
@@ -252,13 +242,13 @@ noncomputable def Zad7_5a.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) :=
     intro v h1 h2 h3 h4; exists -v 3; ext i; fin_cases i <;> simp <;> grind
 
 /-- Span of `!![2, 1; 0, 2]` and `!![-3, 4; 0, -3]`. -/
-abbrev Zad7_5b.V1 := Submodule.span ℚ {!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]}
+abbrev Zad5b.V1 := Submodule.span ℚ {!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]}
 
 /-- Span of `!![0, 1; 1, 1]`, `!![-1, 2; 2, 1]`, and `!![2, 1; 1, 3]`. -/
-abbrev Zad7_5b.V2 := Submodule.span ℚ {!![(0 : ℚ), 1; 1, 1], !![-1, 2; 2, 1], !![2, 1; 1, 3]}
+abbrev Zad5b.V2 := Submodule.span ℚ {!![(0 : ℚ), 1; 1, 1], !![-1, 2; 2, 1], !![2, 1; 1, 3]}
 
 /-- `!![2, 1; 0, 2]` and `!![-3, 4; 0, -3]` are a basis for V1. -/
-noncomputable def Zad7_5b.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
+noncomputable def Zad5b.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
   let v := ![!![(2 : ℚ), 1; 0, 2], !![-3, 4; 0, -3]]
   convert Module.Basis.span (v := v) ?_ <;> simp [v, Set.pair_comm]
   rw [LinearIndependent.pair_iff']
@@ -266,7 +256,7 @@ noncomputable def Zad7_5b.basis_v1 : Module.Basis (Fin 2) ℚ V1 := by
   · apply Function.ne_iff.mpr; exists 0
 
 /-- `!![0, 1; 1, 1]` and `!![1, 0; 0, 1]` are a basis for V2. -/
-noncomputable def Zad7_5b.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
+noncomputable def Zad5b.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
   apply Module.Basis.mk
   case v =>
     refine ![⟨!![0, 1; 1, 1], ?_⟩, ⟨!![1, 0; 0, 1], ?_⟩] <;> simp [V2, Submodule.mem_span_triple]
@@ -278,7 +268,7 @@ noncomputable def Zad7_5b.basis_v2 : Module.Basis (Fin 2) ℚ V2 := by
     intro m x y z h; exists m 0 0, m 0 1; subst h; simp; ring
 
 /-- `!![1, 1; 0, 1]`, `!![0, 1; 1, 1]`, and `!![1, 0; 0, 1]` are a basis for V1 + V2. -/
-noncomputable def Zad7_5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
+noncomputable def Zad5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
   let v : Fin 3 → Matrix _ _ ℚ := ![!![1, 1; 0, 1], !![0, 1; 1, 1], !![1, 0; 0, 1]]
   have : V1 + V2 = Submodule.span ℚ (Set.range v) := by
     ext m; simp [Submodule.mem_sup, v, V1, V2, Submodule.mem_span_pair, Submodule.mem_span_triple]
@@ -291,7 +281,7 @@ noncomputable def Zad7_5b.basis_sum : Module.Basis (Fin 3) ℚ (V1 + V2) := by
   apply_fun fun m => m 0 0; simp
 
 /-- `!![1, 0; 0, 1]` spans `V1 ⊓ V2`. -/
-noncomputable def Zad7_5b.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := by
+noncomputable def Zad5b.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) := by
   apply Module.Basis.mk
   case v =>
     refine ![⟨!![1, 0; 0, 1], ?_⟩]
@@ -303,7 +293,7 @@ noncomputable def Zad7_5b.basis_inf : Module.Basis (Fin 1) ℚ ↥(V1 ⊓ V2) :=
     intro m a b h1 c d e h2; exists m 0 0
     rw [m.eta_fin_two] at *; simp at *; grind
 
-theorem Zad7_6 {R : Type*} {M : Type*} [Ring R] [AddCommGroup M] [Module R M] {s t : Submodule R M}
+theorem Zad6 {R : Type*} {M : Type*} [Ring R] [AddCommGroup M] [Module R M] {s t : Submodule R M}
     (h : s + t = ⊤) : s ⊓ t = ⊥ ↔ ∀ v : M, ∃! v' : s × t, v = v'.1 + v'.2 := by
   simp at h; constructor
   · convert fun hb => Submodule.existsUnique_add_of_isCompl_prod (IsCompl.of_eq hb h) using 4
@@ -311,37 +301,37 @@ theorem Zad7_6 {R : Type*} {M : Type*} [Ring R] [AddCommGroup M] [Module R M] {s
   · simp [← disjoint_iff, Submodule.disjoint_def]; intro h x hs ht
     replace h := (h x).unique (y₁ := ⟨⟨x, hs⟩, 0⟩) (y₂ := ⟨0, x, ht⟩); simp at h; tauto
 
-theorem Zad7_7.directSum_V1_V2 : DirectSum.IsInternal (M := ℚ × ℚ) ![ℚ ∙ (1, 0), ℚ ∙ (0, 1)] := by
+theorem Zad7.directSum_V1_V2 : DirectSum.IsInternal (M := ℚ × ℚ) ![ℚ ∙ (1, 0), ℚ ∙ (0, 1)] := by
   rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by ext i; fin_cases i <;> simp)]
   simp [isCompl_iff, Submodule.disjoint_span_singleton', Submodule.codisjoint_iff_exists_add_eq,
       Submodule.mem_span_singleton]
 
-theorem Zad7_7.directSum_V1_V3 : DirectSum.IsInternal (M := ℚ × ℚ) ![ℚ ∙ (1, 0), ℚ ∙ (1, 1)] := by
+theorem Zad7.directSum_V1_V3 : DirectSum.IsInternal (M := ℚ × ℚ) ![ℚ ∙ (1, 0), ℚ ∙ (1, 1)] := by
   rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by ext i; fin_cases i <;> simp)]
   simp [isCompl_iff, Submodule.disjoint_span_singleton', Submodule.codisjoint_iff_exists_add_eq,
       Submodule.mem_span_singleton]
   intro a b; exists a - b; simp
 
-theorem Zad7_7.V2_ne_V3 : ℚ ∙ ((0, 1) : ℚ × ℚ) ≠ ℚ ∙ (1, 1) := by
+theorem Zad7.V2_ne_V3 : ℚ ∙ ((0, 1) : ℚ × ℚ) ≠ ℚ ∙ (1, 1) := by
   simp [Submodule.ext_iff, Submodule.mem_span_singleton]; exists 1, 1
 
 /-- The submodule `{(x, y, z) | z = x + y}`. -/
-def Zad7_8.A : Submodule ℚ (ℚ × ℚ × ℚ) := by
+def Zad8.A : Submodule ℚ (ℚ × ℚ × ℚ) := by
   apply Submodule.ofLinearComb {(x, y, z) | z = x + y}
   · exists 0; simp
   · simp; grind
 
 /-- The submodule `{(x, y, z) | x = y = z}`. -/
-def Zad7_8.B : Submodule ℚ (ℚ × ℚ × ℚ) := by
+def Zad8.B : Submodule ℚ (ℚ × ℚ × ℚ) := by
   apply Submodule.ofLinearComb {(x, x, x) | (x : ℚ)}
   · exists 0; simp
   · simp
-theorem Zad7_8.directSum : DirectSum.IsInternal ![A, B] := by
+theorem Zad8.directSum : DirectSum.IsInternal ![A, B] := by
   rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by ext i; fin_cases i <;> simp)]
   simp [isCompl_iff, Submodule.disjoint_def, Submodule.codisjoint_iff_exists_add_eq, A, B, Submodule.ofLinearComb]
   intro a b c; exists c - b, c - a, a + b - c; simp; ring
 
-theorem Zad7_D1 {K : Type u} {V : Type v} [DivisionRing K] [AddCommGroup V] [Module K V]
+theorem ZadD1 {K : Type u} {V : Type v} [DivisionRing K] [AddCommGroup V] [Module K V]
     (s t : Submodule K V) [FiniteDimensional K s] [FiniteDimensional K t] :
     Module.finrank K (s + t) = Module.finrank K s + Module.finrank K t - Module.finrank K ↥(s ⊓ t) := by
   rw [← Submodule.finrank_sup_add_finrank_inf_eq s t, add_tsub_cancel_right, Submodule.add_eq_sup]

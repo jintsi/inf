@@ -29,7 +29,7 @@ theorem Zad1 {G : SimpleGraph V} [Nonempty V] : [G.IsTree,
 theorem Zad3 {G : SimpleGraph V} [Fintype V] [DecidableEq V] [DecidableRel G.Adj] (hG : G.IsTree) :
     G.maxDegree ≤ #{v | G.degree v = 1} := by
   by_cases! Subsingleton V
-  · simp [-nonpos_iff_eq_zero, -Nat.le_zero_eq, maxDegree_le_of_forall_degree_le]
+  · simp
   apply maxDegree_le_of_forall_degree_le; intro w
   let s : Finset V := {v | G.degree v = 1 ∧ v ≠ w}
   suffices G.degree w ≤ #s by

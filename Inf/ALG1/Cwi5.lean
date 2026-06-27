@@ -1,3 +1,4 @@
+import Mathlib.Algebra.Polynomial.Eval.SMul
 import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Data.ZMod.Basic
@@ -19,58 +20,62 @@ structure IsSubmodule (R : Type u) {M : Type v} [Semiring R] [AddCommMonoid M] [
   add_mem : a ∈ s → b ∈ s → a + b ∈ s
   smul_mem (c : R) {x : M} : x ∈ s → c • x ∈ s
 
-namespace ALG1
+namespace ALG1.Cwi5
 
-theorem Zad5_1a : ¬IsSubmodule ℝ {(x, _, _) : ℝ × ℝ × ℝ | x ≠ 0} := by
+theorem Zad1a : ¬IsSubmodule ℝ {(x, _, _) : ℝ × ℝ × ℝ | x ≠ 0} := by
   simp [mt IsSubmodule.zero_mem]
 
-theorem Zad5_1b : IsSubmodule ℝ {(x, y, z) : ℝ × ℝ × ℝ | x + 3 * y = z} := by
+theorem Zad1b : IsSubmodule ℝ {(x, y, z) : ℝ × ℝ × ℝ | x + 3 * y = z} := by
   apply IsSubmodule.mk <;>
     simp +contextual [mul_add, ← add_assoc, add_right_comm _ _ (_ * _), mul_left_comm]
 
-theorem Zad5_1c : ¬IsSubmodule ℝ {(x, y, _) : ℝ × ℝ × ℝ | y = x ^ 2} :=
+theorem Zad1c : ¬IsSubmodule ℝ {(x, y, _) : ℝ × ℝ × ℝ | y = x ^ 2} :=
  fun this => by simpa [sq] using this.smul_mem 2 (show (1, 1, 1) ∈ _ by simp)
 
-theorem Zad5_1d : ¬IsSubmodule ℝ {(x, _, z) : ℝ × ℝ × ℝ | x * z = 0} :=
+theorem Zad1d : ¬IsSubmodule ℝ {(x, _, z) : ℝ × ℝ × ℝ | x * z = 0} :=
  fun this => by simpa using this.add_mem (a := (1, 0, 0)) (b := (0, 0, 1))
 
-theorem Zad5_1e : IsSubmodule ℝ {(x, y, z) : ℝ × ℝ × ℝ | x = 0 ∧ y = 2 * z} := by
+theorem Zad1e : IsSubmodule ℝ {(x, y, z) : ℝ × ℝ × ℝ | x = 0 ∧ y = 2 * z} := by
   apply IsSubmodule.mk <;> simp +contextual [mul_add, mul_left_comm]
 
-theorem Zad5_1f : IsSubmodule ℝ {(a, b) : ℝ × ℝ | a + b = 0} := by
+theorem Zad1f : IsSubmodule ℝ {(a, b) : ℝ × ℝ | a + b = 0} := by
   apply IsSubmodule.mk <;> simp +contextual [add_add_add_comm, ← mul_add]
 
-theorem Zad5_1g : ¬IsSubmodule ℝ {(a, b, c) : ℝ × ℝ × ℝ | 4 * a + 2 * b + c = 1} :=
+theorem Zad1g : ¬IsSubmodule ℝ {(a, b, c) : ℝ × ℝ × ℝ | 4 * a + 2 * b + c = 1} :=
  fun this => by simpa using this.zero_mem
 
-theorem Zad5_1h : ¬IsSubmodule ℝ {(a, b, c) : ℝ × ℝ × ℝ | (a + b + c) * c = 0} :=
+theorem Zad1h : ¬IsSubmodule ℝ {(a, b, c) : ℝ × ℝ × ℝ | (a + b + c) * c = 0} :=
  fun this => by simpa using this.add_mem (a := (0, -1, 1)) (b := (0, 1, 0))
 
-theorem Zad5_4 [Semiring R] [AddCommMonoid M] [Module R M] {M₁ M₂ : Set M} :
+theorem Zad4 [Semiring R] [AddCommMonoid M] [Module R M] {M₁ M₂ : Set M} :
     IsSubmodule R M₁ → IsSubmodule R M₂ → IsSubmodule R (M₁ ∩ M₂) := by
   intro h1 h2; apply IsSubmodule.mk
   · simp [h1.zero_mem, h2.zero_mem]
   · simp +contextual [h1.add_mem, h2.add_mem]
   · simp +contextual [h1.smul_mem, h2.smul_mem]
 
-theorem Zad5_5a : (![0, -2, 1] : _ → ℚ) =
+theorem Zad5a : (![0, -2, 1] : _ → ℚ) =
     (-1) • ![2, 0, 1] + (-3) • ![1, 1, 0] + 1 • ![5, 1, 2] := by norm_num
 
-theorem Zad5_5b : ¬∃ a b c : ℚ, (![1, 1, 1] : _ → ℚ) =
+theorem Zad5b : ¬∃ a b c : ℚ, (![1, 1, 1] : _ → ℚ) =
     a • ![2, 0, 1] + b • ![1, 1, 0] + c • ![5, 1, 2] := by simp; grind only
 
-theorem Zad5_5c : (![1, -1, 3] : _ → ℚ) =
+theorem Zad5c : (![1, -1, 3] : _ → ℚ) =
     (7/5 : ℚ) • ![2, 0, 1] + (-9/5 : ℚ) • ![1, 1, 0] + (4/5 : ℚ) • ![0, 1, 2] := by norm_num
 
-theorem Zad5_6 : (![3, -1, 0, -1] : _ → ℚ ) ∉
+theorem Zad6 : (![3, -1, 0, -1] : _ → ℚ ) ∉
     Submodule.span ℚ {![3, -1, 3, 2], ![-1, 1, 1, -3], ![1, 1, 9, -5]} := by
   simp [Submodule.mem_span_triple]; intros; linarith
 
 open Polynomial in
-theorem Zad5_7 : (X ^ 2 + 1 : ℤ[X]) ∈ Submodule.span ℤ {X, X ^ 2 - 3, X + 2, X - 1} := by
+theorem Zad7 : (X ^ 2 + 1 : ℤ[X]) ∈ Submodule.span ℤ {X, X ^ 2 - 3, X + 2, X - 1} := by
   simp [Submodule.mem_span_insert, Submodule.mem_span_singleton]; exists -2, 1, 2, 0; ring
 
-theorem Zad5_D2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧ BddBelow (Set.range f)} where
+open Polynomial in
+theorem ZadD1a (r : ℝ) : IsSubmodule ℝ {p : ℝ[X] | p.IsRoot r} := by
+  apply IsSubmodule.mk <;> simp +contextual
+
+theorem ZadD2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧ BddBelow (Set.range f)} where
   zero_mem := by simp
   add_mem := by simp +contextual [Pi.add_def, BddAbove.range_add, BddBelow.range_add]
   smul_mem := by
@@ -79,37 +84,37 @@ theorem Zad5_D2a : IsSubmodule ℝ {f : ℕ → ℝ | BddAbove (Set.range f) ∧
     · exact ⟨hb.smul_of_nonpos ‹_›, ha.smul_of_nonpos ‹_›⟩
 
 open Topology Filter in
-theorem Zad5_D2b : IsSubmodule ℝ {f : ℕ → ℝ | ∃ g, Tendsto f atTop (𝓝 g)} where
+theorem ZadD2b : IsSubmodule ℝ {f : ℕ → ℝ | ∃ g, Tendsto f atTop (𝓝 g)} where
   zero_mem := ⟨0, tendsto_const_nhds⟩
   add_mem := fun ⟨ga, ha⟩ ⟨gb, hb⟩ => ⟨ga + gb, ha.add hb⟩
   smul_mem := fun c _ ⟨g, h⟩ => ⟨c * g, h.const_mul c⟩
 
 open Topology Filter in
-theorem Zad5_D2c : IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 0)} where
+theorem ZadD2c : IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 0)} where
   zero_mem := tendsto_const_nhds
   add_mem := fun ha hb => by simpa using! Tendsto.add ha hb
   smul_mem := fun c a h => by simpa using! Tendsto.const_mul c h
 
 open Topology Filter in
-theorem Zad5_D2d : ¬IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 1)} :=
+theorem ZadD2d : ¬IsSubmodule ℝ {f : ℕ → ℝ | Tendsto f atTop (𝓝 1)} :=
   fun this => one_ne_zero (tendsto_nhds_unique this.zero_mem tendsto_const_nhds)
 
-theorem Zad5_D2e : IsSubmodule ℝ (Set.range Finsupp.toFun : Set (ℕ → ℝ)) where
+theorem ZadD2e : IsSubmodule ℝ (Set.range Finsupp.toFun : Set (ℕ → ℝ)) where
   zero_mem := ⟨0, rfl⟩
   add_mem := by rintro _ _ ⟨f, rfl⟩ ⟨g, rfl⟩; exists f + g
   smul_mem := by rintro c _ ⟨f, rfl⟩; exists c • f
 
-theorem Zad5_D3b : IsSubmodule ℝ {f : ℝ → ℝ | Continuous f} where
+theorem ZadD3b : IsSubmodule ℝ {f : ℝ → ℝ | Continuous f} where
   zero_mem := continuous_zero
   add_mem := Continuous.add
   smul_mem c _ h := h.const_smul c
 
-theorem Zad5_D3c : IsSubmodule ℝ {f : ℝ → ℝ | Differentiable ℝ f} where
+theorem ZadD3c : IsSubmodule ℝ {f : ℝ → ℝ | Differentiable ℝ f} where
   zero_mem := differentiable_zero
   add_mem := Differentiable.add
   smul_mem c _ h := h.const_mul c
 
-instance Zad5_D4_group {T : Type u} : AddCommGroup (Set T) where
+local instance ZadD4_group {T : Type u} : AddCommGroup (Set T) where
   add := symmDiff
   add_comm := symmDiff_comm
   add_assoc := symmDiff_assoc
@@ -122,7 +127,7 @@ instance Zad5_D4_group {T : Type u} : AddCommGroup (Set T) where
   zsmul := @zsmulRec _ ⟨∅⟩ ⟨symmDiff⟩ ⟨id⟩ (@nsmulRec _ ⟨∅⟩ ⟨symmDiff⟩)
 
 set_option backward.isDefEq.respectTransparency false in
-instance Zad5_D4 {T : Type u} : Module (ZMod 2) (Set T) where
+local instance Zad5_D4 {T : Type u} : Module (ZMod 2) (Set T) where
   smul a s := a.val • s
   smul_zero := fun a => smul_zero a.val
   smul_add := fun a => smul_add a.val
@@ -137,7 +142,7 @@ instance Zad5_D4 {T : Type u} : Module (ZMod 2) (Set T) where
     intro a b s; fin_cases a <;> fin_cases b <;> norm_num <;>
       first | exact zero_smul ℕ s | exact (one_smul ℕ _).symm
 
-alias Zad5_D5a := smul_eq_zero
-alias Zad5_D5b1 := neg_smul
-alias Zad5_D5b2 := smul_neg
-alias Zad5_D5c := neg_one_smul
+alias ZadD5a := smul_eq_zero
+alias ZadD5b1 := neg_smul
+alias ZadD5b2 := smul_neg
+alias ZadD5c := neg_one_smul

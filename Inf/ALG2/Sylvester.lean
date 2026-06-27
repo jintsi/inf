@@ -41,10 +41,11 @@ theorem Matrix.posDef_fin_two [RCLike K] {A : Matrix (Fin 2) (Fin 2) K} :
 lemma Fin.forall_fin_three {p : Fin 3 → Prop} : (∀ (i : Fin 3), p i) ↔ p 0 ∧ p 1 ∧ p 2 := by
   simp [Fin.forall_fin_succ]
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem Matrix.posDef_fin_three [RCLike K] {A : Matrix (Fin 3) (Fin 3) K} :
     A.PosDef ↔ A.IsHermitian ∧ 0 < A 0 0 ∧ A 0 1 * A 1 0 < A 0 0 * A 1 1
     ∧ A 0 0 * A 1 2 * A 2 1 + A 0 1 * A 1 0 * A 2 2 + A 0 2 * A 1 1 * A 2 0
     < A 0 0 * A 1 1 * A 2 2 + A 0 1 * A 1 2 * A 2 0 + A 0 2 * A 1 0 * A 2 1 := by
-  simp [posDef_sylvester_iff, det_fin_two, det_fin_three]; grind
+  simp [posDef_sylvester_iff, det_fin_three]
+  conv => pattern Matrix.det _; apply det_fin_two
+  simp; grind
