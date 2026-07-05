@@ -7,6 +7,10 @@ import Inf.Util.Range
 
 namespace VecMatrix
 
+theorem toMatrix_one [Zero R] [One R] : @toMatrix n n R 1 = 1 := by
+  ext i j; simp [OfNat.ofNat, One.one, Vector.getElem_set, Fin.val_inj, Zero.zero]
+  split <;> simp [*]; apply Vector.getElem_zero
+
 theorem toMatrix_swap [Semiring R] (A : VecMatrix m n R) (i j : Fin m) :
     toMatrix (A.swap i j) = Matrix.swap R i j * A.toMatrix := by
   ext a b; simp [Vector.getElem_swap, Fin.val_inj]
@@ -54,7 +58,8 @@ abbrev GaussInvariant [CommRing R] (A : VecMatrix m m R) (B : VecMatrix m n R)
 
 set_option mvcgen.warning false in
 open Std.Do in
-/-- **Proof of correctness** of `gauss`. -/
+/-- **Proof of correctness** of `gauss`. The `GaussInvariant` states that `A'` is an invertible
+upper triangular matrix and `A'⁻¹ * B' = A⁻¹ * B`. -/
 theorem gauss_correct [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMatrix m n K)
     (hA : A.toMatrix.det ≠ 0) : ∃ A' B', gauss A B = some (A', B') ∧ GaussInvariant A B A' B' m le_rfl := by
   apply Option.of_wp_eq rfl fun x => ∃ A' B', x = some (A', B') ∧ GaussInvariant A B A' B' m le_rfl
@@ -132,14 +137,13 @@ theorem gauss_correct [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMa
 /-- Solve the linear equation `A * x = B` for upper triangular `A` via backwards substitution. -/
 @[inline]
 def backSubst [Div R] [Mul R] [Sub R] (A : VecMatrix m m R) (B : VecMatrix m n R) :
-    VecMatrix m n R := go B m (Nat.le_refl m) where
-  @[inline] go (B : VecMatrix m n R) : (i : Nat) → i ≤ m → VecMatrix m n R
+    VecMatrix m n R := go B m le_rfl where
+  @[inline] go (B : VecMatrix m n R) : (i : ℕ) → i ≤ m → VecMatrix m n R
   | 0,     _ => B
-  | i + 1, h => Id.run do
-    let mut B : VecMatrix m n R := B.modify i fun row => row.map (· / A[i][i])
-    for hj : j in *...i do
-      B := B.transvectSub ⟨j, by get_elem_tactic⟩ ⟨i, h⟩ A[j][i]
-    go B i (Nat.le_of_succ_le h)
+  | i + 1, h => go (goCol (B.modify i (Vector.map (· / A[i][i]))) i h i le_rfl) i (Nat.le_of_succ_le h)
+  @[inline] goCol (B : VecMatrix m n R) (i : ℕ) (hi : i < m) : (j : ℕ) → j ≤ i → VecMatrix m n R
+  | 0,     _ => B
+  | j + 1, h => goCol (B.transvectSub ⟨j, by omega⟩ ⟨i, hi⟩ A[j][i]) i hi j (Nat.le_of_succ_le h)
 
 /-- Compute `A⁻¹ * B`. -/
 def ldiv [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMatrix m n K)
@@ -149,3 +153,92 @@ def ldiv [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMatrix m n K)
 /-- Compute `A⁻¹`. -/
 def inv [Field K] [DecidableEq K] (A : VecMatrix m m K) (hA : A.toMatrix.det ≠ 0) :=
   ldiv A (1 : VecMatrix m m K) hA
+
+namespace backSubst
+
+theorem getElem_goCol_ge [Mul R] [Sub R] {A : VecMatrix m m R} {B : VecMatrix m n R} (i : ℕ)
+    (hi : i < m) (j : ℕ) (hj : j ≤ i) (r : ℕ) (hjr : j ≤ r) (c : ℕ) (hr : r < m) (hc : c < n) :
+    (goCol A B i hi j hj)[r][c] = B[r][c] := by
+  induction j generalizing B with
+  | zero => rw [goCol]
+  | succ j ih => rw [goCol, ih _ (Nat.le_of_succ_le hjr), getElem_transvectSub_ne]; simp; omega
+
+theorem getElem_goCol_lt [Mul R] [Sub R] {A : VecMatrix m m R} {B : VecMatrix m n R} (i : ℕ)
+    (hi : i < m) (j : ℕ) (hj : j ≤ i) (r : ℕ) (hrj : r < j) (c : ℕ) (hr : r < m) (hc : c < n) :
+    (goCol A B i hi j hj)[r][c] = B[r][c] - A[r][i] * B[i][c] := by
+  induction j, hrj using Nat.le_induction generalizing B with
+  | base => simp [goCol]; rw [getElem_goCol_ge, getElem_transvectSub_self] <;> simp
+  | succ j hrj ih => rw [goCol, ih, getElem_transvectSub_ne, getElem_transvectSub_ne]
+      <;> (simp; omega)
+
+theorem getElem_go_ge [Mul R] [Sub R] [Div R] {A : VecMatrix m m R} {B : VecMatrix m n R} (i : ℕ)
+    (hi : i ≤ m) (r : ℕ) (hir : i ≤ r) (c : ℕ) (hr : r < m) (hc : c < n) :
+    (go A B i hi)[r][c] = B[r][c] := by
+  induction i generalizing B with
+  | zero => simp [go]
+  | succ i ih => simp [go]; rw [ih, getElem_goCol_ge, Vector.getElem_modify_ne] <;> omega
+
+theorem getElem_go_succ_le [AddCommGroup R] [Mul R] [Div R] {A : VecMatrix m m R} {B : VecMatrix m n R}
+    (i : ℕ) (hi : i < m) (r : ℕ) (hri : r ≤ i) (c : ℕ) (hr : r < m) (hc : c < n) :
+    (go A B i.succ hi)[r][c] = (B[r][c] - ∑ j ∈ Finset.Ioc (Fin.mk r (hri.trans_lt hi)) (Fin.mk i hi),
+      A[r][j] * (go A B i.succ hi)[j][c]) / A[r][r] := by
+  induction i, hri using Nat.le_induction generalizing B with
+  | base => simp [go]; rw [getElem_go_ge, getElem_goCol_ge] <;> simp
+  | succ i hri ih =>
+    rw [go, ih, getElem_goCol_lt, Vector.getElem_modify_ne, sub_sub] <;> try omega
+    congr; convert_to _ = ∑ j ∈ (insert ⟨(i + 1), hi⟩ _ : Finset (Fin m)), A[r][j] * (go A B (i + 2) hi)[j][c]
+    swap; · exact Finset.Ioc ⟨r, hr⟩ ⟨i, Nat.lt_of_succ_lt hi⟩
+    · congr; ext ⟨x, h⟩; simp; omega
+    simp; congr; rw [go, getElem_go_ge, getElem_goCol_ge] <;> simp
+
+end backSubst
+
+theorem GaussInvariant.backSubst_eq [Field K] {A : VecMatrix m m K} {B : VecMatrix m n K}
+    (A' : VecMatrix m m K) (B' : VecMatrix m n K) (h : GaussInvariant A B A' B' m le_rfl) :
+    (A'.backSubst B').toMatrix = A.toMatrix⁻¹ * B.toMatrix := by
+  rcases m with _ | m
+  · ext i j; nomatch i
+  have := A'.toMatrix.invertibleOfIsUnitDet h.1.isUnit
+  symm; rw [← h.2.1, Matrix.inv_mul_eq_iff_eq_mul_of_invertible]; symm
+  ext r c; calc (A'.toMatrix * (A'.backSubst B').toMatrix) r c
+  _ = ∑ i : Fin m.succ, A'[r][i] * (A'.backSubst B')[i][c] := rfl
+  _ = ∑ i with i < r, A'[r][i] * (A'.backSubst B')[i][c] +
+      ∑ i with ¬i < r, A'[r][i] * (A'.backSubst B')[i][c] :=
+    (Finset.sum_filter_add_sum_filter_not _ _ _).symm
+  _ = 0 + ∑ i ∈ Finset.Ici r, A'[r][i] * (A'.backSubst B')[i][c] := by
+    congr
+    · simp; apply Finset.sum_eq_zero; simp; intro x hx; left; exact (h.2.2 x x.isLt).2 r hx
+    · ext i; simp
+  _ = B'[r][c] := by
+    simp [← Finset.add_sum_Ioi_eq_sum_Ici, backSubst]
+    rw [backSubst.getElem_go_succ_le, mul_div_cancel₀]
+    case hri => exact Nat.le_of_lt_succ r.isLt
+    case hb => exact (h.2.2 r r.isLt).1
+    convert sub_add_cancel _ _ <;> simp
+    ext i; simp; intro; exact Nat.le_of_lt_succ i.isLt
+
+/-- `ldiv` does, in fact, compute `A⁻¹ * B`. -/
+@[simp]
+theorem toMatrix_ldiv [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMatrix m n K)
+    (hA : A.toMatrix.det ≠ 0) : (ldiv A B hA).toMatrix = A.toMatrix⁻¹ * B.toMatrix := by
+  rcases gauss_correct A B hA with ⟨A', B', h', h⟩
+  simpa [ldiv, h'] using h.backSubst_eq
+
+@[simp]
+theorem mul_ldiv [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMatrix m n K)
+    (hA : A.toMatrix.det ≠ 0) : A.toMatrix * (ldiv A B hA).toMatrix = B.toMatrix := by
+  have := A.toMatrix.invertibleOfIsUnitDet hA.isUnit; simp
+
+/-- `inv` does, in fact, compute `A⁻¹` (and is much quicker than
+`Matrix.invertibleOfDetInvertible`). -/
+@[simp]
+theorem toMatrix_inv [Field K] [DecidableEq K] (A : VecMatrix m m K) (hA : A.toMatrix.det ≠ 0) :
+    (inv A hA).toMatrix = A.toMatrix⁻¹ := by
+  rw [inv, toMatrix_ldiv, toMatrix_one, mul_one]
+
+@[implicit_reducible]
+def _root_.Matrix.invertibleOfDetNeZero [Field K] [DecidableEq K] (A : Matrix (Fin m) (Fin m) K)
+    (hA : A.det ≠ 0) : Invertible A where
+  invOf := ((ofMatrix A).inv (by simpa using hA)).toMatrix
+  invOf_mul_self := by have := A.invertibleOfIsUnitDet hA.isUnit; simp
+  mul_invOf_self := by have := A.invertibleOfIsUnitDet hA.isUnit; simp

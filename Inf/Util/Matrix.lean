@@ -30,8 +30,16 @@ def toMatrix (A : VecMatrix m n R) : Matrix (Fin m) (Fin n) R :=
   Matrix.of fun i j => A[i][j]
 
 @[simp]
+theorem getElem_ofMatrix (M : Matrix (Fin m) (Fin n) R) (i j : Nat) (hi : i < m) (hj : j < n) :
+    (ofMatrix M)[i][j] = M ⟨i, hi⟩ ⟨j, hj⟩ := by simp [ofMatrix]
+
+@[simp]
 theorem toMatrix_apply (A : VecMatrix m n R) (i : Fin m) (j : Fin n) :
-  A.toMatrix i j = A[i][j] := by simp [toMatrix]
+    A.toMatrix i j = A[i][j] := rfl
+
+@[simp]
+theorem toMatrix_ofMatrix (M : Matrix (Fin m) (Fin n) R) : (ofMatrix M).toMatrix = M := by
+  ext i j; simp
 
 /-- Subtract row `j` multiplied by `c` from row `i`. -/
 @[inline]
