@@ -1,6 +1,6 @@
-import Mathlib.LinearAlgebra.Matrix.Block
 import Mathlib.LinearAlgebra.Matrix.Hermitian
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.LinearAlgebra.Vandermonde
 
 namespace ALG1.Cwi10
 
@@ -16,24 +16,24 @@ theorem Zad1c : !![1, 0, 1+I; 0, 1, I; 1-I, -I, 1].det = -2 := by
 
 /-- 5x5 already reaches the recursion limit when trying to prove it with just `rfl` lol. -/
 theorem Zad1d : !![1, 2, 3, 4, 5;
-                      2, 2, 3, 4, 5;
-                      3, 3, 3, 4, 5;
-                      4, 4, 4, 4, 5;
-                      5, 5, 5, 5, 5].det = (5 : ℤ) := by
+                   2, 2, 3, 4, 5;
+                   3, 3, 3, 4, 5;
+                   4, 4, 4, 4, 5;
+                   5, 5, 5, 5, 5].det = (5 : ℤ) := by
   simp [det_succ_row_zero, Fin.sum_univ_succ, Fin.succAbove]
 
 theorem Zad1e : !![1, 1, 1, 1, 1;
-                      1, 2, 2, 2, 2;
-                      1, 2, 3, 3, 3;
-                      1, 2, 3, 4, 5;
-                      1, 2, 3, 4, 5].det = (0 : ℤ) :=
+                   1, 2, 2, 2, 2;
+                   1, 2, 3, 3, 3;
+                   1, 2, 3, 4, 5;
+                   1, 2, 3, 4, 5].det = (0 : ℤ) :=
   det_zero_of_row_eq (show 3 ≠ 4 by simp) rfl
 
 theorem Zad1f : !![2,  1,  2, 3,  1;
-                      3, -2,  5, 4,  3;
-                      4,  2,  1, 0,  2;
-                      1,  3, -1, 3, -1;
-                      2,  1,  4, 3,  2].det = 12 := by
+                   3, -2,  5, 4,  3;
+                   4,  2,  1, 0,  2;
+                   1,  3, -1, 3, -1;
+                   2,  1,  4, 3,  2].det = 12 := by
   simp [det_succ_row_zero, Fin.sum_univ_succ, Fin.succAbove]
 
 theorem Zad1g [CommRing R] (x y z t : R) :
@@ -77,8 +77,8 @@ theorem ZadD1 [DecidableEq n] [Fintype n] [CommRing R] [DecidableEq R] {A : Matr
   have ⟨i, hi⟩ : ∃ i, ∀ j, A i j = 0 := by simpa using exists_mem_notMem_of_card_lt_card this
   exact det_eq_zero_of_row_eq_zero i hi
 
-theorem ZadD2 [DecidableEq n] [Fintype n] (A : Matrix n n ℤ) : IsUnit A ↔ (A.det = 1 ∨ A.det = -1) :=
-  A.isUnit_iff_isUnit_det.trans A.det.isUnit_iff
+theorem ZadD2 [DecidableEq n] [Fintype n] (A : Matrix n n ℤ) :
+    IsUnit A ↔ (A.det = 1 ∨ A.det = -1) := A.isUnit_iff_isUnit_det.trans A.det.isUnit_iff
 
 theorem ZadD3a : (!![1, 2, 0, 0; 2, 3, 0, 0; 1, -1, 1, 3; 0, 1, 0, 2]⁻¹ : Matrix _ _ ℚ) =
     !![-3, 2, 0, 0; 2, -1, 0, 0; 8, -(9 / 2), 1, -(3 / 2); -1, 1 / 2, 0, 1 / 2] := by
@@ -95,3 +95,5 @@ theorem ZadD3b : !![1+I, I, 1-I; I, I, 0; 1, 0, 4]⁻¹ =
 theorem ZadD4 [DecidableEq n] [Fintype n] {A : Matrix n n ℂ} (hA : A.IsHermitian) : A.det.im = 0 := by
   apply A.det.im_eq_zero_iff_isSelfAdjoint.mpr
   rw [IsSelfAdjoint, ← det_conjTranspose, hA]
+
+alias ZadD6 := det_vandermonde

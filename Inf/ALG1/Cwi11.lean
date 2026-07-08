@@ -40,7 +40,7 @@ theorem Zad2c [CommRing R] [Nontrivial R] [Fintype n] [DecidableEq n] {A : Matri
 lemma Zad3_isUnit : IsUnit (!![1, 2, 2; 2, 1, -2; 2, -2, 1] : Matrix _ _ ℚ) := by
   simp [isUnit_iff_isUnit_det, det_fin_three]; norm_num
 
-/-- The column vectors `![1, 2, 2]`, `![2, 1, -2]`, and `![2, -2, 1]` are the matrix's eigenvectors.  -/
+/-- The column vectors `![1, 2, 2]`, `![2, 1, -2]`, and `![2, -2, 1]` are the matrix's eigenvectors. -/
 theorem Zad3a : (!![2, -2, 0; -2, 1, -2; 0, -2, 0] : Matrix _ _ ℚ) =
     !![1, 2, 2; 2, 1, -2; 2, -2, 1] * diagonal ![-2, 1, 4] * !![1, 2, 2; 2, 1, -2; 2, -2, 1]⁻¹ := by
   have := Zad3_isUnit.invertible

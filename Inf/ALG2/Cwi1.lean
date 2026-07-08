@@ -1,5 +1,6 @@
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Eigs
 import Inf.ALG1.Cwi11
+import Mathlib.LinearAlgebra.Dimension.OrzechProperty
 import Mathlib.LinearAlgebra.Matrix.Stochastic
 
 open Matrix
@@ -50,9 +51,50 @@ theorem Zad7 [CommRing R] [Nontrivial R] [Fintype n] [DecidableEq n] [Nontrivial
 theorem Zad8 [Semiring R] [Fintype n] [DecidableEq n] {M N : Matrix n n R} (h : IsUnit M) :
     M * N = 0 ↔ N = 0 := h.mul_right_eq_zero
 
+theorem Zad9 [CommRing R] [IsDomain R] [Fintype m] [Fintype n]
+    [DecidableEq m] [DecidableEq n] (h : Fintype.card n < Fintype.card m) (A : Matrix m n R)
+    (B : Matrix n m R) : (A * B).det = 0 := by
+  apply det_eq_zero_of_not_linearIndependent_rows
+  rw [linearIndependent_iff_card_le_finrank_span, not_le]
+  apply h.trans_le'; classical trans Set.finrank R (Finset.image B Finset.univ : Set (m → R))
+  · simp [Set.finrank]; apply Submodule.finrank_mono
+    simp [Submodule.span_le, Set.subset_def, Submodule.mem_span_range_iff_exists_fun]
+    intro i; use A i; ext j; simp [mul_apply]
+  · simpa using finrank_range_le_card B
+
+theorem Zad10 [CommRing R] [Fintype n] [DecidableEq n] (A B : Matrix n n R) :
+    (fromBlocks A B B A).det = (A + B).det * (A - B).det := by
+  trans (fromBlocks 1 0 (-1) 1 * fromBlocks (A - B) B 0 (A + B) * fromBlocks 1 0 1 1).det
+  · simp [fromBlocks_multiply]
+  · simp [mul_comm]
+
 theorem ZadD1 [Semiring R] [PartialOrder R] [IsOrderedRing R] [Fintype n] [DecidableEq n]
     (A B : Matrix n n R) : A ∈ rowStochastic R n → B ∈ rowStochastic R n → A * B ∈ rowStochastic R n :=
   (rowStochastic R n).mul_mem
+
+theorem ZadD4 [CommRing R] [Fintype n] [DecidableEq n] [Nonempty n] {M : Matrix n n R}
+    (h : ∀ i j, Odd (M i j)) : 2 ^ (Fintype.card n - 1) ∣ M.det := by
+  revert n; apply Fintype.induction_empty_option
+  · intro n n' _ e hn _ _ M h
+    specialize @hn e.decidableEq e.nonempty (M.submatrix e e) fun i j => h (e i) (e j)
+    let := Fintype.ofEquiv n' e.symm
+    simpa [Fintype.card_congr e] using hn
+  · simp
+  rintro n _ - _ _ M h; choose M' h using h; change Matrix _ _ R at M'
+  have : DecidableEq n := fun i j => decidable_of_iff (some i = some j) Option.some_inj
+  have : M = (of fun i j => j.elim 1 fun j => if i = j then 2 else 0) *
+             (of fun i => i.elim (M none) fun i => M' (some i) - M' none) := by
+    ext i j; rcases i with _ | i <;> simp [mul_apply, h]; ring
+  rw [this, det_mul]; apply dvd_mul_of_dvd_left
+  rw [BlockTriangular.det_fintype (b := Option.isNone)]
+  · simp [toSquareBlock_def]; apply dvd_mul_of_dvd_right; convert dvd_rfl
+    convert det_diagonal (d := fun _ => (2 : R))
+    · ext ⟨i, hi⟩ ⟨j, hj⟩; rcases i with _ | i; contradiction; rcases j with _ | j; contradiction
+      simp [diagonal]
+    · simp [Fintype.card_congr (Equiv.optionIsSomeEquiv n)]
+    · infer_instance
+    · infer_instance
+  · simp +contextual [BlockTriangular, Bool.lt_iff, Option.isSome_iff_exists]
 
 alias ZadD6 := Zad3
 

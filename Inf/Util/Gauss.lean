@@ -193,7 +193,8 @@ theorem getElem_go_succ_le [AddCommGroup R] [Mul R] [Div R] {A : VecMatrix m m R
 
 end backSubst
 
-theorem GaussInvariant.backSubst_eq [Field K] {A : VecMatrix m m K} {B : VecMatrix m n K}
+/-- For upper triangular `A`, `backSubst` can be used to compute `A⁻¹ * B`. -/
+theorem GaussInvariant.toMatrix_backSubst [Field K] {A : VecMatrix m m K} {B : VecMatrix m n K}
     (A' : VecMatrix m m K) (B' : VecMatrix m n K) (h : GaussInvariant A B A' B' m le_rfl) :
     (A'.backSubst B').toMatrix = A.toMatrix⁻¹ * B.toMatrix := by
   rcases m with _ | m
@@ -222,7 +223,7 @@ theorem GaussInvariant.backSubst_eq [Field K] {A : VecMatrix m m K} {B : VecMatr
 theorem toMatrix_ldiv [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMatrix m n K)
     (hA : A.toMatrix.det ≠ 0) : (ldiv A B hA).toMatrix = A.toMatrix⁻¹ * B.toMatrix := by
   rcases gauss_correct A B hA with ⟨A', B', h', h⟩
-  simpa [ldiv, h'] using h.backSubst_eq
+  simpa [ldiv, h'] using h.toMatrix_backSubst
 
 @[simp]
 theorem mul_ldiv [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMatrix m n K)
