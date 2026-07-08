@@ -84,12 +84,10 @@ theorem Zad1a : ∫ p in {(x, y) | 3 * √x ≤ y ∧ y ≤ 4 - x ^ 2}, p.1 * p.
     congr! with p; simp; intro h1 h2; and_intros
     · have h3 : 0 ≤ p.2 := by grw [← h1]; simp
       grw [← h3] at h2; simp at h2; nlinarith
-    · have := h1.trans h2; contrapose! this -- grw sucks here
-      apply (mul_lt_mul_of_pos_left (sqrt_lt_sqrt zero_le_one this) three_pos).trans_le'
-      grw [← this]; norm_num
+    · contrapose! h1; grw [h2, ← h1, ← h1]; norm_num
   _ = ∫ x in -2..1, ∫ y in 3 * √x..4 - x ^ 2, x * y := by
     refine integral_normal_domain_cc (f := fun x => 3 * √x) (g := fun x => 4 - x ^ 2)
-      (by fun_prop) (by fun_prop) (by trans 0 <;> simp) ?_ (by fun_prop)
+      (by fun_prop) (by fun_prop) (by norm_num) ?_ (by fun_prop)
     intro x hx; by_cases! hx' : x < 0
     · simp_all [sqrt_eq_zero_of_nonpos hx'.le]; nlinarith
     trans 3
@@ -186,16 +184,13 @@ theorem Zad1c : ∫ p in {(x, y) : ℝ × ℝ | y ≤ x ^ 2 + y ^ 2 ∧ x ^ 2 + 
         ← MeasureTheory.integral_indicator (by simp; fun_prop)]
     congr; ext x; simp [Set.indicator, ← ite_and]; congr 1; simp [mul_pow, ← mul_add]; constructor
     · rintro ⟨⟨h1, h2, h3⟩, h4, h5, h6⟩; and_intros
-      · contrapose! h5; apply (sq_pos_of_pos h1).trans_le'
-        apply mul_nonpos_of_nonneg_of_nonpos zero_le_two
-        apply mul_nonpos_of_nonneg_of_nonpos h1.le
-        exact sin_nonpos_of_nonpos_of_neg_pi_le h5 h2.le
+      · contrapose! h5; grw [← h1, sin_nonpos_of_nonpos_of_neg_pi_le h5 h2.le]; simp
       · contrapose! h6; apply mul_neg_of_pos_of_neg h1
         apply cos_neg_of_pi_div_two_lt_of_lt h6; linarith
       · nlinarith
       · nlinarith
     · rintro ⟨⟨h1, h2⟩, h3, h4⟩; and_intros
-      · apply h3.trans_lt'; apply sin_pos_of_pos_of_lt_pi h1; linarith
+      · grw [← h3, sin_pos_of_pos_of_lt_pi h1]; linarith
       · linarith
       · linarith
       · nlinarith
@@ -288,7 +283,7 @@ theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y 
     norm_num [Set.indicator, ← ite_and, mul_pow, ← mul_add, ← mul_sub, ← pow_mul]
     congr! 4 with ⟨r, t⟩; constructor <;> simp +contextual
     · intro hr ht1 ht2 h ht; contrapose! +distrib h
-      suffices cos t ^ 2 < sin t ^ 2 by grw [this]; simpa using pow_pos hr 4
+      suffices cos t ^ 2 < sin t ^ 2 by grw [this]; simpa using (pow_pos hr 4).le
       rcases h with hlt | hgt
       · rw [← neg_sq (sin t)]; apply sq_lt_sq'
         · grw [neg_neg, ← ht]; apply sin_neg_of_neg_of_neg_pi_lt <;> linarith

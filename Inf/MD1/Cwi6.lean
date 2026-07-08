@@ -22,7 +22,7 @@ theorem card_le_mul_of_isChain_isAntichain [Fintype α] [DecidableEq α] [Partia
   have ha : ∀ i : ℕ, IsAntichain (· ≤ ·) {x : α | (Set.Iic x).chainHeight (· ≤ ·) = i} := by
     simp [IsAntichain, Set.Pairwise]; intro i x hx y hy hne hle
     let ⟨t, ht1, ht2, ht3⟩ := Set.exists_isChain_of_le_chainHeight _ (ge_of_eq hx)
-    have := ht3.insert fun z hz _ => Or.inr (le_trans (ht1 hz) hle)
+    have := ht3.insert fun z hz _ => Or.inr (hle.trans' (ht1 hz))
     absurd Set.encard_le_chainHeight_of_isChain (Set.Iic y) _ ?_ this
     · simp [Set.insert_subset_iff]; grw [ht1, hle]
     rw [not_le, hy, ← ht2, Set.encard_insert_of_notMem, ht2, ENat.lt_coe_add_one_iff]
@@ -138,7 +138,7 @@ theorem Zad4 [Nonempty α] {F : Finset (Finset α)}
   revert hF; unfold Maximal; apply And.imp
   · unfold Set.Intersecting; simp; intro h; peel h
     simpa [not_disjoint_iff_nonempty_inter, ← compl_union, nonempty_iff_ne_empty]
-  · intro h s hs; rw [le_iff_subset, le_iff_subset, ← compls_subset_iff, compls_subset_iff]
+  · intro h s hs; rw [← compls_subset_iff, compls_subset_iff]
     apply h; simp [-mem_compls, forall_mem_compls, ← compl_inter]
     simp [Set.Intersecting] at hs; peel hs
     rwa [not_disjoint_iff_nonempty_inter, nonempty_iff_ne_empty] at this

@@ -12,7 +12,7 @@ theorem List.isChain_scanr {f : α → β → β} (hf : ∀ a b, R (f a b) b) :
 theorem List.isChain_scanl {f : β → α → β} (hf : ∀ b a, R b (f b a)) :
     IsChain R (scanl f init as) := by
   rw [scanl_eq_scanr_reverse, isChain_reverse]
-  apply isChain_scanr; simp_all [flip]
+  apply isChain_scanr; simp [flip, hf]
 
 open SimpleGraph Finset
 

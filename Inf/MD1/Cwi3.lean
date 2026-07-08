@@ -151,7 +151,7 @@ theorem Finpartition.card [DecidableEq α] (s : Finset α) :
       · simp only [Function.Injective, Finpartition.ext_iff, fun P => parts_extendOfLE_of_lt P hlt]
         intro P₁ P₂ h; apply_fun (· \ {insert a t}) at h; convert h; all_goals
           symm; rw [Finset.sdiff_sdiff_eq_self (by simp [ht])]; simp [Finset.insert_sdiff_of_mem]
-          intro this; apply Finpartition.subset at this; simp [Finset.subset_iff] at this
+          intro this; apply Finpartition.subset at this; simp at this
       · intro P hP; use ofExistsUnique (P.parts \ {insert a t}) (by
           simp_rw [Finset.mem_sdiff, Finset.mem_singleton, ← hP]
           intro p ⟨hp, hnp⟩ x hx; have := P.subset hp hx
@@ -179,7 +179,7 @@ namespace MD1.Cwi3
 
 theorem Zad1 (h : 0 < n) : n.bell = ∑ i < n, (n - 1).choose i * i.bell := by
   rw [Nat.Iio_eq_range, show n = n - 1 + 1 by lia, Nat.add_one_sub_one,
-    ← Finset.sum_flip, Nat.bell_succ, Fin.sum_univ_eq_sum_range fun i => (_ * Nat.bell _)]
+    ← Finset.sum_flip, Nat.bell_succ, Nat.range_succ_eq_Iic]
   congr! 2 with i hi; exact (Nat.choose_symm (by simpa using hi)).symm
 
 /-- the Bell triangle a_n,k -/

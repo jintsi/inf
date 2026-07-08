@@ -29,7 +29,7 @@ theorem Zad1b : Summable (fun (n : ℕ) => (1 + (-1) ^ n) / π ^ n) := by
   convert (summable_geometric_of_abs_lt_one (r := π⁻¹) ?pi).add
     (summable_geometric_of_abs_lt_one (r := -π⁻¹) (abs_neg π⁻¹ ▸ ?pi)) using 2 with n
   · ring
-  · simp [inv_lt_one₀, pi_pos, lt_abs]; left; apply two_le_pi.trans_lt'; simp
+  · simp [inv_lt_one₀, pi_pos, lt_abs]; left; grw [← two_le_pi]; simp
 
 theorem Zad2a : ¬Summable (fun (n : ℕ) => arccos (√n)⁻¹) (conditional ℕ) := by
   apply mt Summable.tendsto_atTop_zero'

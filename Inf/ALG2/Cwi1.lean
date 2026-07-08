@@ -56,7 +56,7 @@ theorem Zad9 [CommRing R] [IsDomain R] [Fintype m] [Fintype n]
     (B : Matrix n m R) : (A * B).det = 0 := by
   apply det_eq_zero_of_not_linearIndependent_rows
   rw [linearIndependent_iff_card_le_finrank_span, not_le]
-  apply h.trans_le'; classical trans Set.finrank R (Finset.image B Finset.univ : Set (m → R))
+  grw [← h]; classical trans Set.finrank R (Finset.image B Finset.univ : Set (m → R))
   · simp [Set.finrank]; apply Submodule.finrank_mono
     simp [Submodule.span_le, Set.subset_def, Submodule.mem_span_range_iff_exists_fun]
     intro i; use A i; ext j; simp [mul_apply]

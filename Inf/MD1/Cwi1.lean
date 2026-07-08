@@ -43,33 +43,22 @@ theorem Zad2iii (n : ℕ) : Nat.fib n < 2 ^ n := by
   rename_i n; cases n; simp
   grind [Nat.fib_add_two]
 
-end MD1.Cwi1
-
-theorem SimpleGraph.mem_universalVerts_iff_card (G : SimpleGraph V) (v : V) [Fintype V]
-    [DecidableRel G.Adj] [DecidableEq V] : v ∈ G.universalVerts ↔ G.degree v = Fintype.card V - 1 := by
-  rw [← (Nat.le_sub_one_of_lt (G.degree_lt_card_verts v)).ge_iff_eq, ← Nat.sub_eq_zero_iff_le,
-    ← degree_compl, degree_eq_zero_iff_notMem_support, mem_support]
-  simp [universalVerts, adj_comm];
-
-namespace MD1.Cwi1
-
 theorem Zad6 (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj] [DecidableEq V] [Nontrivial V] :
     ∃ x y, x ≠ y ∧ G.degree x = G.degree y := by
   by_cases hmax : G.maxDegree = Fintype.card V - 1
   · have ⟨v, hv⟩ := G.exists_maximal_degree_vertex
-    symm at hv
-    simp [hmax, ← G.mem_universalVerts_iff_card, SimpleGraph.universalVerts] at hv
+    symm at hv; simp [hmax] at hv
     have hmin : 1 ≤ G.minDegree := by
       apply SimpleGraph.le_minDegree_of_forall_le_degree
       intro w; apply Nat.one_le_of_lt (a := 0); by_cases h : v = w
       · subst h; have ⟨w, h⟩ := exists_ne v
-        exact (hv h.symm).degree_pos_right
-      · exact (hv h).degree_pos_left
+        exact (hv h.symm).degree_pos_left
+      · exact (hv h).degree_pos_right
     apply Fintype.exists_ne_map_eq_of_card_lt_of_maps_to (s := Finset.Icc 1 (G.maxDegree))
-    · simp; exact G.maxDegree_lt_card_verts
+    · simpa [hmax] using Fintype.card_pos
     · simp [G.degree_le_maxDegree]; exact fun w => hmin.trans (G.minDegree_le_degree w)
   apply Fintype.exists_ne_map_eq_of_card_lt_of_maps_to (s := Finset.range (Fintype.card V - 1))
-  · simp; exact Fintype.card_pos
+  · simpa [hmax] using Fintype.card_pos
   · simp; intro; grw [G.degree_le_maxDegree]; grind [G.maxDegree_lt_card_verts]
 
 theorem Zad7 {n : ℕ} [NeZero n] (f : Equiv.Perm (Fin n)) (h : ∀ x, f x ≠ x) :
@@ -135,4 +124,4 @@ theorem Zad10 [Nonempty X] [Fintype X] [DecidableEq X] {F : Finset (Finset X)}
   exists x; convert h
   simp [Finset.filter_product_left fun x' : Finset X × X => x'.2 = x, F', Finset.filter_filter]
   apply Finset.card_nbij fun s => (s, x) <;> simp [Set.MapsTo, Set.SurjOn, Set.subset_def]
-  intros; subst_vars; trivial
+  intro s x hs hx rfl; trivial

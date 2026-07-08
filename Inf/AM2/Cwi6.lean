@@ -6,9 +6,7 @@ open Topology Filter
 
 namespace AM2.Cwi6
 
-/-- Specialization of `isClosed_singleton` to metric spaces. -/
-theorem Zad4 [MetricSpace X] {x : X} : IsClosed {x} := isClosed_singleton
-
+alias Zad4 := isClosed_singleton
 alias Zad5a := IsOpen.inter
 alias Zad5b := isOpen_iUnion
 /-- This fails to hold when `ι` is infinite.

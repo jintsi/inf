@@ -80,8 +80,7 @@ theorem Zad2e : Tendsto (fun n : ℕ => ∑ i ∈ range n, (√(2 * n ^ 2 - (i +
         ← arcsin_eq_of_sin_eq sin_pi_div_four, sqrt_div_self]
       · simp; ring_nf; and_intros <;> (gcongr 1; norm_num)
       · use neg_one_lt_zero.le.trans (by positivity); simp [← sqrt_inv, inv_le_one₀]
-  · simp only [Set.mem_Icc, ne_eq, sqrt_ne_zero', sub_pos, and_imp]; intro x h0 h1
-    exact ((sq_le_one_iff₀ h0).mpr h1).trans_lt one_lt_two
+  · simp only [Set.mem_Icc, ne_eq, sqrt_ne_zero', sub_pos, and_imp]; intros; nlinarith
 
 theorem Zad2f : Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ((2 * n).factorial / n.factorial) ^ (n : ℝ)⁻¹)
     atTop (𝓝 (4 / exp 1)) := by

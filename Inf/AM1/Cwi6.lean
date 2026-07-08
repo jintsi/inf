@@ -57,10 +57,8 @@ theorem Zad4 {a b : ℝ} {f : ℝ → ℝ} (hab : a < b) (hd : DifferentiableOn 
   obtain ⟨c, hb⟩ := hb
   have hc : 0 ≤ c := (abs_nonneg _).trans (hb ((a + b) / 2) (by grind))
   apply LipschitzOnWith.uniformContinuousOn (K := ⟨c, hc⟩)
-  apply Convex.lipschitzOnWith_of_nnnorm_deriv_le
-  · intro x hx; exact hd.differentiableAt (Ioo_mem_nhds hx.1 hx.2)
-  · exact hb
-  · exact convex_Ioo a b
+  exact (convex_Ioo a b).lipschitzOnWith_of_nnnorm_deriv_le
+    (fun x hx => hd.differentiableAt (Ioo_mem_nhds hx.1 hx.2)) hb
 
 open Topology Filter
 

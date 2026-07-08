@@ -13,7 +13,7 @@ theorem Zad2 [CommRing R] [NoZeroDivisors R] [LinearOrder R] [Nontrivial R] [IsO
     (hA : A ∈ orthogonalGroup n R) (hB : B ∈ orthogonalGroup n R) (h : A.det + B.det = 0) : (A + B).det = 0 := by
   suffices -A.det ^ 2 * (A + B).det = (A + B).det by
     rw [mul_left_eq_self₀] at this; apply this.resolve_left; apply ne_of_lt
-    apply zero_lt_one.trans_le'; simp [sq_nonneg]
+    grw [← zero_lt_one, neg_nonpos, sq_nonneg]
   convert_to _ = (A * (A + B)ᵀ * B).det
   · rw [transpose_add, mul_add, add_mul, (mem_orthogonalGroup_iff n R).mp hA, one_mul, mul_assoc,
       (mem_orthogonalGroup_iff' n R).mp hB, mul_one, add_comm]

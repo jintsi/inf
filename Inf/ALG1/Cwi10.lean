@@ -72,8 +72,7 @@ theorem ZadD1 [DecidableEq n] [Fintype n] [CommRing R] [DecidableEq R] {A : Matr
     · convert! h; simp [sq]
     · simpa using Nat.le_mul_self _
   have : #{i | ∃ j, A i j ≠ 0} < Fintype.card n := by
-    apply this.trans_le'; convert! card_image_le (β := n) (f := Prod.fst)
-    ext i; simp
+    grw [← this]; convert! card_image_le (β := n) (f := Prod.fst); ext i; simp
   have ⟨i, hi⟩ : ∃ i, ∀ j, A i j = 0 := by simpa using exists_mem_notMem_of_card_lt_card this
   exact det_eq_zero_of_row_eq_zero i hi
 

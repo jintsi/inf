@@ -34,7 +34,7 @@ theorem Zad2a : Tendsto (fun n => (2 * n - 1) / (4 * n + 1) : ℕ → ℝ) atTop
 theorem Zad2b : Tendsto (fun n => 3 - 2 * n : ℕ → ℝ) atTop atBot := by
   simp [tendsto_atTop_atBot]
   intro D; exists ⌊(3 - D) / 2⌋₊ + 1; intro n hn
-  replace hn := lt_of_lt_of_le (Nat.lt_floor_add_one ((3 - D) / 2))
+  replace hn := (Nat.lt_floor_add_one ((3 - D) / 2)).trans_le
     (show _ ≤ (n : ℝ) by exact_mod_cast hn)
   linarith
 

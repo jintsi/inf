@@ -16,9 +16,9 @@ theorem Zad1a : TendstoUniformly (fun n x => √(x ^ 2 + 1 / n)) abs atTop := by
   filter_upwards [eventually_gt_atTop (e ^ 2)⁻¹]; intro n hn x
   have hn' : 0 < n := by grw [← hn]; positivity
   rw [dist_comm, dist_eq, abs_lt]; and_intros
-  · grw [he, neg_zero, sub_pos, lt_sqrt (abs_nonneg x)]; simpa
+  · grw [he, neg_zero, sub_nonneg]; apply le_sqrt_of_sq_le; simpa using hn'.le
   rw [inv_lt_comm₀ (sq_pos_of_pos he) hn', ← sqrt_lt' he] at hn
-  apply hn.trans_le'; grw [sub_le_iff_le_add', sqrt_le_left (by positivity)]
+  grw [← hn, sub_le_iff_le_add', sqrt_le_left (by positivity)]
   simp [add_sq, hn'.le]; positivity
 
 theorem Zad1b : Tendsto (fun n x => cos (x / n)) atTop (𝓝 1) ∧
@@ -55,11 +55,11 @@ theorem Zad1d (ha : a < 0) :
   rw [Metric.tendstoUniformlyOn_iff]; intro e he; simp only [Set.mem_Iic]
   wlog he' : e < π generalizing e
   · specialize this (π / 2) pi_div_two_pos (by simp [pi_pos])
-    peel this; grw [this]; simp at he'; grw [he']; simpa
+    peel this; grw [this, le_of_not_gt he']; simpa using he.le
   filter_upwards [eventually_gt_atTop (tan (e + -(π / 2)) / a), eventually_gt_atTop 0]
   intro n hn hn' x hx
   rw [dist_eq, abs_lt]; and_intros; swap
-  · grw [he]; simp [neg_pi_div_two_lt_arctan]
+  · apply he.trans'; simp [neg_pi_div_two_lt_arctan]
   grw [neg_lt_sub_iff_lt_add, ← strictMonoOn_tan.lt_iff_lt (arctan_mem_Ioo _) (by simp_all),
     tan_arctan, hx, ← div_lt_iff_of_neg ha]; assumption
 
