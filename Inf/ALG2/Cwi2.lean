@@ -48,7 +48,7 @@ lemma norm_def (A : Matrix n n K) : ‖A‖ = √(RCLike.re (Aᴴ * A).trace) :=
 
 end Zad3
 
-open Zad3 in
+open scoped Zad3 in
 theorem Zad4 : ‖!![(2 : ℝ), 1; 0, 2]‖ = 3 := by norm_num [trace, mul_apply, sqrt_eq_cases]
 
 open MeasureTheory in
@@ -123,5 +123,5 @@ theorem ZadD2c (n : Type*) [Fintype n] :
     Module.finrank ℝ (SymmMatrix n ℂ) = Fintype.card n * (Fintype.card n + 1) := by
   rw [finrank_real_of_complex, ZadD2ab, mul_comm, Nat.choose_succ_right_eq, mul_comm]; simp
 
-noncomputable def Zad2_D2c_basis (n : Type*) [Fintype n] :=
+noncomputable def ZadD2c_basis (n : Type*) [Fintype n] :=
   Complex.basisOneI.smulTower (ZadD2ab_basis n ℂ)

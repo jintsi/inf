@@ -1,6 +1,6 @@
 import Mathlib.Topology.Algebra.Polynomial
+import Inf.ALG1.Cwi9
 import Mathlib.LinearAlgebra.Matrix.BilinearForm
-import Mathlib.RingTheory.Polynomial.DegreeLT
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.LinearAlgebra.Dimension.OrzechProperty
 
@@ -27,15 +27,8 @@ open Zad2 in
 theorem Zad2b [CommSemiring R] : toMatrix (Pi.basisFun R (Fin 3)) (Basis.singleton (Fin 1) R) (F R)
     = !![1, 3, 6] := by ext i j; fin_cases j <;> simp [LinearMap.toMatrix_apply, F]
 
-/-- Basis `![![1, 0, 0], ![1, 1, 0], ![1, 1, 1]]`. -/
-noncomputable def Zad2c.basis (R) [DivisionRing R] : Basis (Fin 3) R (Fin 3 → R) := by
-  apply basisOfLinearIndependentOfCardEqFinrank' ![![1, 0, 0], ![1, 1, 0], ![1, 1, 1]]
-  · simp [linearIndependent_finSucc, Submodule.mem_span_singleton, Submodule.mem_span_pair]
-  · simp
-
-@[simp]
-theorem Zad2c.basis_apply [DivisionRing R] :
-    basis R i = ![![1, 0, 0], ![1, 1, 0], ![1, 1, 1]] i := by simp [basis]
+noncomputable abbrev Zad2c.basis (R) [CommRing R] := (Pi.basisFun R (Fin 3)).ofDetNeZero
+    ![![1, 0, 0], ![1, 1, 0], ![1, 1, 1]] (by simp [Matrix.det_fin_three])
 
 open Zad2 Zad2c in
 theorem Zad2c [Field K] : toMatrix (basis K) (Basis.singleton (Fin 1) K) (F K)
@@ -47,7 +40,7 @@ def Zad2d.inner (R) [Add R] [Mul R] [NatCast R] (x y : Fin 3 → R) :=
 
 open Zad2 Zad2d in
 theorem Zad2d [Ring R] : F R = inner R ![-1, 2, 2] := by
-  ext x; simp [F, Zad2d.inner]; grind
+  ext x; simp [F, Zad2d.inner]; noncomm_ring
 
 open Matrix in
 theorem Zad3 [Field K] [LinearOrder K] [AddLeftMono K] [PosMulMono K] [Fintype m] [Fintype n]

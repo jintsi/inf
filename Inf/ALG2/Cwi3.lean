@@ -3,7 +3,7 @@ import Inf.ALG2.Cwi2
 import Mathlib.Algebra.Order.Chebyshev
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.InnerProductSpace.GramSchmidtOrtho
-import Mathlib.RingTheory.Polynomial.DegreeLT
+import Inf.ALG1.Cwi9
 import Mathlib.MeasureTheory.Function.L2Space
 
 open Real Matrix InnerProductSpace RealInnerProductSpace
@@ -27,13 +27,13 @@ theorem inner_def {x y : Fin 3 → ℝ} :
 end Zad1
 
 open Zad1 in
-theorem Zad1a : (ℝ ∙ ![1, 1, (1 : ℝ)]).orthogonal = Submodule.span ℝ {![1, 1, -1], ![1, -1, 0]} := by
+theorem Zad1a : (ℝ ∙ ![1, 1, (1 : ℝ)])ᗮ = Submodule.span ℝ {![1, 1, -1], ![1, -1, 0]} := by
   ext v; simp [Submodule.mem_orthogonal_singleton_iff_inner_right, Submodule.mem_span_pair]; constructor
   · intro h; exists -v 2, v 0 + v 2; apply funext; simp; linarith
   · rintro ⟨a, b, rfl⟩; simp; ring
 
 open Zad1 in
-theorem Zad1b : (Submodule.span ℝ {![1, 1, 0], ![0, 1, (1 : ℝ)]}).orthogonal = ℝ ∙ ![2, -1, 0] := by
+theorem Zad1b : (Submodule.span ℝ {![1, 1, 0], ![0, 1, (1 : ℝ)]})ᗮ = ℝ ∙ ![2, -1, 0] := by
   ext v; simp [Submodule.mem_orthogonal, Submodule.mem_span_pair, Submodule.mem_span_singleton]
   constructor
   · intro h; use -v 1; ext i; fin_cases i <;> simp
@@ -113,26 +113,24 @@ theorem third : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 2).val = X ^ 2 - X + C 6
 end Zad6
 
 /-- Subspace `{(x, y, z) | x + 2 * y - z = 0}` of `EuclideanSpace ℝ (Fin 3)` -/
-noncomputable def Zad7.X : Submodule ℝ (EuclideanSpace ℝ (Fin 3)) :=
+def Zad7.X : Submodule ℝ (EuclideanSpace ℝ (Fin 3)) :=
   .span ℝ {!₂[1, 0, 1], !₂[0, 1, 2]}
 
 @[simp]
-lemma Zad7.mem_X : x ∈ X ↔ x.ofLp 0 + 2 * x.ofLp 1 - x.ofLp 2 = 0 := by
+lemma Zad7.mem_X : x ∈ X ↔ x 0 + 2 * x 1 - x 2 = 0 := by
   simp [X, Submodule.mem_span_pair, PiLp.ext_iff, sub_eq_zero, mul_comm]
 
 noncomputable def Zad7.basis : OrthonormalBasis (Fin 2) ℝ X :=
   gramSchmidtOrthonormalBasis (by
-    simp only [X]; convert! finrank_span_set_eq_card ?_
-    · simp
-    · infer_instance
-    · infer_instance
+    rw [X, finrank_span_set_eq_card]; · simp
     apply linearIndepOn_id_pair (by simp); simp [PiLp.ext_iff]
   ) ![⟨!₂[1, 0, 1], by simp⟩, ⟨!₂[-1, 1, 1], by simp; norm_num⟩]
 
 theorem Zad7a : Zad7.basis i = ![!₂[(√2)⁻¹, 0, (√2)⁻¹], !₂[-(√3)⁻¹, (√3)⁻¹, (√3)⁻¹]] i := by
   rw [Zad7.basis, gramSchmidtOrthonormalBasis_apply_of_orthogonal]
   case hf => simp [Pairwise, inner, Fin.sum_univ_three]
-  all_goals fin_cases i <;> simp [PiLp.norm_eq_of_L2, Fin.sum_univ_three, ← WithLp.toLp_smul] <;> norm_num
+  all_goals fin_cases i <;> simp [PiLp.norm_eq_of_L2, Fin.sum_univ_three, ← WithLp.toLp_smul]
+    <;> norm_num
 
 theorem Zad7b : Zad7.X.starProjection !₂[x, y, z] =
     !₂[5 / 6 * x - y / 3 + z / 6, -(x / 3) + y / 3 + z / 3, x / 6 + y / 3 + 5 / 6 * z] := by
@@ -142,6 +140,85 @@ theorem Zad7b : Zad7.X.starProjection !₂[x, y, z] =
 theorem Zad8 : !![2024, 1; -1, 0] =
     ∑ i, ![-2024, 0, -1, 0] i • ![!![-1, 0; 0, 0], !![0, 2; 2, 1], !![0, -1; 1, 0], !![0, 1; -1, 4]] i := by
   simp [Fin.sum_univ_four, -zsmul_eq_mul]
+
+end ALG2.Cwi3
+
+theorem Module.Basis.isCompl_span_image [Semiring R] [AddCommMonoid M] [Module R M]
+    (b : Basis ι R M) (s : Set ι) :
+    IsCompl (Submodule.span R (b '' s)) (Submodule.span R (b '' sᶜ)) where
+  disjoint := by
+    simp_rw [Submodule.disjoint_def, mem_span_image, ← and_imp, ← Set.subset_inter_iff]; simp
+  codisjoint := by
+    simp [Submodule.codisjoint_iff_exists_add_eq, mem_span_image]; intro z; classical
+    use b.repr.symm ((b.repr z).filter (· ∈ s)), by simp [Set.subset_def],
+        b.repr.symm ((b.repr z).filter (· ∉ s)), by simp [Set.subset_def]
+    rw [← map_add, Finsupp.filter_add_filter_not, LinearEquiv.symm_apply_apply]
+
+theorem Module.Basis.toMatrix_projection_span_image [CommRing R] [AddCommGroup M] [Module R M]
+    [Fintype ι] [DecidableEq ι] (b : Basis ι R M) (s : Set ι) [DecidablePred (· ∈ s)] :
+    LinearMap.toMatrix b b (Submodule.projection _ _ (b.isCompl_span_image s))
+    = diagonal (s.indicator 1) := by
+  ext i j; simp [diagonal_apply, Set.indicator_apply, LinearMap.toMatrix_apply]
+  by_cases h : j ∈ s
+  · rw [Submodule.projection_apply_of_mem_left]; · split <;> simp [*]
+    simp [mem_span_image]; grw [Finsupp.support_single_subset]; simpa
+  · rw [Submodule.projection_apply_of_mem_right]; · simp +contextual [h]
+    simp [mem_span_image]; grw [Finsupp.support_single_subset]; simpa
+
+theorem LinearMap.toMatrix_of_toMatrix_map_left [CommSemiring R] [AddCommMonoid M₁] [Module R M₁]
+    [AddCommMonoid M₂] [Module R M₂] [Fintype n] [DecidableEq n] [Finite m]
+    (b₁ : Module.Basis n R M₁) (b₂ : Module.Basis m R M₂) (f : M₁ →ₗ[R] M₂) (g : M₁ ≃ₗ[R] M₁) :
+    toMatrix b₁ b₂ f = toMatrix (b₁.map g) b₂ f * toMatrix b₁ b₁ g.symm := by
+  simp [toMatrix_map_left, ← toMatrix_comp, comp_assoc]
+
+theorem LinearMap.toMatrix_of_toMatrix_map_right [CommSemiring R] [AddCommMonoid M₁] [Module R M₁]
+    [AddCommMonoid M₂] [Module R M₂] [Fintype n] [DecidableEq n] [Fintype m] [DecidableEq m]
+    (b₁ : Module.Basis n R M₁) (b₂ : Module.Basis m R M₂) (f : M₁ →ₗ[R] M₂) (g : M₂ ≃ₗ[R] M₂) :
+    toMatrix b₁ b₂ f = toMatrix b₂ b₂ g * toMatrix b₁ (b₂.map g) f := by
+  simp [toMatrix_map_right, ← toMatrix_comp]
+
+@[simp]
+theorem Matrix.toLinearEquiv_toLinearMap [CommRing R] [AddCommGroup M] [Module R M] [Fintype n]
+    [DecidableEq n] (b : Module.Basis n R M) (A : Matrix n n R) (hA : IsUnit A.det) :
+    toLinearEquiv b A hA = toLin b b A := rfl
+
+@[simp]
+theorem Matrix.toLinearEquiv_symm_toLinearMap [CommRing R] [AddCommGroup M] [Module R M] [Fintype n]
+    [DecidableEq n] (b : Module.Basis n R M) (A : Matrix n n R) (hA : IsUnit A.det) :
+    (toLinearEquiv b A hA).symm = toLin b b A⁻¹ := rfl
+
+namespace ALG2.Cwi3.Zad9
+
+open Polynomial
+
+noncomputable def basis (R : Type*) [CommRing R] := (degreeLT.basis R 3).map
+  (toLinearEquiv (degreeLT.basis R 3) !![1, 3, 1; -2, -5, -1; 3, 11, 4]
+    (by simp [det_fin_three]; norm_num))
+
+theorem basis_apply [CommRing R] (i : Fin 3) : (basis R i).val =
+    ![1 - 2 * X + 3 * X ^ 2, 3 - 5 * X + 11 * X ^ 2, 1 - X + 4 * X ^ 2] i := by
+  simp [basis, Fin.sum_univ_three]; fin_cases i <;> simp [smul_eq_C_mul, C_ofNat, sub_eq_add_neg]
+
+noncomputable def P [CommRing R] := Submodule.projection _ _ ((basis R).isCompl_span_image {2})
+
+theorem ker_P [CommRing R] : P.ker = Submodule.span R {basis R 0, basis R 1} := by
+  simp [P]; suffices ({2}ᶜ : Set (Fin 3)) = {0, 1} by simp [this, Set.image_pair]
+  ext i; fin_cases i <;> simp
+
+theorem range_P [CommRing R] : P.range = R ∙ basis R 2 := by simp [P]
+
+theorem toMatrix_P [CommRing R] : LinearMap.toMatrix (degreeLT.basis R 3) (degreeLT.basis R 3) P
+    = !![7, 2, -1; -7, -2, 1; 28, 8, -4] := by
+  have : LinearMap.toMatrix (basis R) (basis R) P = !![0, 0, 0; 0, 0, 0; 0, 0, 1] := by
+    rw [P]; convert (basis R).toMatrix_projection_span_image {2}
+    ext i j; fin_cases i <;> fin_cases j <;> simp
+  rw [basis] at this
+  rw [LinearMap.toMatrix_of_toMatrix_map_left, LinearMap.toMatrix_of_toMatrix_map_right, this]
+  simp [inv_def, det_fin_three]; norm_num
+
+end Zad9
+
+alias Zad13a := Submodule.reflection_apply
 
 theorem ZadD1 [NormedAddCommGroup V] [InnerProductSpace ℝ V] [Fintype n] [Nonempty n]
     (b : Module.Basis n ℝ V) : 0 < ∑ i, ∑ j, Matrix.gram ℝ b i j := calc

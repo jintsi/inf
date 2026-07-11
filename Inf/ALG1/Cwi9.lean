@@ -4,6 +4,10 @@ theorem add_one_smul [Semiring R] [AddCommMonoid M] [Module R M] (r : R) (x : M)
     (r + 1) • x = r • x + x := by rw [add_smul, one_smul]
 
 @[simp]
+theorem Ring.inverse_neg [Ring R] (a : R) : inverse (-a) = -inverse a := by
+  rw [← neg_one_mul, inverse_mul, eq_comm, ← mul_neg_one, eq_mul_inverse_iff_mul_eq] <;> simp
+
+@[simp]
 theorem Matrix.transpose_fin_two_of :
     transpose !![a, b; c, d] = !![a, c; b, d] := by
   ext i j; fin_cases i <;> fin_cases j <;> dsimp
@@ -155,12 +159,10 @@ noncomputable abbrev Zad3c.C [CommRing R] :=
 open Zad3c in
 theorem Zad3c [CommRing R] :
     LinearMap.toMatrix (R := R) B C F = !![0, 0, -1; -1, 0, 1] := by
-  have : Ring.inverse (-1 : R) = -1 := by
-    rw [← mul_one (Ring.inverse _), Ring.inverse_mul_eq_iff_eq_mul] <;> simp
   rw [LinearMap.toMatrix_eq_basisToMatrix, ofDetNeZero_toMatrix]
   simp [Matrix.inv_def, Matrix.det_fin_two, Matrix.adjugate_fin_two, toMatrix_apply]
   and_intros <;> (ext i; fin_cases i) <;>
-    simp [Matrix.vecMul_apply_eq_sum, toMatrix_apply, this] <;> norm_num
+    simp [Matrix.vecMul_apply_eq_sum, toMatrix_apply] <;> norm_num
 
 open Polynomial
 

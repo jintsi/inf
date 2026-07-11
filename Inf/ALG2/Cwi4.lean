@@ -1,7 +1,8 @@
 import Mathlib.Analysis.InnerProductSpace.GramMatrix
 import Inf.ALG2.Sylvester
 import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
-import Mathlib.RingTheory.Polynomial.DegreeLT
+import Inf.ALG1.Cwi9
+import Mathlib.LinearAlgebra.CrossProduct
 
 open Matrix ComplexOrder Module Polynomial
 
@@ -55,33 +56,24 @@ theorem Zad4b : MeasureTheory.volume (parallelepiped
   case hb => rfl
   simp [Basis.det, det_fin_three, Basis.toMatrix]
 
-/-- Basis `B = ![1 + X, 1 - 2 * X]`. -/
-noncomputable def Zad5.B : Basis (Fin 2) ℝ ℝ[X]_2 := by
-  apply basisOfLinearIndependentOfCardEqFinrank
-    (b := ![⟨1 + X, by rw [mem_degreeLT]; compute_degree!⟩,
-    ⟨1 - 2 * X, by rw [mem_degreeLT]; compute_degree!⟩])
-  · rw [LinearIndependent.pair_iff' (by simp [Polynomial.ext_iff]; exists 0; simp)]
-    simp only [ne_eq, (degreeLT.basis ℝ 2).ext_elem_iff]; norm_num [coeff_one]
-  · exact (finrank_eq_card_basis (degreeLT.basis ℝ 2)).symm
+noncomputable def Zad5.B := (degreeLT.basis ℝ 2).ofDetNeZero
+  ![⟨1 + X, by rw [mem_degreeLT]; compute_degree!⟩, ⟨1 - 2 * X, by rw [mem_degreeLT]; compute_degree!⟩]
+  (by norm_num [det_fin_two, Basis.toMatrix_apply, coeff_one])
 
-theorem Zad5.B_eq : (B i).val = ![1 + X, 1 - 2 * X] i := by fin_cases i <;> simp [B]
+theorem Zad5.B_eq : (B i).val = ![1 + X, 1 - 2 * X] i := by revert i; simp [B]
 
 /-- Basis `C = ![3 - X, 2 + X]`. -/
-noncomputable def Zad5.C : Basis (Fin 2) ℝ ℝ[X]_2 := by
-  apply basisOfLinearIndependentOfCardEqFinrank
-    (b := ![⟨3 - X, by rw [mem_degreeLT]; compute_degree!⟩,
-    ⟨2 + X, by rw [mem_degreeLT]; compute_degree!⟩])
-  · rw [LinearIndependent.pair_iff' (by simp [Polynomial.ext_iff]; exists 0; simp)]
-    simp only [ne_eq, (degreeLT.basis ℝ 2).ext_elem_iff]; norm_num; grind
-  · exact (finrank_eq_card_basis (degreeLT.basis ℝ 2)).symm
+noncomputable def Zad5.C := (degreeLT.basis ℝ 2).ofDetNeZero
+  ![⟨3 - X, by rw [mem_degreeLT]; compute_degree!⟩, ⟨2 + X, by rw [mem_degreeLT]; compute_degree!⟩]
+  (by norm_num [det_fin_two, Basis.toMatrix_apply])
 
-theorem Zad5.C_eq : (C i).val = ![3 - X, 2 + X] i := by fin_cases i <;> simp [C]
+theorem Zad5.C_eq : (C i).val = ![3 - X, 2 + X] i := by revert i; simp [C]
 
 theorem Zad5 : Zad5.B.orientation = -Zad5.C.orientation := by
   trans -(degreeLT.basis ℝ 2).orientation
   · rw [← Basis.orientation_ne_iff_eq_neg]; symm
     norm_num [Basis.orientation_eq_iff_det_pos, Basis.det, det_fin_two,
-      Basis.toMatrix_apply, Zad5.B, coeff_one]
+      Basis.toMatrix_apply, Zad5.B_eq, coeff_one]
   · congr 1; norm_num [Basis.orientation_eq_iff_det_pos, Basis.det, det_fin_two,
       Basis.toMatrix_apply, Zad5.C]
 
@@ -91,3 +83,69 @@ theorem Zad6 [Field K] [LinearOrder K] [IsStrictOrderedRing K] [AddCommGroup V]
   have := b.finiteDimensional_of_finite
   simp [Orientation.map_eq_iff_det_pos x f (finrank_eq_card_basis b).symm,
     ← LinearMap.det_toMatrix b, hf]
+
+end ALG2.Cwi4
+
+/-! # Generalized cross product -/
+
+/-- Given an alternating map `f` in `n+1` variables, split the last variable to obtain an
+alternating map in `n` variables taking values in linear maps, given by `m ↦ (x ↦ f (snoc m x))`.
+
+This is the `AlternatingMap` version of `MultilinearMap.curryRight`. TODO: this really should
+rather belong in `Mathlib.LinearAlgebra.Alternating.Curry`. -/
+@[simps!]
+def AlternatingMap.curryRight [CommSemiring R] [AddCommMonoid M] [Module R M] [AddCommMonoid N]
+    [Module R N] (f : M [⋀^Fin n.succ]→ₗ[R] N) : M [⋀^Fin n]→ₗ[R] (M →ₗ[R] N) where
+  toMultilinearMap := f.toMultilinearMap.curryRight
+  map_eq_zero_of_eq' v i j h hne := by
+    ext x; apply f.map_eq_zero_of_eq (i := i.castSucc) (j := j.castSucc) <;> simpa
+
+section CrossProduct
+
+open InnerProductSpace RealInnerProductSpace
+
+variable [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
+  [_i : Fact (finrank ℝ E = .succ n)] (o : Orientation ℝ E (Fin n.succ))
+
+/-- `n`-ary cross product (or "external product") in an oriented `n+1`-dimensional real inner
+product space, with `Orientation.mixed_product_apply` as its defining equation. -/
+noncomputable def Orientation.crossProduct : E [⋀^Fin n]→ₗ[ℝ] E :=
+  LinearMap.compAlternatingMap ((toDual ℝ E).symm ∘ₗ
+    LinearMap.toContinuousLinearMap.toLinearMap) (AlternatingMap.curryRight o.volumeForm)
+
+theorem Orientation.mixed_product_apply : ⟪o.crossProduct v, w⟫ = o.volumeForm (Fin.snoc v w) := by
+  simp [crossProduct]; rw [toDual_symm_apply]; simp
+
+theorem Orientation.mixed_product_eq_det (b : OrthonormalBasis (Fin n.succ) ℝ E)
+    (hb : b.toBasis.orientation = o) {v w} : ⟪o.crossProduct v, w⟫ = b.toBasis.det (Fin.snoc v w) := by
+  rwa [mixed_product_apply, volumeForm_robust]
+
+theorem Orientation.repr_crossProduct_apply (b : OrthonormalBasis (Fin n.succ) ℝ E)
+    (hb : b.toBasis.orientation = o) {v i} : b.repr (o.crossProduct v) i =
+    (-1) ^ (n + i) * ((b.toBasis.toMatrix v).submatrix i.succAbove id).det := by
+  rw [b.repr_apply_apply, real_inner_comm, o.mixed_product_eq_det b hb, Basis.det_apply,
+    det_succ_column _ (Fin.last n)]; simp [Basis.toMatrix_apply]
+  rw [add_comm]; congr 2; ext r c; simp [Basis.toMatrix_apply]
+
+noncomputable instance EuclideanSpace.oriented [RCLike 𝕜] [Fintype ι] [DecidableEq ι] :
+    Module.Oriented 𝕜 (EuclideanSpace 𝕜 ι) ι where
+  positiveOrientation := (basisFun ι 𝕜).toBasis.orientation
+
+open WithLp in
+/-- In `EuclideanSpace ℝ (Fin 3)`, `Orientation.crossProduct` gives the same result as
+`crossProduct`. -/
+@[simp]
+theorem EuclideanSpace.crossProduct_eq_cross {v w : EuclideanSpace ℝ (Fin 3)} :
+    positiveOrientation.crossProduct ![v, w] = toLp 2 (crossProduct v w) := by
+  ext i; rw [← basisFun_repr, Orientation.repr_crossProduct_apply]
+  case hb => rfl
+  fin_cases i <;>
+    (simp [det_fin_two, Basis.toMatrix_apply, Fin.succAbove, cross_apply]; norm_num [mul_comm])
+
+end CrossProduct
+
+namespace ALG2.Cwi4
+
+open EuclideanSpace in
+theorem Zad7 : positiveOrientation.crossProduct ![!₂[(1 : ℝ), 1, 2], !₂[2, 1, -1]] = !₂[-3, 5, -1] := by
+  simp [cross_apply]; norm_num
