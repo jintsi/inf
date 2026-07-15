@@ -15,6 +15,15 @@ import Inf.ALG1.Cwi8
 import Inf.ALG1.Cwi10
 import Inf.ALG1.Cwi11
 
+import Inf.ELiTM.Cwi0
+import Inf.ELiTM.Cwi1
+import Inf.ELiTM.Cwi2
+import Inf.ELiTM.Cwi3
+import Inf.ELiTM.Cwi4
+import Inf.ELiTM.Cwi5
+import Inf.ELiTM.Cwi6
+import Inf.ELiTM.Cwi8
+
 import Inf.MD1.Cwi1
 import Inf.MD1.Cwi2
 import Inf.MD1.Cwi3
@@ -49,6 +58,7 @@ import Inf.Util
 Term 1:
 - Analysis 1 (AM1)
 - Linear Algebra 1 (ALG1)
+- Elements of Logic and Set Theory (ELiTM)
 
 Term 2:
 - Analysis 2 (AM2)
