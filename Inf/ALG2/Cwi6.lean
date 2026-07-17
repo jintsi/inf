@@ -75,7 +75,7 @@ theorem Zad11 : A ∈ orthogonalGroup (Fin 2) ℝ ↔ ∃ θ,
     · rw [← norm_ne_zero_iff, Complex.norm_eq_sqrt_sq_add_sq]; simp [sq, h₀]
     simp [Complex.norm_eq_sqrt_sq_add_sq, sq, h₀, ← Matrix.ext_iff]; grind
   mpr h := by rcases h with ⟨θ, rfl | rfl⟩ <;>
-    simp [mem_orthogonalGroup_iff, vecHead, vecTail, ← Matrix.ext_iff, ← sq, mul_comm]
+    simp [mem_orthogonalGroup_iff, ← Matrix.ext_iff, vecMul_apply, ← sq, mul_comm]
 
 theorem Zad12 : !![(1 : ℝ), 0, 0; 0, 2, 2; 0, 2, 2].PosSemidef := by
   simp [posSemidef_iff_dotProduct_mulVec]; and_intros

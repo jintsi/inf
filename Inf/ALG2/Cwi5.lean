@@ -27,6 +27,7 @@ open Zad2 in
 theorem Zad2b [CommSemiring R] : toMatrix (Pi.basisFun R (Fin 3)) (Basis.singleton (Fin 1) R) (F R)
     = !![1, 3, 6] := by ext i j; fin_cases j <;> simp [LinearMap.toMatrix_apply, F]
 
+set_option backward.isDefEq.respectTransparency.types false in
 noncomputable abbrev Zad2c.basis (R) [CommRing R] := (Pi.basisFun R (Fin 3)).ofDetNeZero
     ![![1, 0, 0], ![1, 1, 0], ![1, 1, 1]] (by simp [Matrix.det_fin_three])
 

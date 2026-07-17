@@ -65,7 +65,7 @@ theorem gauss_correct [Field K] [DecidableEq K] (A : VecMatrix m m K) (B : VecMa
   apply Option.of_wp_eq rfl fun x => ∃ A' B', x = some (A', B') ∧ GaussInvariant A B A' B' m le_rfl
   mvcgen [gauss, findNonzero] invariants
   | inv1 => ⇓⟨icur, A', B'⟩ =>
-    ⌜GaussInvariant A B A' B' icur.pos (by convert icur.pos_le_length; simp)⌝
+    ⌜GaussInvariant A B A' B' icur.pos (by grw [icur.pos_le_length]; simp)⌝
   | inv2 A' B' i _ => Invariant.withEarlyReturnNewDo (fun rcur _ => ⌜∀ j ∈ rcur.prefix, A'[j][i] = 0⌝)
       fun (r, e) _ => ⌜i ≤ r ∧ A'[r][i] = e ∧ e ≠ 0⌝
   | inv3 ip _ _ hi _ _ _ i _ _ _ _ _ A' B' => ⇓⟨rcur, A'', B''⟩ =>

@@ -204,6 +204,7 @@ theorem Zad6 [CommRing R] :
     sorry
 -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad7 [CommRing R] (k : ℕ) :
     (mk fun n => n.stirlingSecond k : R⟦X⟧) = X ^ k * ∏ i ∈ range k, rescale (i + 1 : R) (mk 1) := by
   trans X ^ k * ∏ i ∈ range (k + 1), rescale (i : R) (mk 1); swap

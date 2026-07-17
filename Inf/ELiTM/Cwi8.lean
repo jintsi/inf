@@ -132,6 +132,7 @@ theorem Zad5m : #{f : ℕ → ℕ // StrictMono f} = 𝔠 := by
     intro f; simp [add_assoc, Nat.add_sub_add_right]; simp [Finset.sum_range_succ]
     ext n; split <;> rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad5n : #{f : ℕ → ℝ // StrictMono f} = 𝔠 := by
   trans #(ℝ × (ℕ → NNReal)); swap; simp [mk_real]
   trans #{f : ℕ → ℝ // Monotone f}
@@ -140,17 +141,18 @@ theorem Zad5n : #{f : ℕ → ℝ // StrictMono f} = 𝔠 := by
       intro m n hmn; simp; grw [hmn]; simpa using hf hmn.le⟩
     intro ⟨f, hf⟩ ⟨g, hg⟩; simp [funext_iff]
   apply mk_congr; constructor
-  case toFun => intro ⟨f, hf⟩; use f 0; intro n; use f (n + 1) - f n; simp; apply hf; simp
+  case toFun =>
+    intro ⟨f, hf⟩; use f 0; intro n; apply NNReal.mk (f (n + 1) - f n); simp; apply hf; simp
   case invFun =>
     intro ⟨r, f⟩; use fun n => r + ∑ i ∈ Finset.range n, f i
     intro a b hab; dsimp; gcongr
-  case left_inv =>
-    intro ⟨f, hf⟩; simp; simp [← NNReal.val_eq_coe, -Finset.sum_sub_distrib, Finset.sum_range_sub]
-  case right_inv => intro ⟨r, f⟩; simp [Finset.sum_range_succ]; ext; rfl
+  case left_inv => intro ⟨f, hf⟩; simp [- Finset.sum_sub_distrib, Finset.sum_range_sub]
+  case right_inv => intro ⟨r, f⟩; simp [Finset.sum_range_succ]
 
 theorem Zad5o [Semiring R] [Invertible (2 : R)] : #{x : R // Even x} = #R :=
   mk_congr (Equiv.subtypeUnivEquiv Even.all)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad5p : #(Set.diagonal α) = #α :=
   mk_congr {
     toFun p := p.val.1

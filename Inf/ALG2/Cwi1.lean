@@ -26,6 +26,7 @@ theorem Zad3 [CommSemiring R] [DecidableEq n] [Fintype n] {M : Matrix n n R} {v 
 
 alias Zad4 := aeval_self_charpoly
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad5 : !![(1 : ℚ), 2; 2, 1] ^ 2021 =
     (2⁻¹ : ℚ) • !![3 ^ 2021 - 1, 3 ^ 2021 + 1; 3 ^ 2021 + 1, 3 ^ 2021 - 1] := by
   rw [show !![(1 : ℚ), 2; 2, 1] = !![1, 1; -1, 1] * diagonal ![-1, 3] * !![1, 1; -1, 1]⁻¹ by
@@ -51,6 +52,7 @@ theorem Zad7 [CommRing R] [Nontrivial R] [Fintype n] [DecidableEq n] [Nontrivial
 theorem Zad8 [Semiring R] [Fintype n] [DecidableEq n] {M N : Matrix n n R} (h : IsUnit M) :
     M * N = 0 ↔ N = 0 := h.mul_right_eq_zero
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad9 [CommRing R] [IsDomain R] [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n] (h : Fintype.card n < Fintype.card m) (A : Matrix m n R)
     (B : Matrix n m R) : (A * B).det = 0 := by

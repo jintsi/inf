@@ -53,6 +53,7 @@ theorem _root_.Matrix.conj_pow [CommRing R] [Fintype n] [DecidableEq n]
   have := h.invertible
   induction n with simp [pow_add, *, ← mul_assoc]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad3b (n : ℕ) : (!![2, -2, 0; -2, 1, -2; 0, -2, 0] : Matrix _ _ ℚ) ^ n = (9⁻¹ : ℚ) •
     !![4 * 4 ^ n +     (-2) ^ n + 4, -4 * 4 ^ n + 2 * (-2) ^ n + 2,  2 * 4 ^ n + 2 * (-2) ^ n - 4;
       -4 * 4 ^ n + 2 * (-2) ^ n + 2,  4 * 4 ^ n + 4 * (-2) ^ n + 1, -2 * 4 ^ n + 4 * (-2) ^ n - 2;

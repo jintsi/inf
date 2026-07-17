@@ -110,11 +110,11 @@ variable [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ
 /-- `n`-ary cross product (or "external product") in an oriented `n+1`-dimensional real inner
 product space, with `Orientation.mixed_product_apply` as its defining equation. -/
 noncomputable def Orientation.crossProduct : E [⋀^Fin n]→ₗ[ℝ] E :=
-  LinearMap.compAlternatingMap ((toDual ℝ E).symm ∘ₗ
+  LinearMap.compAlternatingMap ((toDual ℝ E).symm.toLinearMap ∘ₗ
     LinearMap.toContinuousLinearMap.toLinearMap) (AlternatingMap.curryRight o.volumeForm)
 
 theorem Orientation.mixed_product_apply : ⟪o.crossProduct v, w⟫ = o.volumeForm (Fin.snoc v w) := by
-  simp [crossProduct]; rw [toDual_symm_apply]; simp
+  simp [crossProduct]
 
 theorem Orientation.mixed_product_eq_det (b : OrthonormalBasis (Fin n.succ) ℝ E)
     (hb : b.toBasis.orientation = o) {v w} : ⟪o.crossProduct v, w⟫ = b.toBasis.det (Fin.snoc v w) := by

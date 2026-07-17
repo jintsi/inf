@@ -65,6 +65,7 @@ theorem Zad4b {x y z t : ℝ} (h1 : 2 * x + 3 * y + 5 * z + 11 * t = 2)
 
 open Finset
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem ZadD1 [DecidableEq n] [Fintype n] [CommRing R] [DecidableEq R] {A : Matrix n n R}
     (h : Fintype.card n ^ 2 - Fintype.card n < #{(i, j) | A i j = 0}) : A.det = 0 := by
   have : #{(i, j) | A i j ≠ 0} < Fintype.card n := by

@@ -41,6 +41,7 @@ namespace ALG1.Cwi9
 
 open Module Basis
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad1a [Field K] [CharZero K] (v : Fin 3 → K)
     (hv : ((Pi.basisFun K (Fin 3)).ofDetNeZero ![![1, 0, 1], ![0, 2, 1], ![0, 0, 1]]
       (by simp [Matrix.det_fin_three])).equivFun v = ![1, 0, 2]) :
@@ -69,10 +70,12 @@ noncomputable abbrev Zad2a.B [CommRing R] :=
 noncomputable abbrev Zad2a.C [Field K] [CharZero K] :=
   (Pi.basisFun K (Fin 2)).ofDetNeZero !![1, -1; 2, 3] (by norm_num [Matrix.det_fin_two])
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2a.B_to_C [Field K] [CharZero K] :
     C.toMatrix (B (R := K)) = (5⁻¹ : K) • !![7, 4; 4, 3] := by
   rw [ofDetNeZero_toMatrix]; norm_num [-Matrix.cons_transpose, Matrix.inv_def]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2a.C_to_B [Field K] [CharZero K] : B.toMatrix (C (K := K)) = !![3, -4; -4, 7] := by
   rw [ofDetNeZero_toMatrix]; norm_num [-Matrix.cons_transpose, Matrix.inv_def]
 
@@ -83,11 +86,13 @@ noncomputable abbrev Zad2b.C [Field K] [CharZero K] :=
   (Pi.basisFun K (Fin 3)).ofDetNeZero !![2, 1, 1; 1, 2, 1; 1, 1, 2]
     (by simp [Matrix.det_fin_three]; norm_num)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2b.B_to_C [Field K] [CharZero K] :
     C.toMatrix (B (K := K)) = (2⁻¹ : K) • !![1, -1, 1; 1, 1, -1; -1, 1, 1] := by
   rw [ofDetNeZero_toMatrix]
   simp [-Matrix.cons_transpose, Matrix.inv_def, Matrix.det_fin_three]; norm_num
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2b.C_to_B [Field K] [CharZero K] :
     B.toMatrix (C (K := K)) = !![1, 1, 0; 0, 1, 1; 1, 0, 1] := by
   rw [ofDetNeZero_toMatrix]
@@ -97,11 +102,13 @@ noncomputable abbrev Zad2c.C [Field K] [CharZero K] :=
   (Pi.basisFun K (Fin 3)).ofDetNeZero !![3, 3, 4; -1, 2, 2; 1, 1, 1]
     (by simp [Matrix.det_fin_three]; norm_num)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2c.B_to_C [Field K] [CharZero K] :
     C.toMatrix (Pi.basisFun K (Fin 3)) = (3⁻¹ : K) • !![0, -3, 3; -1, 1, 0; 2, 10, -9] := by
   rw [ofDetNeZero_toMatrix]
   simp [-Matrix.cons_transpose, Matrix.inv_def, Matrix.det_fin_three]; norm_num
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2c.C_to_B [Field K] [CharZero K] :
     (Pi.basisFun K (Fin 3)).toMatrix (C (K := K)) = !![3, -1, 1; 3, 2, 1; 4, 2, 1] := by
   simp [-Matrix.cons_transpose]
@@ -137,6 +144,7 @@ noncomputable abbrev Zad3b.C [CommRing R] :=
   (Pi.basisFun R (Fin 3)).ofDetNeZero !![1, 1, 0; 0, 0, 1; 1, 0, 1] (by simp [Matrix.det_fin_three])
 
 open Zad3b in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad3b [Field K] [CharZero K] :
     LinearMap.toMatrix (R := K) B C F = !![4, 2; 3, 0; -6, 0] := by
   rw [LinearMap.toMatrix_eq_basisToMatrix, ofDetNeZero_toMatrix]
@@ -157,6 +165,7 @@ noncomputable abbrev Zad3c.C [CommRing R] :=
   (Basis.finTwoProd R).ofDetNeZero ![(1, 1), (1, 0)] (by simp [Matrix.det_fin_two, toMatrix_apply])
 
 open Zad3c in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad3c [CommRing R] :
     LinearMap.toMatrix (R := R) B C F = !![0, 0, -1; -1, 0, 1] := by
   rw [LinearMap.toMatrix_eq_basisToMatrix, ofDetNeZero_toMatrix]

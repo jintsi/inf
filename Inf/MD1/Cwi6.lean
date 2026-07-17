@@ -25,14 +25,14 @@ theorem card_le_mul_of_isChain_isAntichain [Fintype α] [DecidableEq α] [Partia
     have := ht3.insert fun z hz _ => Or.inr (hle.trans' (ht1 hz))
     absurd Set.encard_le_chainHeight_of_isChain (Set.Iic y) _ ?_ this
     · simp [Set.insert_subset_iff]; grw [ht1, hle]
-    rw [not_le, hy, ← ht2, Set.encard_insert_of_notMem, ht2, ENat.lt_coe_add_one_iff]
+    rw [not_le, hy, ← ht2, Set.encard_insert_of_notMem, ht2, ENat.lt_natCast_add_one_iff]
     grw [ht1]; simpa using not_le_of_gt (lt_of_le_of_ne hle hne)
   rw [mul_comm, ← Nat.add_one_sub_one r, ← Nat.card_Icc]
   apply card_le_mul_card_image_of_maps_to (f := fun x => ((Set.Iic x).chainHeight (· ≤ ·)).toNat)
   · simp only [mem_univ, mem_Icc, forall_const]; intro x; and_intros
     · rw [← ENat.toNat_one]; apply ENat.toNat_le_toNat (by simp)
       apply Set.chainHeight_ne_top_of_finite; apply Set.toFinite
-    · exact ENat.toNat_le_of_le_coe (hle x)
+    · exact ENat.toNat_le_of_le_natCast (hle x)
   · simp_rw [mem_Icc]; intro i hi; apply hs
     simp_rw [ENat.toNat_eq_iff (one_pos.trans_le hi.left).ne', coe_filter_univ]; exact ha i
 
@@ -41,6 +41,7 @@ theorem exists_isChain_or_isAntichain_of_mul_lt_card [Fintype α] [DecidableEq �
     ∨ ∃ t : Finset α, IsAntichain (· ≤ ·) (SetLike.coe t) ∧ s < #t := by
   contrapose! h; exact card_le_mul_of_isChain_isAntichain h.1 h.2
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- **Erdős–Szekeres Theorem**: A sequence of more than `r * s` distinct values has an
 increasing subsequence of length longer than `r` or a decreasing subsequence of length longer than
 `s`. -/

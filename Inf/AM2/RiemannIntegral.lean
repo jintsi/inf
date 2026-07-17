@@ -38,7 +38,7 @@ noncomputable def intervalPartition : Prepartition (interval hab) where
     rw [Finset.coe_image, Finset.coe_range]; apply Set.Pairwise.image; unfold Set.Pairwise Function.onFun
     simp_rw [Set.mem_Iio]; intro i hi j hj hne; apply Disjoint.of_image (f := Equiv.funUnique _ _)
     simp_rw [Equiv.image_eq_preimage_symm, Equiv.funUnique_symm_apply, Set.preimage, intervalBox,
-      Box.mem_coe, mem_interval, uniqueElim_const, Set.setOf_mem_eq, Set.Ioc_disjoint_Ioc]
+      Box.mem_coe, mem_interval, uniqueElim_const, Set.ofPred_mem_eq, Set.Ioc_disjoint_Ioc]
     have := sub_pos_of_lt hab
     rw [← add_min, ← add_max, min_div_div_right, max_div_div_right,
       ← mul_min_of_nonneg, ← mul_max_of_nonneg, ← Nat.cast_add_one, ← Nat.cast_add_one,
@@ -97,9 +97,9 @@ noncomputable abbrev taggedIntervalPartition (t : ℕ → ℝ)
     (ht : ∀ i : ℕ, t i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
     TaggedPrepartition (interval hab) :=
   taggedIntervalPartition' hab hn t fun i hi => Set.mem_of_mem_of_subset (ht i) (by
-      rw [Set.Icc_subset_Icc_iff (by bound)]
-      exact intervalBox_bounds hab hn hi)
+    rw [Set.Icc_subset_Icc_iff (by bound)]; exact intervalBox_bounds hab hn hi)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem intervalPartition_isHenstock (t : ℕ → ℝ)
     (ht : ∀ i : ℕ, t i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
     (taggedIntervalPartition hab hn t ht).IsHenstock := by
@@ -135,7 +135,7 @@ theorem tendsto_intervalPartition_toFilteriUnion (t : ℕ → ℕ → ℝ)
     atTop (IntegrationParams.Riemann.toFilteriUnion (interval hab) ⊤) := by
   simp_rw [(IntegrationParams.Riemann.hasBasis_toFilteriUnion_top _).tendsto_right_iff,
     IntegrationParams.RCond, IntegrationParams.Riemann, true_implies]; intro r hr
-  simp_rw [exists_and_right, Set.mem_setOf, eventually_and]; and_intros; swap
+  simp_rw [exists_and_right, Set.mem_ofPred, eventually_and]; and_intros; swap
   · simp [TaggedPrepartition.IsPartition, taggedIntervalPartition', intervalPartition_isPartition]
   rw [eventually_atTop]; use ⌈(b - a) / r 0 0⌉₊; intro n hn; use 0; constructor <;>
     try simp only [true_implies, Bool.false_eq_true, false_implies, intervalPartition_isHenstock]

@@ -20,6 +20,11 @@ theorem Std.Roi.cur_mem [LT α] [UpwardEnumerable α] [LawfulUpwardEnumerable α
     [LawfulUpwardEnumerableLT α] [Rxi.IsAlwaysFinite α] {r : Roi α}
     (h : r.toList = pref ++ cur :: suf) : cur ∈ r := by simp [← mem_toList_iff_mem, h]
 
+theorem Std.Rio.cur_mem [Least? α] [LT α] [DecidableLT α] [UpwardEnumerable α]
+    [LawfulUpwardEnumerable α] [LawfulUpwardEnumerableLT α] [LawfulUpwardEnumerableLeast? α]
+    [Rxo.IsAlwaysFinite α] {r : Rio α} (h : r.toList = pref ++ cur :: suf) : cur ∈ r := by
+  simp [← mem_toList_iff_mem, h]
+
 theorem Std.Roi.cur_ne_pref [UpwardEnumerable α] [LawfulUpwardEnumerable α] [Rxi.IsAlwaysFinite α]
     {r : Roi α} (h : r.toList = pref ++ cur :: suf) {a : α} (ha : a ∈ pref) : cur ≠ a := by
   have := r.pairwise_toList_ne; simp [h, List.pairwise_append] at this

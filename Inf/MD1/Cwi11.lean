@@ -109,10 +109,11 @@ theorem Zad5ii [Fintype d] [DecidableEq d] : (hypercubeGraph d).diam = Fintype.c
   · congr! with ⟨u, v⟩; rw [Reachable.coe_dist_eq_edist]; use hypercube_path u v
   have hb : BddAbove (Set.range fun p : _ × _ => (hypercubeGraph d).dist p.1 p.2) := by
     use Fintype.card d; simp [upperBounds]; intro _ u v rfl; simp [hypercube_dist, card_le_univ]
-  rw [← ENat.coe_iSup hb, ENat.toNat_coe]; apply le_antisymm
+  rw [← ENat.natCast_iSup hb, ENat.toNat_natCast]; apply le_antisymm
   · apply ciSup_le; simp [hypercube_dist, card_le_univ]
   · apply le_ciSup_of_le hb (0, 1); simp [hypercube_dist]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad5iii [Nontrivial d] [DecidableEq d] : (hypercubeGraph d).girth = 4 := by
   obtain ⟨i, j, hij⟩ := exists_pair_ne d
   let w := Walk.nil' (G := hypercubeGraph d) 0

@@ -168,6 +168,7 @@ theorem Zad1b : ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1 ∧ x ≤ y 
     simp; apply Set.notMem_uIcc_of_lt <;> simp [Zad1b_cos_add_sin_pos ht]
   _ = 1 - π / 4 := by simp; ring
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad1c : ∫ p in {(x, y) : ℝ × ℝ | y ≤ x ^ 2 + y ^ 2 ∧ x ^ 2 + y ^ 2 ≤ 2 * y ∧ 0 ≤ x},
     p.1 * p.2 ^ 2 = 31 / 40 := calc
   ∫ p in {(x, y) : ℝ × ℝ | y ≤ x ^ 2 + y ^ 2 ∧ x ^ 2 + y ^ 2 ≤ 2 * y ∧ 0 ≤ x}, p.1 * p.2 ^ 2
@@ -227,15 +228,17 @@ theorem Zad1d : ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ x + y}, p.1 - 
       (continuousOn_snd.integrableOn_compact this), sub_eq_zero,
     ← MeasureTheory.integral_indicator (by simp; fun_prop), Measure.volume_eq_prod,
     ← integral_prod_swap, ← MeasureTheory.integral_indicator (by simp; fun_prop)]
-  simp [Set.indicator, add_comm]; rfl
+  simp [Set.indicator, add_comm]
 
 theorem _root_.region_between_cc_ae_eq_regionBetween [MeasurableSpace α] {μ : Measure α}
     [SFinite μ] (hf : Measurable f) (hg : Measurable g) :
     {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)} =ᵐ[μ.prod volume] regionBetween f g s := by
   apply EventuallyEq.rfl.inter; unfold EventuallyEq
-  rw [Measure.ae_prod_iff_ae_ae (by rw [measurableSet_setOf]; simp [Set.Icc, Set.Ioo, setOf]; fun_prop)]
+  rw [Measure.ae_prod_iff_ae_ae (by
+    rw [measurableSet_setOfPred]; simp [Set.Icc, Set.Ioo, Set.ofPred]; fun_prop)]
   filter_upwards with x using Ioo_ae_eq_Icc.symm
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2a : volume {(x, y) : ℝ × ℝ | y ^ 2 ≤ 1 - x ∧ y ^ 2 ≤ x / 2 + 1} = 4 := calc
   volume {(x, y) : ℝ × ℝ | y ^ 2 ≤ 1 - x ∧ y ^ 2 ≤ x / 2 + 1}
   _ = volume {(x, y) : ℝ × ℝ | y ∈ Set.Icc (-1) 1 ∧ x ∈ Set.Icc (2 * y ^ 2 - 2) (1 - y ^ 2)} := by
@@ -261,8 +264,10 @@ theorem _root_.region_between_oc_ae_eq_cc' {s : Set α} [MeasurableSpace α] {μ
     {p : ℝ × α | p.2 ∈ s ∧ p.1 ∈ Set.Ioc (f p.2) (g p.2)} =ᵐ[volume.prod μ]
     {p : ℝ × α | p.2 ∈ s ∧ p.1 ∈ Set.Icc (f p.2) (g p.2)} := by
   apply EventuallyEq.rfl.inter; unfold EventuallyEq
-  rw [Measure.ae_prod_iff_ae_ae (by rw [measurableSet_setOf]; simp [Set.Ioc, Set.Icc, setOf]; fun_prop),
-    Measure.ae_ae_comm (by rw [measurableSet_setOf]; simp [Set.Ioc, Set.Icc, setOf]; fun_prop)]
+  rw [Measure.ae_prod_iff_ae_ae (by
+      rw [measurableSet_setOfPred]; simp [Set.Ioc, Set.Icc, Set.ofPred]; fun_prop),
+    Measure.ae_ae_comm (by
+      rw [measurableSet_setOfPred]; simp [Set.Ioc, Set.Icc, Set.ofPred]; fun_prop)]
   filter_upwards with x using Ioc_ae_eq_Icc
 
 theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y ^ 2 ∧ 0 ≤ x} = 1 / 2 := calc
@@ -317,6 +322,7 @@ theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y 
     rw [intervalIntegral.integral_sub] <;> try apply Continuous.intervalIntegrable; fun_prop
     simp [neg_div]; ring_nf; norm_num [ENNReal.ofReal_div_of_pos]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧
     z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)} = 120 * NNReal.pi := calc
   volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)}

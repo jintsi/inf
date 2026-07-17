@@ -26,6 +26,7 @@ theorem Zad1_inf (s : Finset ι) (S : ι → Finset α) :
   simp [← inclusion_exclusion_card_inf_compl]
 
 open Fintype in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2 [DecidableEq β] [Fintype β] : #{f : α → β | f.Surjective} =
     ∑ j ∈ range (card β + 1), (-1 : ℤ) ^ j * (card β).choose j * (card β - j) ^ card α := by
   simp [Function.Surjective]

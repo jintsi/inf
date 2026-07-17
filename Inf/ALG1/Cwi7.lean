@@ -73,11 +73,11 @@ theorem Zad2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (Nat
   all_goals simp [Nat.Prime.ne_zero, Finset.prod_ne_zero_iff]
   rw [Finset.sum_eq_zero, ← Nat.ne_zero_iff_zero_lt, Finset.lcm_ne_zero_iff]; simp
   intro i hi; apply Finsupp.single_eq_of_ne
-  exact (Nat.nth_injective Nat.infinite_setOf_prime).ne i.isLt.ne'
+  exact (Nat.nth_injective Nat.infinite_setOfPred_prime).ne i.isLt.ne'
 
 /-- Symmetric matrices form a submodule. -/
 def _root_.SymmMatrix (n : Type*) (R : Type*) [Semiring R] : Submodule R (Matrix n n R) where
-  carrier := setOf Matrix.IsSymm
+  carrier := Set.ofPred Matrix.IsSymm
   add_mem' := Matrix.IsSymm.add
   zero_mem' := Matrix.isSymm_zero
   smul_mem' := fun c _ h => Matrix.IsSymm.smul h c
@@ -154,7 +154,7 @@ theorem Zad3c : (fun k => (DirectSum.decompose ![SymmMatrix (Fin 2) ℚ, SkewSym
     !![3, 4; 5, -2] k).val) = ![!![3, 9 / 2; 9 / 2, -2], !![0, -(1 / 2); 1 / 2, 0]] := by
   ext k i j
   simp [DirectSum.decompose, DirectSum.Decomposition.decompose', DFinsupp.equivFunOnFintype,
-    Pi.smul_def, Matrix.vecHead, Matrix.vecTail]
+    Pi.smul_def]
   fin_cases k <;> fin_cases i <;> fin_cases j <;> simp <;> norm_num
 
 /-- The subspace of vectors in `Fin n → ZMod 2` with an even number of 1s (or alternatively, whose
