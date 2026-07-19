@@ -125,7 +125,6 @@ theorem Zad2 [LinearOrder α] {F : Finset (NonemptyInterval α)} (h : k ^ 2 < #F
     use s.sup' H fun x => x.val.fst; intro x _ hx; simp [x.mem_def]
     use ⟨x, ⟨‹_›, hx⟩, le_rfl⟩; intro y _ hy; simpa using hs.not_lt hx hy
 
-
 variable [Fintype α] [DecidableEq α] {F : Finset (Finset α)}
 
 theorem Zad3 [Nonempty α] {F : Finset (Finset α)}

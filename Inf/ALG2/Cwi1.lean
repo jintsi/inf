@@ -77,10 +77,10 @@ theorem ZadD1 [Semiring R] [PartialOrder R] [IsOrderedRing R] [Fintype n] [Decid
 theorem ZadD4 [CommRing R] [Fintype n] [DecidableEq n] [Nonempty n] {M : Matrix n n R}
     (h : ∀ i j, Odd (M i j)) : 2 ^ (Fintype.card n - 1) ∣ M.det := by
   revert n; apply Fintype.induction_empty_option
-  · intro n n' _ e hn _ _ M h
-    specialize @hn e.decidableEq e.nonempty (M.submatrix e e) fun i j => h (e i) (e j)
-    let := Fintype.ofEquiv n' e.symm
-    simpa [Fintype.card_congr e] using hn
+  · intro n' n _ e ih _ _ M h
+    specialize @ih e.decidableEq e.nonempty (M.submatrix e e) fun i j => h (e i) (e j)
+    let := Fintype.ofEquiv n e.symm
+    simpa [Fintype.card_congr e] using ih
   · simp
   rintro n _ - _ _ M h; choose M' h using h; change Matrix _ _ R at M'
   have : DecidableEq n := fun i j => decidable_of_iff (some i = some j) Option.some_inj

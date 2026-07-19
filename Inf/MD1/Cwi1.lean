@@ -43,6 +43,64 @@ theorem Zad2iii (n : ℕ) : Nat.fib n < 2 ^ n := by
   rename_i n; cases n; simp
   grind [Nat.fib_add_two]
 
+end MD1.Cwi1
+
+/-- A tournament is a directed graph whose adjacency relation is total, i.e.
+`G.Adj v w ∨ G.Adj w v` for any two `v w : V`. -/
+def Digraph.IsTournament (G : Digraph V) := Std.Total G.Adj
+
+namespace MD1.Cwi1
+
+theorem Zad3 [Fintype V] [Nonempty V] {G : Digraph V} (h : G.IsTournament) :
+    ∃ v, ∀ w, ∃ u, G.Adj v u ∧ G.Adj u w := by
+  revert V; apply Fintype.induction_empty_option
+  · intro V' V _ e ih _ G hG
+    specialize @ih e.nonempty ⟨fun v w => G.Adj (e v) (e w)⟩ ⟨fun v w => hG.total (e v) (e w)⟩
+    exact Iff.mp (e.exists_congr fun v => e.forall_congr fun w => e.exists_congr fun u => Iff.rfl) ih
+  · simp
+  · rintro V _ ih - G hG; by_cases! IsEmpty V
+    · use none; simp [Option.forall]; use none; simpa using hG.total none none
+    specialize @ih _ ⟨fun v w => G.Adj v w⟩ ⟨fun v w => hG.total v w⟩; rcases ih with ⟨v, ih⟩
+    by_cases! h : ∃ u, G.Adj v u ∧ G.Adj u none
+    · use v; simp [Option.forall]; use h; intro w; have ⟨u, h⟩ := ih w; exact ⟨u, h⟩
+    use none; rintro (_ | w)
+    · use none; simpa using hG.total none none
+    specialize ih w; rcases ih with ⟨u, ih⟩; use u; and_intros; swap; exact ih.2
+    exact (hG.total u none).resolve_left (h u ih.1)
+
+theorem Zad4 [Fintype V] [DecidableEq V] {G : Digraph V} [DecidableRel G.Adj] (h : G.IsTournament) :
+    ∃ p : List V, p.IsChain G.Adj ∧ ∀ v, p.count v = 1 := by
+  revert V; apply Fintype.induction_empty_option
+  · intro V' V _ e ih _ G _ hG; have := e.decidableEq
+    specialize @ih _ ⟨fun v w => G.Adj (e v) (e w)⟩ (fun v w => inferInstance)
+      ⟨fun v w => hG.total (e v) (e w)⟩
+    rcases ih with ⟨p, hp, hv⟩; use p.map e, p.isChain_map_of_isChain e (by tauto) hp
+    intro v; rw [← e.apply_symm_apply v, p.count_map_of_injective e e.injective, hv]
+  · intros; use []; simp
+  · intro V _ ih inst G _ hG; have := (Option.some_injective V).decidableEq
+    specialize @ih _ ⟨fun v w => G.Adj v w⟩ (fun v w => inferInstance) ⟨fun v w => hG.total v w⟩
+    rcases ih with ⟨p, hp, hv⟩
+    use (p.takeWhile (fun v => decide (G.Adj (some v) none))).map some ++ none ::
+        (p.dropWhile (fun v => decide (G.Adj (some v) none))).map some; and_intros
+    · rw [List.isChain_split, List.isChain_append]; simp; and_intros
+      · rw [List.isChain_map]; apply hp.prefix; apply List.takeWhile_prefix
+      · intro v; by_cases h : (List.takeWhile (fun v => decide (G.Adj (some v) none)) p) = []
+        · simp [h]
+        simp [List.getLast?_eq_some_getLast h]; rintro rfl
+        have := p.all_takeWhile (p := fun v => decide (G.Adj (some v) none))
+        simp [-List.all_takeWhile] at this; apply this; simp
+      · apply List.IsChain.isChain_cons
+        · rw [List.isChain_map]; apply hp.suffix; apply List.dropWhile_suffix
+        · simp; intro lne; apply (hG.total _ _).resolve_left
+          convert p.head_dropWhile_not _ lne; simp
+    · have : instBEqOfDecidableEq (α := Option V) = Option.instBEq := by ext; simp
+      rw [this]; intro v
+      rw [← List.singleton_append, List.count_append, List.count_append, add_left_comm,
+        ← List.count_append, ← List.map_append, List.takeWhile_append_dropWhile]
+      rcases v with (_ | v)
+      · simp [List.count_eq_zero]
+      · simp [p.count_map_of_injective some (Option.some_injective V), hv]
+
 theorem Zad6 (G : SimpleGraph V) [Fintype V] [DecidableRel G.Adj] [DecidableEq V] [Nontrivial V] :
     ∃ x y, x ≠ y ∧ G.degree x = G.degree y := by
   by_cases hmax : G.maxDegree = Fintype.card V - 1

@@ -3,17 +3,16 @@ import Mathlib.Combinatorics.Enumerative.Bell
 import Mathlib.Order.Partition.Finpartition
 import Mathlib.Combinatorics.Enumerative.Catalan.Tree
 
-@[simp]
+open Finset
+
 theorem Finpartition.card_of_parts [DecidableEq α] (s : Finset α) (k : ℕ) :
     Finset.card {P : Finpartition s | P.parts.card = k} = s.card.stirlingSecond k := by
   induction s using Finset.induction generalizing k
   case empty =>
-    cases k
-    case zero =>
-      suffices Fintype.card (Finpartition ∅) = 1 by simpa
+    rcases k with (_ | k)
+    · suffices Fintype.card (Finpartition ∅) = 1 by simpa
       rw [Fintype.card_eq_one_iff_nonempty_unique]; exact ⟨instUniqueBot⟩
-    case succ n =>
-      simp; intro P; convert n.zero_ne_add_one; rw [← Nat.le_zero]; exact P.card_parts_le_card
+    case succ => simp; intro P; convert k.zero_ne_add_one; rw [← Nat.le_zero]; exact P.card_parts_le_card
   rename_i a s ha ih
   cases k; case zero => simp [ha]
   rename_i k; simp [ha, Nat.stirlingSecond_succ_succ]
@@ -143,7 +142,7 @@ theorem Finpartition.card [DecidableEq α] (s : Finset α) :
     _ = ∑ t ∈ s.powerset, Fintype.card (Finpartition (insert a s \ insert a t)) := by
       congr! with t ht; rw [Finset.mem_powerset] at ht; symm
       have hlt : insert a s \ insert a t < insert a s := by
-        simpa using ssubset_of_subset_of_ssubset Finset.sdiff_subset (Finset.ssubset_insert ha)
+        simpa using Finset.ssubset_of_subset_of_ssubset Finset.sdiff_subset (Finset.ssubset_insert ha)
       apply Finset.card_nbij fun P => P.extendOfLE Finset.sdiff_subset
         <;> simp [Set.SurjOn, Set.subset_def]
       · intro P; refine part_eq_of_mem ?_ ?_ (t.mem_insert_self a)
@@ -177,19 +176,78 @@ theorem Finpartition.card [DecidableEq α] (s : Finset α) :
 
 namespace MD1.Cwi3
 
-theorem Zad1 (h : 0 < n) : n.bell = ∑ i < n, (n - 1).choose i * i.bell := by
-  rw [Nat.Iio_eq_range, show n = n - 1 + 1 by lia, Nat.add_one_sub_one,
-    ← Finset.sum_flip, Nat.bell_succ, Nat.range_succ_eq_Iic]
+theorem Zad1 (h : 0 < n) : n.bell = ∑ i ∈ range n, (n - 1).choose i * i.bell := by
+  rw [show n = n - 1 + 1 by lia, Nat.add_one_sub_one,
+    ← sum_flip, Nat.bell_succ, Nat.range_succ_eq_Iic]
   congr! 2 with i hi; exact (Nat.choose_symm (by simpa using hi)).symm
 
-/-- the Bell triangle a_n,k -/
-def _root_.Nat.bellTrig (n k : ℕ) : ℕ :=
+theorem Zad2 (n k : ℕ) : (n + 1).stirlingSecond (k + 1) = ∑ i ≤ n, n.choose i * i.stirlingSecond k := by
+  induction n generalizing k with
+  | zero => simp [← Nat.range_succ_eq_Iic, Nat.stirlingSecond_succ_succ]
+  | succ n ih =>
+    rcases k with (- | k)
+    · simp [Nat.stirlingSecond_one_right, ← Nat.range_succ_eq_Iic, sum_range_succ']
+    symm; calc ∑ i ≤ n + 1, (n + 1).choose i * i.stirlingSecond (k + 1)
+    _ = ∑ i ∈ range (n + 1), (n + 1).choose (i + 1) * (i + 1).stirlingSecond (k + 1) := by
+      rw [← Nat.range_succ_eq_Iic, sum_range_succ']; simp
+    _ = ∑ i ∈ range (n + 1), n.choose (i + 1) * (i + 1).stirlingSecond (k + 1)
+      + ∑ i ∈ range (n + 1), n.choose i * (i + 1).stirlingSecond (k + 1) := by
+      simp [Nat.choose_succ_succ, add_mul, sum_add_distrib, add_comm]
+    _ = _ + (k + 1) * ∑ i ∈ range (n + 1), n.choose i * i.stirlingSecond (k + 1) +
+        ∑ x ∈ range (n + 1), n.choose x * x.stirlingSecond k := by
+      rw [add_assoc]; congr 1; simp [Nat.stirlingSecond_succ_succ, mul_add, sum_add_distrib]
+      simp [← mul_left_comm (k + 1), ← mul_sum]
+    _ = ∑ i ∈ range (n + 1), n.choose i * i.stirlingSecond (k + 1) + _ + _ := by
+      congr 2; rw [sum_range_succ, sum_range_succ']; congr 1; simp
+    _ = (k + 2) * ∑ i ≤ n, n.choose i * i.stirlingSecond (k + 1)
+      + ∑ i ≤ n, n.choose i * i.stirlingSecond k := by
+        rw [← add_comm (_ * _), ← add_one_mul, Nat.range_succ_eq_Iic]; rfl
+    _ = (n + 2).stirlingSecond (k + 2) := by rw [Nat.stirlingSecond_succ_succ, ih, ih]
+
+end MD1.Cwi3
+
+/-
+@[simp]
+theorem Finpartition.card_of_parts' [DecidableEq α] (s : Finset α) (k : ℕ) :
+    Finset.card {P : Finpartition s | #P.parts = k} = (#s).stirlingSecond k := by
+  induction s using case_strong_induction_on generalizing k
+  · rcases k with (- | k); case zero => simp
+    case succ => simp; intro P; apply ne_of_lt; grw [P.card_parts_le_card]; simp
+  rename_i a s ha ih; rcases k with (- | k); case zero => simp [ha]
+  calc #{P : Finpartition (insert a s) | #P.parts = k + 1}
+  _ = ∑ p ∈ s.powerset, #{P : Finpartition (insert a s) | #P.parts = k + 1 ∧ s \ (P.part a) = p} := by
+    rw [card_eq_sum_card_fiberwise (f := fun P => s \ (P.part a))]; congr! 2; ext; simp
+    intro P _; simp
+  _ = ∑ p ∈ s.powerset, #{P : Finpartition p | #P.parts = k} := by
+    congr! 1 with p hp; simp at hp; apply card_nbij' (fun P => P.restrict (by grw [hp]; simp))
+      (fun P => P.extendOfLE (by grw [hp]; simp))
+    · intro P; simp [restrict]; intro hk hp; rw [card_erase_of_mem, card_image_of_injOn, hk]; simp
+      · intro x hx y hy h; simp [← hp] at h; sorry
+      · simp; use P.part a; simp [← hp]
+    · intro P; simp
+      have := P.parts_extendOfLE_of_lt (a := p) (b := insert a s) (by grw [← ssubset_insert ha]; exact hp)
+      rw [this, card_insert_of_notMem]; intro h; simp [h]; trans s \ (insert a s \ p)
+      · congr; apply Finpartition.part_eq_of_mem _ (by simp [this]) (by simp; grw [hp]; exact ha)
+      · simp [sdiff_sdiff_right', Finset.sdiff_insert_of_notMem ha, hp]
+      · apply mt P.subset; simp [Finset.subset_iff]; grw [hp]; simpa
+    · intro P; simp [Finpartition.ext_iff]
+      have := (P.restrict (by grw [hp]; simp)).parts_extendOfLE_of_lt (a := p) (b := insert a s)
+        (by grw [← ssubset_insert ha]; exact hp)
+      rw [this, restrict]; simp; sorry
+    · intro P; simp; sorry
+  _ = ∑ p ∈ s.powerset, (#p).stirlingSecond k := by congr! with p hp; simp at hp; simp [ih, hp]
+  _ = (#(insert a s)).stirlingSecond (k + 1) := by rw [sum_powerset_apply_card (f := fun m => m.stirlingSecond k),
+      Nat.range_succ_eq_Iic, card_insert_of_notMem ha, MD1.Cwi3.Zad2]; rfl
+-/
+
+/-- The Bell triangle a_n,k. -/
+def Nat.bellTrig (n k : ℕ) : ℕ :=
   match n, k with
   | 0, k => 2 ^ k
   | n + 1, 0 => n.bellTrig n
   | n + 1, k + 1 => n.bellTrig k + (n + 1).bellTrig k
 
-lemma _root_.Nat.bellTrig_eq_sum_bell (n k : ℕ) :
+lemma Nat.bellTrig_eq_sum_bell (n k : ℕ) :
     n.bellTrig k = ∑ i ∈ Finset.range (k + 1), k.choose i * (n + i - k).bell := by
   induction n generalizing k
   case zero => calc
@@ -198,7 +256,7 @@ lemma _root_.Nat.bellTrig_eq_sum_bell (n k : ℕ) :
     _ = ∑ i ∈ Finset.range (k + 1), k.choose i * (0 + i - k).bell := by
       congr! 1 with i hi; simp_all
   induction k
-  case zero n ih => simp [Nat.bellTrig, ih, Zad1, Nat.Iio_eq_range]
+  case zero n ih => simp [Nat.bellTrig, ih, MD1.Cwi3.Zad1]
   case succ n ih₁ k ih₂ =>
     rw [Nat.bellTrig, ih₁, ih₂]; symm; calc
       ∑ i ∈ Finset.range (k + 2), (k + 1).choose i * (n + 1 + i - (k + 1)).bell
@@ -207,6 +265,8 @@ lemma _root_.Nat.bellTrig_eq_sum_bell (n k : ℕ) :
         + ∑ i ∈ Finset.range (k + 1), k.choose i * (n + (i + 1) - k).bell :=
         Finset.sum_choose_succ_mul (fun _ _ => _) _
       _ = _ := by ac_rfl
+
+namespace MD1.Cwi3
 
 theorem Zad4 (n : ℕ) : n.bell = n.bellTrig 0 := by simp [Nat.bellTrig_eq_sum_bell]
 
