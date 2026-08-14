@@ -1,4 +1,5 @@
 import Mathlib.Analysis.InnerProductSpace.Orthogonal
+import Mathlib.Algebra.Polynomial.Degree.Defs
 
 open scoped SetRel in
 def SetRel.IsAntisymm (R : SetRel α α) := Std.Antisymm (· ~[R] ·)

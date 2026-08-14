@@ -72,10 +72,10 @@ theorem Zad5e : #{x : ℝ // ∃ n, ¬Irrational (x ^ (n + 1))} = ℵ₀ := by
   intro ⟨x, n, h⟩; simp [Irrational] at h; rcases h with ⟨q, h⟩
   by_cases hx : 0 ≤ x
   · use ⟨q, n⟩; dsimp
-    rw [dif_pos (by grw [← Rat.cast_nonneg (K := ℝ), h, ← hx, pow_succ, mul_zero]),
+    rw [dite_eq_left (by grw [← Rat.cast_nonneg (K := ℝ), h, ← hx, pow_succ, mul_zero]),
       Subtype.mk.injEq, h, Real.pow_rpow_inv_natCast hx n.add_one_ne_zero]
   · use ⟨-q ^ 2, n + 1 + n⟩; dsimp
-    rw [dif_neg (by simp; rw [← Rat.cast_eq_zero (α := ℝ), h]; simpa using ne_of_not_ge hx),
+    rw [dite_eq_right (by simp; rw [← Rat.cast_eq_zero (α := ℝ), h]; simpa using ne_of_not_ge hx),
       Subtype.mk.injEq, Rat.cast_neg, neg_neg, Rat.cast_pow, h, ← pow_mul, mul_two, ← add_assoc]
     trans -((-x) ^ ?_) ^ (?_ : ℝ)
     · congr 2; swap; rfl; symm; convert Even.neg_pow _ _; simp

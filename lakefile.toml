@@ -2,6 +2,10 @@ name = "inf"
 defaultTargets = ["Inf"]
 reservoir = false
 
+[leanOptions]
+pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+maxSynthPendingDepth = 3
+
 [[lean_lib]]
 name = "Inf"
 

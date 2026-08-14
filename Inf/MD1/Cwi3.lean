@@ -42,7 +42,7 @@ theorem Finpartition.card_of_parts [DecidableEq α] (s : Finset α) (k : ℕ) :
         · intro ⟨h₁, h₂⟩; use P.ne_empty h₂, x, h₂; rw [← hPa, ne_comm, Ne, P.part_eq_iff_mem h₂] at h₁
           simpa using ((Finset.subset_insert_iff_of_notMem h₁).mp (P.subset h₂))
       and_intros
-      · simp [this, Finset.card_erase_of_mem, ← hPa, hP, k.add_one_sub_one]
+      · rw [this]; simp [Finset.card_erase_of_mem, ← hPa, hP, k.add_one_sub_one]
       · ext1; rw [fun P => parts_extendOfLE_of_lt P (Finset.ssubset_insert ha), this]
         simp [ha, ← hPa]
   _ = s.card.stirlingSecond k + _ := congrArg (· + _) (ih k)

@@ -262,10 +262,10 @@ attribute [local instance] Measure.Subtype.measureSpace in
 theorem ZadD10 {f g : ℝ → ℝ} (hab : a ≤ b) (hf : ContinuousOn f (Set.Icc a b))
     (hg : ContinuousOn g (Set.Icc a b)) :
     (∫ x in a..b, f x * g x) ^ 2 ≤ (∫ x in a..b, f x ^ 2) * ∫ x in a..b, g x ^ 2 := by
-  let f' : C(Set.Icc a b, ℝ) := ⟨_, hf.restrict⟩
-  let g' : C(Set.Icc a b, ℝ) := ⟨_, hg.restrict⟩
+  let f' : C(Set.Icc a b, ℝ) := ⟨_, hf.domRestrict⟩
+  let g' : C(Set.Icc a b, ℝ) := ⟨_, hg.domRestrict⟩
   simp_rw [intervalIntegral.integral_of_le hab, ← integral_Icc_eq_integral_Ioc,
-    ← integral_subtype measurableSet_Icc, ← Set.restrict_apply]
+    ← integral_subtype measurableSet_Icc, ← Set.domRestrict_apply]
   change (∫ x, f' x * g' x) ^ 2 ≤ (∫ x, f' x ^ 2) * ∫ x, g' x ^ 2
   convert real_inner_mul_inner_self_le (ContinuousMap.toLp 2 volume ℝ f') (ContinuousMap.toLp 2 volume ℝ g')
    <;> simp [← sq, ContinuousMap.inner_toLp, -inner_self_eq_norm_sq_to_K, mul_comm]

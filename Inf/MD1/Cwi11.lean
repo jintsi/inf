@@ -126,7 +126,7 @@ theorem Zad5iii [Nontrivial d] [DecidableEq d] : (hypercubeGraph d).girth = 4 :=
     · simp [w]
     simp [w]; simp [funext_iff]; use! i, (by simp [hij]), j, by simp [hij]
   suffices (hypercubeGraph d).girth ≠ 3 by
-    have := girth_le_length hw; simp [w] at this
+    have := hw.girth_le_length; simp [w] at this
     have := (hypercubeGraph d).three_le_girth (by simp [IsAcyclic]; exists 0, w)
     lia
   suffices ∀ v (p : (hypercubeGraph d).Walk v v), p.IsCycle → p.length ≠ 3 by

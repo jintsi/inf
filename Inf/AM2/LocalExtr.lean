@@ -60,8 +60,8 @@ theorem deriv_deriv_eq_hessian (hf : ∀ᶠ x in nhds a, DifferentiableAt ℝ f 
   deriv (deriv fun x => f (a + x • v)) (0 : ℝ)
   _ = fderiv ℝ (fderiv ℝ f) a v v := by rw [fderiv_fderiv_apply_same hf hf']
   _ = b.repr v ⬝ᵥ hessian b f a *ᵥ b.repr v := by
-    rw [← ContinuousLinearMap.toLinearMap₁₂_apply, ← LinearMap.sum_repr_mul_repr_mul b b,
-      Finsupp.sum_fintype _ _ (by simp)]
+    rw [← ContinuousLinearMap.toLinearMap₁₂_apply_apply_apply,
+        ← LinearMap.sum_repr_mul_repr_mul b b, Finsupp.sum_fintype _ _ (by simp)]
     simp [hessian, mulVec_eq_sum, dotProduct]; congr; ext x
     rw [Finsupp.sum_fintype _ _ (by simp)]; simp [Finset.mul_sum]
 

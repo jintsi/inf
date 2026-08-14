@@ -32,7 +32,7 @@ open Classical in
 noncomputable def intervalPartition : Prepartition (interval hab) where
   boxes := (Finset.range n).image (intervalBox hab hn)
   le_of_mem' := by
-    simpa [intervalBox, fun I J => (Box.le_TFAE I J).out 0 3, Pi.le_def, -le_add_iff_nonneg_right]
+    simpa [intervalBox, fun I J => (Box.le_TFAE I J).out 1 4, Pi.le_def, -le_add_iff_nonneg_right]
       using fun i => intervalBox_bounds hab hn
   pairwiseDisjoint := by
     rw [Finset.coe_image, Finset.coe_range]; apply Set.Pairwise.image; unfold Set.Pairwise Function.onFun
@@ -106,10 +106,10 @@ theorem intervalPartition_isHenstock (t : ℕ → ℝ)
   simp_rw [TaggedPrepartition.IsHenstock, taggedIntervalPartition', TaggedPrepartition.mem_mk,
     intervalPartition, Prepartition.mem_mk, Finset.forall_mem_image, Finset.mem_range,
     Box.Icc_eq_pi, Set.mem_univ_pi, Unique.forall_iff, intervalBox]
-  intro i hi; rw [ite_cond_eq_false, intervalPartition_index, add_sub_cancel_left,
+  intro i hi; rw [ite_eq_right, intervalPartition_index, add_sub_cancel_left,
     div_mul_cancel₀ _ (by simpa), mul_div_cancel_left₀ _ (by bound), ← Nat.cast_add_one,
     Nat.ceil_natCast, Nat.add_one_sub_one]; · exact_mod_cast ht i
-  rw [add_le_iff_nonpos_right, eq_iff_iff, iff_false, not_or, not_lt, not_le]
+  rw [add_le_iff_nonpos_right, not_or, not_lt, not_le]
   exact ⟨by bound, (intervalBox_bounds hab hn hi).right⟩
 
 open Classical in
@@ -179,8 +179,8 @@ theorem tendsto_sum_intervalIntegral {f : ℝ → E} (hc : ContinuousOn f (Set.I
   dsimp; simp_rw [taggedIntervalPartition', intervalPartition]
   rw [Finset.sum_image, Finset.smul_sum]; congr! 2 with i hi
   · simp_rw [intervalBox]; ring
-  · rw [ite_cond_eq_false, index_intervalBox]; simp_rw [intervalBox]
-    rw [add_le_iff_nonpos_right, eq_iff_iff, iff_false, not_or, not_lt, not_le]
+  · rw [ite_eq_right, index_intervalBox]; simp_rw [intervalBox]
+    rw [add_le_iff_nonpos_right, not_or, not_lt, not_le]
     exact ⟨by bound, (intervalBox_bounds hab n.succ_ne_zero (by simpa using hi)).right⟩
   · intro i hi j hj h
     apply_fun fun J => intervalPartition_index a b (n + 1) J.upper at h
