@@ -93,7 +93,7 @@ theorem Zad9a {k : ℕ} (hk : k ≠ 0) {x : ℝ} (hx : 0 < x) : log x < k * x ^ 
     have := by simpa using this Set.self_mem_Ici hx.le hx
     linarith
   apply strictMonoOn_of_deriv_pos (convex_Ici 1)
-  · fun_prop (disch := simp <;> intros; linarith)
+  · fun_prop (disch := simp; intros; linarith)
   · intro x hx; rw [interior_Ici, Set.mem_Ioi] at hx
     rw [deriv_fun_sub ?_ (by simp; bound), deriv_log, deriv_const_mul_field, Real.deriv_rpow_const]
     · rw [sub_pos, ← mul_assoc, mul_inv_cancel₀ (by simpa), one_mul, ← rpow_neg_one]

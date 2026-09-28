@@ -136,12 +136,10 @@ theorem Zad4 [Nonempty α] {F : Finset (Finset α)}
   suffices Maximal (fun s => (SetLike.coe s).Intersecting) (F.compls) by
     rw [← Zad3 this, card_compls]
   revert hF; unfold Maximal; apply And.imp
-  · unfold Set.Intersecting; simp; intro h; peel h
-    simpa [not_disjoint_iff_nonempty_inter, ← compl_union, nonempty_iff_ne_empty]
+  · simp [Set.Intersecting, not_disjoint_iff_nonempty_inter, ← compl_union, nonempty_iff_ne_empty]
   · intro h s hs; rw [← compls_subset_iff, compls_subset_iff]
     apply h; simp [-mem_compls, forall_mem_compls, ← compl_inter]
-    simp [Set.Intersecting] at hs; peel hs
-    rwa [not_disjoint_iff_nonempty_inter, nonempty_iff_ne_empty] at this
+    simpa [Set.Intersecting, disjoint_iff_inter_eq_empty] using hs
 
 theorem Zad5i_le (hF : Pairwise fun x y => ∃ s ∈ F, ¬(x ∈ s ↔ y ∈ s)) : Nat.clog 2 (card α) ≤ #F := by
   rw [Nat.clog_le_iff_le_pow (by simp), ← card_powerset]

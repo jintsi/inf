@@ -100,14 +100,15 @@ theorem first : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 0).val = 1 := by
 
 theorem second : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 1).val = X - C 2⁻¹ := by
   rw [gramSchmidt_def, ← Fintype.sum_ite_mem]
-  norm_num [Submodule.starProjection_singleton, ← real_inner_self_eq_norm_sq, -inner_self_eq_norm_sq_to_K,
-    first, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul, -Submodule.coe_inner, -Submodule.coe_norm]
+  norm_num [Submodule.starProjection_singleton, ← real_inner_self_eq_norm_sq, first,
+    Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul, -inner_self_eq_norm_sq_to_K,
+    -Submodule.coe_inner, -ClosedSubmodule.coe_inner, -Submodule.norm_coe]
 
 theorem third : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 2).val = X ^ 2 - X + C 6⁻¹ := by
   rw [gramSchmidt_def, ← Fintype.sum_ite_mem]
   norm_num [Submodule.starProjection_singleton, ← real_inner_self_eq_norm_sq, -inner_self_eq_norm_sq_to_K,
     Fin.sum_univ_succ, Fin.lt_def, first, second, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul,
-    -Submodule.coe_inner, -Submodule.coe_norm]
+    -Submodule.coe_inner, -ClosedSubmodule.coe_inner, -Submodule.norm_coe]
   rw [show C (1 / 6 : ℝ) = C 2⁻¹ - C 3⁻¹ by norm_num [← C_sub]]; ring_nf
 
 end Zad6
@@ -202,7 +203,7 @@ theorem basis_apply [CommRing R] (i : Fin 3) : (basis R i).val =
 noncomputable def P [CommRing R] := Submodule.projection _ _ ((basis R).isCompl_span_image {2})
 
 theorem ker_P [CommRing R] : P.ker = Submodule.span R {basis R 0, basis R 1} := by
-  simp [P]; suffices ({2}ᶜ : Set (Fin 3)) = {0, 1} by simp [this, Set.image_pair]
+  simp [P]; suffices ({2}ᶜ : Set (Fin 3)) = {0, 1} by simp [this]
   ext i; fin_cases i <;> simp
 
 theorem range_P [CommRing R] : P.range = R ∙ basis R 2 := by simp [P]

@@ -44,8 +44,8 @@ theorem Zad2d [Ring R] : F R = inner R ![-1, 2, 2] := by
   ext x; simp [F, Zad2d.inner]; noncomm_ring
 
 open Matrix in
-theorem Zad3 [Field K] [LinearOrder K] [AddLeftMono K] [PosMulMono K] [Fintype m] [Fintype n]
-    (f : Dual K (Matrix m n K)) : ∃ A, ∀ x, f x = (A * x).trace := by
+theorem Zad3 [Field K] [LinearOrder K] [IsOrderedAddMonoid K] [PosMulMono K]
+    [Fintype m] [Fintype n] (f : Dual K (Matrix m n K)) : ∃ A, ∀ x, f x = (A * x).trace := by
   let B : LinearMap.BilinForm K (Matrix m n K) := mk₂ K (fun a b => trace (aᵀ * b))
     (by simp [Matrix.add_mul]) (by simp) (by simp [Matrix.mul_add]) (by simp)
   have hB : B.Nondegenerate := by

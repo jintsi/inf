@@ -4,7 +4,6 @@ import Mathlib.Combinatorics.Digraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.UniversalVerts
 import Mathlib.Order.Interval.Finset.Fin
 import Mathlib.Data.Int.Interval
-import Mathlib.Tactic.Peel
 
 /-- Pigeonhole principle, halfway between `Fintype.exists_ne_map_eq_of_card_lt` and
 `Finset.exists_ne_map_eq_of_card_lt_of_maps_to` -/
@@ -144,7 +143,7 @@ theorem Zad8 {n : ℕ} [NeZero n] (f : Fin n → ℤ) :
           rw [← Finset.coe_inj]; simp [Set.ext_iff, and_comm],
         Finset.sum_sdiff_eq_sub (Finset.Icc_subset_Icc_right hxy.le), Int.sub_emod, h, sub_self]; rfl
     · simp [NeZero.pos]
-    · simp [Int.emod_lt_of_pos, NeZero.pos]; peel h
+    · simp [Int.emod_lt_of_pos, NeZero.pos]; gconvert h
       exact this.lt_of_le' (Int.emod_nonneg _ (NeZero.ne _))
 
 theorem Zad9 [Nonempty α] [Fintype α] {F : Set (Set α)}

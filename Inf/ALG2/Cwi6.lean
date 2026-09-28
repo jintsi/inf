@@ -82,7 +82,6 @@ theorem Zad12 : !![(1 : ℝ), 0, 0; 0, 2, 2; 0, 2, 2].PosSemidef := by
   · simp [IsSymm.ext_iff]; intro i j; fin_cases i <;> fin_cases j <;> rfl
   simp [Fin.forall_fin_succ_pi]; intro x y z
   convert_to 0 ≤ x ^ 2 + 2 * (y + z) ^ 2 using 1
-  · rfl
   · ring
   · positivity
 

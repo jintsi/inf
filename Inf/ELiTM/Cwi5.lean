@@ -50,7 +50,7 @@ theorem Subset_refl (α : Type*) : @Std.Refl (Set α) (· ⊆ ·) := LE_refl
 theorem Subset_trans (α : Type*) : IsTrans (Set α) (· ⊆ ·) := LE_trans
 theorem Subset_antisymm (α : Type*) : @Std.Antisymm (Set α) (· ⊆ ·) := LE_antisymm
 
-alias Dvd_refl := instReflDvd_mathlib
+theorem Dvd_refl [Monoid α] : @Std.Refl α (· ∣ ·) := inferInstance
 alias Dvd_trans := instIsTransDvd
 theorem Dvd_antisymm [CommMonoidWithZero α] [IsCancelMulZero α] [Subsingleton αˣ] :
     @Std.Antisymm α (· ∣ ·) where

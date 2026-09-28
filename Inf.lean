@@ -51,8 +51,6 @@ import Inf.ALG2.Cwi4
 import Inf.ALG2.Cwi5
 import Inf.ALG2.Cwi6
 
-import Inf.Util
-
 /-! ### Status
 
 Term 1:
@@ -65,5 +63,5 @@ Term 2:
 - Discrete Mathematics 1 (MD1)
 - Linear Algebra 2 (ALG2)
 
-Term 3: Coming soon...
+Term 3: Coming VERY soon...
 -/

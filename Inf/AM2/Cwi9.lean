@@ -233,9 +233,9 @@ theorem Zad1d : ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ x + y}, p.1 - 
 theorem _root_.region_between_cc_ae_eq_regionBetween [MeasurableSpace α] {μ : Measure α}
     [SFinite μ] (hf : Measurable f) (hg : Measurable g) :
     {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)} =ᵐ[μ.prod volume] regionBetween f g s := by
-  apply EventuallyEq.rfl.inter; unfold EventuallyEq
-  rw [Measure.ae_prod_iff_ae_ae (by
-    rw [measurableSet_setOfPred]; simp [Set.Icc, Set.Ioo, Set.ofPred]; fun_prop)]
+  rw [Set.ofPred_and, regionBetween, Set.ofPred_and]
+  apply EventuallyEqSet.rfl.inter; unfold EventuallyEqSet EventuallyEq
+  rw [Measure.ae_prod_iff_ae_ae (by simp; fun_prop)]
   filter_upwards with x using Ioo_ae_eq_Icc.symm
 
 set_option backward.isDefEq.respectTransparency.types false in
@@ -250,7 +250,7 @@ theorem Zad2a : volume {(x, y) : ℝ × ℝ | y ^ 2 ≤ 1 - x ∧ y ^ 2 ≤ x / 
     apply MeasurableSet.nullMeasurableSet; simp; fun_prop
   _ = volume (regionBetween (fun y => 2 * y ^ 2 - 2) (fun y => 1 - y ^ 2) (Set.Icc (-1) 1)) := by
     apply measure_congr; rw [Measure.volume_eq_prod]
-    convert region_between_cc_ae_eq_regionBetween ?_ ?_; rfl
+    convert region_between_cc_ae_eq_regionBetween ?_ ?_ using 1; rfl
     infer_instance; all_goals fun_prop
   _ = .ofReal (∫ y in Set.Icc (-1) 1, 1 - y ^ 2 - (2 * y ^ 2 - 2)) :=
     volume_regionBetween_eq_integral (Continuous.integrableOn_Icc (by fun_prop))
@@ -263,11 +263,9 @@ theorem _root_.region_between_oc_ae_eq_cc' {s : Set α} [MeasurableSpace α] {μ
     [SFinite μ] (hf : Measurable f) (hg : Measurable g) :
     {p : ℝ × α | p.2 ∈ s ∧ p.1 ∈ Set.Ioc (f p.2) (g p.2)} =ᵐ[volume.prod μ]
     {p : ℝ × α | p.2 ∈ s ∧ p.1 ∈ Set.Icc (f p.2) (g p.2)} := by
-  apply EventuallyEq.rfl.inter; unfold EventuallyEq
-  rw [Measure.ae_prod_iff_ae_ae (by
-      rw [measurableSet_setOfPred]; simp [Set.Ioc, Set.Icc, Set.ofPred]; fun_prop),
-    Measure.ae_ae_comm (by
-      rw [measurableSet_setOfPred]; simp [Set.Ioc, Set.Icc, Set.ofPred]; fun_prop)]
+  rw [Set.ofPred_and, Set.ofPred_and]
+  apply EventuallyEqSet.rfl.inter; unfold EventuallyEqSet EventuallyEq
+  rw [Measure.ae_prod_iff_ae_ae (by simp; fun_prop), Measure.ae_ae_comm (by simp; fun_prop)]
   filter_upwards with x using Ioc_ae_eq_Icc
 
 theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y ^ 2 ∧ 0 ≤ x} = 1 / 2 := calc
@@ -307,7 +305,7 @@ theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y 
       · apply cos_nonneg_of_neg_pi_div_two_le_of_le <;> linarith
   _ = .ofReal (∫ p in {(r, t) : ℝ × ℝ | t ∈ Set.Icc (-π / 4) (π / 4) ∧ r ∈ Set.Ioc 0 √(cos t ^ 2 - sin t ^ 2)}, p.1) := by
     congr! 8 with ⟨_, _⟩ r t; rw [and_left_comm, Set.mem_Ioc]; congr! 1; apply and_congr_right
-    intro hr; rw [le_sqrt' hr]; convert mul_le_mul_iff_right₀ (pow_pos hr 2); rfl; ring
+    intro hr; rw [le_sqrt' hr]; convert mul_le_mul_iff_right₀ (pow_pos hr 2); ring
   _ = .ofReal (∫ p in {(r, t) : ℝ × ℝ | t ∈ Set.Icc (-π / 4) (π / 4) ∧ r ∈ Set.Icc 0 √(cos t ^ 2 - sin t ^ 2)}, p.1) := by
     rw [Measure.volume_eq_prod, setIntegral_congr_set]
     apply region_between_oc_ae_eq_cc' (g := fun t => √(cos t ^ 2 - sin t ^ 2)) measurable_zero; fun_prop
@@ -334,7 +332,7 @@ theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤
   _ = volume (regionBetween (fun _ => 0) (fun p => 4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2)
         {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36}) := by
     apply measure_congr; rw [Measure.volume_eq_prod]
-    convert region_between_cc_ae_eq_regionBetween ?_ ?_; rfl
+    convert region_between_cc_ae_eq_regionBetween ?_ ?_ using 1; rfl
     infer_instance; all_goals fun_prop
   _ = .ofReal (∫ p in {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36}, 4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2 - 0) := by
     have : IsCompact {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36} := by

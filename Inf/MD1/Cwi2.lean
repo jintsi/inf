@@ -222,7 +222,7 @@ theorem Zad8 (n : ℕ) : #{f : Fin n → Fin n | Monotone f} = (2 * n - 1).choos
   _ = ((univ : Finset (Fin (2 * n - 1))).powersetCard n).card := by
     apply card_bij (fun f h => univ.map ⟨f, StrictMono.injective (by simp_all)⟩)
       <;> simp [← coe_inj]
-    · exact fun f hf g hg => (hf.range_inj hg).mp
+    · exact fun f hf g hg => (hf.range_inj_of_wellFoundedLT hg).mp
     · intro s h; exists s.orderEmbOfFin h; simp [StrictMono]
   _ = (2 * n - 1).choose n := by simp
 
@@ -250,7 +250,7 @@ theorem Zad10 (n k : ℕ) : ∑ i ≤ k, n.choose i * (n - i).choose (k - i) = 2
       congr! with i hi t ht; apply card_nbij fun st => st.1 \ t <;> try first | infer_instance |
         simp [Set.MapsTo, Set.InjOn, Set.SurjOn, Set.subset_def, disjoint_sdiff, F]
       · intro s t hs h ht; simp_all [card_sdiff_of_subset]
-      · intro s t' hs ht' rfl s' t hs' ht'' rfl h; simp; rw [← sdiff_left_inj ht' ht'']; assumption
+      · intro s t' hs ht' rfl s' t hs' ht'' rfl h; simp; rwa [← sdiff_left_inj ht' ht'']
       · intro s hs hd; exists t ∪ s; simp_all [union_sdiff_cancel_left]
     _ = ∑ i ≤ k, ∑ t ∈ powersetCard i univ, #((univ \ t).powersetCard (k - i)) := by
       congr!; ext s; simp [disjoint_right, subset_iff]; tauto

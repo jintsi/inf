@@ -12,7 +12,7 @@ namespace ALG2.Cwi2
 alias Zad1a := inner_zero_right
 alias Zad1b := inner_zero_left
 
-theorem Zad2 [Semiring R] [LinearOrder R] [ExistsAddOfLE R] [AddLeftMono R] [PosMulMono R]
+theorem Zad2 [Semiring R] [LinearOrder R] [ExistsAddOfLE R] [IsOrderedAddMonoid R] [PosMulMono R]
     [NoZeroDivisors R] [Fintype n] {A : Matrix n n R} : (Aᵀ * A).trace = 0 ↔ A = 0 where
   mpr h := by simp [h]
   mp h := by
@@ -111,7 +111,7 @@ theorem Zad9 [CommRing R] [NoZeroDivisors R] [Fintype n] [DecidableEq n] {A : Ma
     (h : Aᵀ * A = 1) : A.det = 1 ∨ A.det = -1 := by
   apply_fun det at h; simp_all [← sq]
 
-theorem Zad10 [CommRing R] [LinearOrder R] [AddLeftMono R] [PosMulMono R] [NoZeroDivisors R]
+theorem Zad10 [CommRing R] [LinearOrder R] [IsOrderedAddMonoid R] [PosMulMono R] [NoZeroDivisors R]
     [Fintype n] {A : Matrix n n R} : (Aᵀ * A).trace = (A * A).trace ↔ A.IsSymm where
   mpr h := congr(($h * A).trace)
   mp h := by apply eq_of_sub_eq_zero; rw [← Zad2]; simp [sub_mul, mul_sub, trace_mul_comm A, h]

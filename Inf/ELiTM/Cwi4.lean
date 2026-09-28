@@ -1,4 +1,5 @@
 import Mathlib.Algebra.Order.Archimedean.Basic
+import Mathlib.Data.Set.Lattice.Bounded
 
 namespace Elitm.Cwi4
 

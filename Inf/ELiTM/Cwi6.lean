@@ -18,7 +18,7 @@ theorem Zad2a_preimage : (fun x : ℝ => x ^ 2) ⁻¹' Ico 0 9 = Ioo (-3) 3 := b
   ext x; simp [sq_nonneg, Real.sq_lt, show √9 = 3 by norm_num [Real.sqrt_eq_iff_eq_sq]]
 
 theorem Zad2b_image [AddZeroClass M] [One M] :
-    (fun p : M × M => p.1 + p.2) '' {(0, 0), (0, 1)} = {0, 1} := by simp [image_pair]
+    (fun p : M × M => p.1 + p.2) '' {(0, 0), (0, 1)} = {0, 1} := by simp
 
 theorem Zad2b_preimage [Add M] [Zero M] [One M] :
     (fun p : M × M => p.1 + p.2) ⁻¹' {0, 1} = {(x, y) | x + y = 0} ∪ {(x, y) | x + y = 1} := rfl
@@ -83,7 +83,7 @@ theorem Zad2g_preimage : (fun p : ℝ × ℝ => max p.1 p.2) ⁻¹' Set.Icc (-�
   ext ⟨x, y⟩; simp; tauto
 
 theorem Zad2h_image : (fun n : ℕ => n.primeFactors.sum id) '' {4, 6} = {2, 5} := by
-  simp [image_pair, Nat.primeFactors_mul, -Nat.reduceMul, show 4 = 2 * 2 from rfl,
+  simp [Nat.primeFactors_mul, -Nat.reduceMul, show 4 = 2 * 2 from rfl,
     show 6 = 2 * 3 from rfl, Nat.prime_two, Nat.prime_three]
 
 theorem Zad2h_preimage : (fun n : ℕ => n.primeFactors.sum id) ⁻¹' {2, 5} =

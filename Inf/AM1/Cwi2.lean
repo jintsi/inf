@@ -35,7 +35,7 @@ theorem Zad3_neg (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, x i ∈ Set.Ioo
     have ih := ih (Nat.forall_lt_succ_right.mp hx).left
     rw [← add_assoc, mul_add, mul_one]
     apply add_lt_add ih
-    have h := prod_lt_prod
+    have h := prod_lt_prod₀
       (fun i hi => add_neg_cancel (1 : ℝ) ▸
         add_lt_add_right (hx i (Nat.lt_succ_of_lt <| mem_range.mp hi)).left 1)
       (fun i hi => (add_lt_add_right (hx i (Nat.lt_succ_of_lt <| mem_range.mp hi)).right 1).le)
@@ -56,7 +56,7 @@ theorem Zad3_pos (hn : n > 1) (x : ℕ → ℝ) (hx : ∀ i < n, 0 < x i) :
     have ih := ih <| (Nat.forall_lt_succ_right.mp hx).left
     rw [← add_assoc, mul_add, mul_one]
     apply add_lt_add ih
-    have h := prod_lt_prod
+    have h := prod_lt_prod₀
       (fun i hi => (by simp))
       (fun i hi => (add_lt_add_right (hx i (Nat.lt_succ_of_lt <| Finset.mem_range.mp hi)) 1).le)
       ⟨0, by simp; omega, by simpa using (hx 0 n.succ_pos)⟩

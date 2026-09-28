@@ -203,7 +203,7 @@ def C : ℕ → ℕ
   | n + 1 => 2 * C n + 3
 
 theorem C_eq : C n = 2 ^ (n + 2) - 3 := by
-  rw [eq_tsub_iff_add_eq_of_le (by grw [← n.zero_le] <;> simp)]
+  rw [eq_tsub_iff_add_eq_of_le (by grw [← n.zero_le]; decide)]
   induction n
   case zero => rfl
   case succ n ih => rw [C, add_assoc, ← two_mul, ← mul_add, ih, mul_comm]; rfl

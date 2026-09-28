@@ -92,20 +92,22 @@ theorem Zad13 : 8 ∣ 11 ^ n - 3 ^ n := by
   induction n with
   | zero => simp
   | succ n ih =>
-    convert (dvd_mul_right 8 (11 ^ n)).add (ih.mul_left 3); rfl
-    rw [Nat.mul_sub, ← Nat.add_sub_assoc (by gcongr; simp)]; ring_nf
+    convert (dvd_mul_right 8 (11 ^ n)).add (ih.mul_left 3)
+    rw [Nat.mul_sub, ← Nat.add_sub_assoc (by gcongr; simp)]
+    ring_nf
 
 theorem Zad14 : 11 ∣ 2 ^ (6 * n + 1) + 3 ^ (2 * n + 2) := by
   induction n with
   | zero => simp
   | succ n ih =>
-    convert (dvd_mul_right 11 (5 * 2 ^ (6 * n + 1))).add (ih.mul_left 9) using 1; rfl; ring
+    convert (dvd_mul_right 11 (5 * 2 ^ (6 * n + 1))).add (ih.mul_left 9) using 1
+    ring
 
 theorem Zad15 : 133 ∣ 11 ^ (n + 2) + 12 ^ (2 * n + 1) := by
   induction n with
   | zero => simp
   | succ n ih =>
-  convert (ih.mul_left 11).add (dvd_mul_right 133 (12 ^ (2 * n + 1))) using 1; rfl
+  convert (ih.mul_left 11).add (dvd_mul_right 133 (12 ^ (2 * n + 1))) using 1
   ring
 
 theorem Zad16 : 9 ∣ 4 ^ n + 24 * n - 1 := by

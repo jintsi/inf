@@ -1,5 +1,5 @@
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Arctan
-import Mathlib.Data.Real.Sign
+import Mathlib.Basic.Real.Sign
 import Mathlib.Topology.Algebra.InfiniteSum.TsumUniformlyOn
 import Mathlib.Analysis.PSeries
 import Mathlib.Analysis.Calculus.DerivativeTest
@@ -54,8 +54,8 @@ theorem Zad1d (ha : a < 0) :
     TendstoUniformlyOn (fun n x => arctan (n * x)) (fun _ => -(π / 2)) atTop (Set.Iic a) := by
   rw [Metric.tendstoUniformlyOn_iff]; intro e he; simp only [Set.mem_Iic]
   wlog he' : e < π generalizing e
-  · specialize this (π / 2) pi_div_two_pos (by simp [pi_pos])
-    peel this; grw [this, le_of_not_gt he']; simpa using he.le
+  · gconvert this (π / 2) pi_div_two_pos (by simp [pi_pos])
+    grw [← le_of_not_gt he']; simpa using pi_nonneg
   filter_upwards [eventually_gt_atTop (tan (e + -(π / 2)) / a), eventually_gt_atTop 0]
   intro n hn hn' x hx
   rw [dist_eq, abs_lt]; and_intros; swap
