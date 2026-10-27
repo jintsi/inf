@@ -44,7 +44,7 @@ theorem Zad1d : ¬∃ g, Tendsto (fun ((x, y) : ℝ × ℝ) => (x * y ^ 2) / (x 
       (x₂ := fun n => ((-2 / n ^ 2, 1 / n) : ℝ × ℝ))
   any_goals
     simp [tendsto_nhdsWithin_iff, Prod.tendsto_iff, tendsto_inv_atTop_nhds_zero_nat]; constructor
-    · exact (tendsto_natCast_atTop.atTop_pow₀ 2).const_div_atTop _
+    · exact (tendsto_natCast_atTop.atTop_pow₀ two_ne_zero).const_div_atTop _
     · use 1; bound
   any_goals
     simp [Function.comp_def]

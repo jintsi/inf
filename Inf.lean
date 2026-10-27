@@ -24,16 +24,6 @@ import Inf.ELiTM.Cwi5
 import Inf.ELiTM.Cwi6
 import Inf.ELiTM.Cwi8
 
-import Inf.MD1.Cwi1
-import Inf.MD1.Cwi2
-import Inf.MD1.Cwi3
-import Inf.MD1.Cwi4
-import Inf.MD1.Cwi5
-import Inf.MD1.Cwi6
-import Inf.MD1.Cwi8
-import Inf.MD1.Cwi9
-import Inf.MD1.Cwi11
-
 import Inf.AM2.Cwi1
 import Inf.AM2.Cwi2
 import Inf.AM2.Cwi3
@@ -44,12 +34,24 @@ import Inf.AM2.Cwi7
 import Inf.AM2.Cwi8
 import Inf.AM2.Cwi9
 
+import Inf.MD1.Cwi1
+import Inf.MD1.Cwi2
+import Inf.MD1.Cwi3
+import Inf.MD1.Cwi4
+import Inf.MD1.Cwi5
+import Inf.MD1.Cwi6
+import Inf.MD1.Cwi8
+import Inf.MD1.Cwi9
+import Inf.MD1.Cwi11
+
 import Inf.ALG2.Cwi1
 import Inf.ALG2.Cwi2
 import Inf.ALG2.Cwi3
 import Inf.ALG2.Cwi4
 import Inf.ALG2.Cwi5
 import Inf.ALG2.Cwi6
+
+import Inf.MD2.Cwi1
 
 /-! ### Status
 
@@ -63,5 +65,6 @@ Term 2:
 - Discrete Mathematics 1 (MD1)
 - Linear Algebra 2 (ALG2)
 
-Term 3: Coming VERY soon...
+Term 3:
+- Discrete Mathematics 2 (MD2)
 -/

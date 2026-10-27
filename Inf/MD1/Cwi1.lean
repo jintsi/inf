@@ -9,7 +9,7 @@ import Mathlib.Data.Int.Interval
 `Finset.exists_ne_map_eq_of_card_lt_of_maps_to` -/
 theorem Fintype.exists_ne_map_eq_of_card_lt_of_maps_to [Fintype α] {s : Finset β}
     (hc : s.card < card α) {f : α → β} (hf : ∀ x, f x ∈ s) : ∃ x y, x ≠ y ∧ f x = f y := by
-  convert Finset.univ.exists_ne_map_eq_of_card_lt_of_maps_to hc ?hf <;> try simp [hf] <;> rfl
+  convert Finset.univ.exists_ne_map_eq_of_card_lt_of_maps_to hc ?hf <;> try simp [hf]; try rfl
 
 /-- Pigeonhole principle, halfway between `Fintype.exists_le_card_fiber_of_mul_le_card`
 and `Finset.exists_le_card_fiber_of_mul_le_card_of_maps_to` -/
@@ -23,7 +23,7 @@ and `Fintype.exists_le_card_fiber_of_mul_le_card` -/
 theorem Finset.exists_le_card_fiber_of_mul_le_card {α β : Type*} [DecidableEq β] [Fintype β]
     {s : Finset α} (f : α → β) {n : ℕ} [Nonempty β] (hn : Fintype.card β * n ≤ s.card) :
     ∃ y, n ≤ card {x ∈ s | f x = y} := by
-  convert s.exists_le_card_fiber_of_mul_le_card_of_maps_to ?hf univ_nonempty hn <;> try simp <;> rfl
+  convert s.exists_le_card_fiber_of_mul_le_card_of_maps_to ?hf univ_nonempty hn <;> try simp; try rfl
 
 namespace MD1.Cwi1
 
@@ -92,7 +92,7 @@ theorem Zad4 [Fintype V] [DecidableEq V] {G : Digraph V} [DecidableRel G.Adj] (h
         · rw [List.isChain_map]; apply hp.suffix; apply List.dropWhile_suffix
         · simp; intro lne; apply (hG.total _ _).resolve_left
           convert p.head_dropWhile_not _ lne; simp
-    · have : instBEqOfDecidableEq (α := Option V) = Option.instBEq := by ext; simp
+    · have : instBEqOfDecidableEq (α := Option V) = instBEqOption := by ext; simp
       rw [this]; intro v
       rw [← List.singleton_append, List.count_append, List.count_append, add_left_comm,
         ← List.count_append, ← List.map_append, List.takeWhile_append_dropWhile]

@@ -94,7 +94,7 @@ theorem Zad6b {s t : ι → Set α} : (⋂ i, s i) ∪ ⋂ i, t i ⊆ ⋂ i, s i
   iInf_sup_iInf_le s t
 
 theorem Zad6c {s t : ι → Set α} : ⋃ i, s i \ t i ⊆ (⋃ i, s i) \ ⋂ i, t i := by
-  rw [Set.sdiff_eq, Set.compl_iInter t]; exact Zad6a
+  rw [Set.sdiff_eq, Set.compl_iInter t]; simp_rw [sdiff_eq]; exact Zad6a
 
 theorem Zad6d {s t : ι → Set α} : (⋂ i, s i) ∪ (⋃ i, t i)ᶜ ⊆ ⋂ i, s i ∪ (t i)ᶜ := by
   rw [Set.compl_iUnion]; exact Zad6b

@@ -143,7 +143,7 @@ theorem Zad5d : ¬Summable (fun n => 9 ^ n * n ^ 5 / (6 + (-1) ^ n) ^ n : ℕ �
   · intro n; cases neg_one_pow_eq_or ℝ n <;> norm_num [*]; gcongr; norm_num
   simp_rw [mul_div_right_comm, ← div_pow]
   exact (tendsto_pow_atTop_atTop_of_one_lt (by norm_num)).atTop_mul_atTop₀
-    (tendsto_natCast_atTop.atTop_pow₀ 5)
+    (tendsto_natCast_atTop.atTop_pow₀ (show 5 ≠ 0 by simp))
 
 theorem Zad5e : Summable (fun (n : ℕ) => cos (√n)⁻¹ / n ^ arctan n) := by
   apply Summable.of_nonneg_atTop_of_le_atTop (f := fun n => 1 / n ^ (π / 3))

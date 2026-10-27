@@ -50,7 +50,7 @@ theorem Zad3 [Field K] [LinearOrder K] [IsOrderedAddMonoid K] [PosMulMono K]
     (by simp [Matrix.add_mul]) (by simp) (by simp [Matrix.mul_add]) (by simp)
   have hB : B.Nondegenerate := by
     apply BilinForm.Nondegenerate.ofSeparatingLeft; intro a; contrapose!; intro ha
-    use a; simp [B, trace, mul_apply, ← sq]
+    use a; simp [B, trace, Matrix.mul_apply, ← sq]
     rw [Fintype.sum_eq_zero_iff_of_nonneg (by simp [Pi.le_def, Fintype.sum_nonneg, sq_nonneg])]
     simp [funext_iff, Fintype.sum_eq_zero_iff_of_nonneg, Pi.le_def, sq_nonneg]
     rw [exists_comm]; simpa [← Matrix.ext_iff] using ha

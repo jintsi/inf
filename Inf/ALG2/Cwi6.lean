@@ -70,7 +70,8 @@ theorem Zad9 {A B : Matrix n n K} (hA : A.IsHermitian) (hB : B.IsHermitian) :
 theorem Zad11 : A ∈ orthogonalGroup (Fin 2) ℝ ↔ ∃ θ,
     A = !![cos θ, sin θ; -sin θ, cos θ] ∨ A = !![cos θ, sin θ; sin θ, -cos θ] where
   mp hA := by
-    simp [mem_orthogonalGroup_iff, ← Matrix.ext_iff, mul_apply] at hA; rcases hA with ⟨⟨h₀, h₁⟩, -, h₂⟩
+    simp [mem_orthogonalGroup_iff, ← Matrix.ext_iff, Matrix.mul_apply] at hA
+    rcases hA with ⟨⟨h₀, h₁⟩, -, h₂⟩
     use Complex.arg ⟨A 0 0, A 0 1⟩; rw [Complex.cos_arg, Complex.sin_arg]; swap
     · rw [← norm_ne_zero_iff, Complex.norm_eq_sqrt_sq_add_sq]; simp [sq, h₀]
     simp [Complex.norm_eq_sqrt_sq_add_sq, sq, h₀, ← Matrix.ext_iff]; grind
@@ -90,6 +91,7 @@ theorem ZadD1 [Nonempty n] (hA : A ∈ orthogonalGroup n K) (hB : B ∈ orthogon
   apply_fun (Aᵀ * · * Bᵀ)
   simp_rw [sq, mul_sub, sub_mul, ← mul_assoc, (mem_orthogonalGroup_iff' n K).mp hA, one_mul,
     mul_assoc, (mem_orthogonalGroup_iff n K).mp hB, mul_one]
-  apply_fun trace; simp [trace, mul_apply]; rw [Finset.sum_comm]; simp; norm_cast; simp [eq_comm]
+  apply_fun trace; simp [trace, Matrix.mul_apply]
+  rw [Finset.sum_comm, sub_self, eq_comm, Nat.cast_eq_zero]; exact Fintype.card_ne_zero
 
 alias ZadD3 := posDef_gram_of_linearIndependent

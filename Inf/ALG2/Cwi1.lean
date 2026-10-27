@@ -61,7 +61,7 @@ theorem Zad9 [CommRing R] [IsDomain R] [Fintype m] [Fintype n]
   grw [← h]; classical trans Set.finrank R (Finset.image B Finset.univ : Set (m → R))
   · simp [Set.finrank]; apply Submodule.finrank_mono
     simp [Submodule.span_le, Set.subset_def, Submodule.mem_span_range_iff_exists_fun]
-    intro i; use A i; ext j; simp [mul_apply]
+    intro i; use A i; ext j; simp [Matrix.mul_apply]
   · simpa using finrank_range_le_card B
 
 theorem Zad10 [CommRing R] [Fintype n] [DecidableEq n] (A B : Matrix n n R) :
@@ -86,7 +86,7 @@ theorem ZadD4 [CommRing R] [Fintype n] [DecidableEq n] [Nonempty n] {M : Matrix 
   have : DecidableEq n := fun i j => decidable_of_iff (some i = some j) Option.some_inj
   have : M = (of fun i j => j.elim 1 fun j => if i = j then 2 else 0) *
              (of fun i => i.elim (M none) fun i => M' (some i) - M' none) := by
-    ext i j; rcases i with _ | i <;> simp [mul_apply, h]; ring
+    ext i j; rcases i with _ | i <;> simp [Matrix.mul_apply, h]; ring
   rw [this, det_mul]; apply dvd_mul_of_dvd_left
   rw [BlockTriangular.det_fintype (b := Option.isNone)]
   · simp [toSquareBlock_def]; apply dvd_mul_of_dvd_right; convert dvd_rfl

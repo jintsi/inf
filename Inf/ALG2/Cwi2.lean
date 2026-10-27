@@ -16,7 +16,7 @@ theorem Zad2 [Semiring R] [LinearOrder R] [ExistsAddOfLE R] [IsOrderedAddMonoid 
     [NoZeroDivisors R] [Fintype n] {A : Matrix n n R} : (Aᵀ * A).trace = 0 ↔ A = 0 where
   mpr h := by simp [h]
   mp h := by
-    simp [trace, mul_apply] at h; ext i j
+    simp [trace, Matrix.mul_apply] at h; ext i j
     rw [Fintype.sum_eq_zero_iff_of_nonneg, funext_iff] at h; swap
     · intro j; apply Fintype.sum_nonneg; intro i; apply mul_self_nonneg
     specialize h j; rw [Pi.zero_apply, Fintype.sum_eq_zero_iff_of_nonneg, funext_iff] at h; swap
@@ -38,7 +38,7 @@ noncomputable scoped instance innerProductSpace : InnerProductSpace K (Matrix n 
   smul_left A B r := by simp
   norm_sq_eq_re_inner A := by
     rw [frobenius_norm_def, one_div, ← Nat.cast_ofNat, rpow_inv_natCast_pow (by positivity) two_ne_zero]
-    simpa [trace, mul_apply, RCLike.norm_sq_eq_def] using Finset.sum_comm
+    simpa [trace, Matrix.mul_apply, RCLike.norm_sq_eq_def] using Finset.sum_comm
 
 @[simp]
 lemma inner_def (A B : Matrix n n K) : ⟪A, B⟫_K = (Aᴴ * B).trace := rfl
@@ -49,7 +49,7 @@ lemma norm_def (A : Matrix n n K) : ‖A‖ = √(RCLike.re (Aᴴ * A).trace) :=
 end Zad3
 
 open scoped Zad3 in
-theorem Zad4 : ‖!![(2 : ℝ), 1; 0, 2]‖ = 3 := by norm_num [trace, mul_apply, sqrt_eq_cases]
+theorem Zad4 : ‖!![(2 : ℝ), 1; 0, 2]‖ = 3 := by norm_num [trace, Matrix.mul_apply, sqrt_eq_cases]
 
 open MeasureTheory in
 attribute [local instance] Measure.Subtype.measureSpace in
@@ -105,7 +105,7 @@ theorem Zad6 : angle !₂[(1 : ℝ), 2, 3] !₂[3, -1, 2] = π / 3 := by
 open scoped Zad3 in
 theorem Zad8 : (ℝ ∙ !![(4 : ℝ), 2; -2, 1]).starProjection !![-2, 1; 0, 2] =
     !![-(16 / 25), -(8 / 25); 8 / 25, -(4 / 25)] := by
-  norm_num [Submodule.starProjection_singleton, trace, mul_apply]
+  norm_num [Submodule.starProjection_singleton, trace, Matrix.mul_apply]
 
 theorem Zad9 [CommRing R] [NoZeroDivisors R] [Fintype n] [DecidableEq n] {A : Matrix n n R}
     (h : Aᵀ * A = 1) : A.det = 1 ∨ A.det = -1 := by

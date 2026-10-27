@@ -48,7 +48,7 @@ theorem Zad5a : Tendsto (fun n : ℕ => n ^ 2 / (√(n + 1) - √(n + 4))) atTop
   apply Tendsto.congr (f₁ := fun n : ℕ => (√(n + 1) + √(n + 4)) * n ^ 2 / -3)
   · intro n; grind
   exact (tendsto_natCast_add_atTop 1).sqrt_atTop.atTop_add_atTop ((tendsto_natCast_add_atTop 4).sqrt_atTop)
-    |>.atTop_mul_atTop₀ (tendsto_natCast_atTop.atTop_pow₀ 2) |>.atTop_div_const_of_neg (by simp)
+    |>.atTop_mul_atTop₀ (tendsto_natCast_atTop.atTop_pow₀ two_ne_zero) |>.atTop_div_const_of_neg (by simp)
 
 /-- The cube root function `r.cbrt = r ^ 3⁻¹`. -/
 noncomputable def _root_.Real.cbrt := fun r : ℝ => r ^ (3⁻¹ : ℝ)
@@ -66,7 +66,7 @@ theorem Zad5b : Tendsto (fun n : ℕ => n * (cbrt (n ^ 3 + n) - n)) atTop (𝓝 
       apply eq_inv_of_mul_eq_one_left; ring_nf
       rw [cbrt, ← Nat.cast_ofNat (n := 3), Real.rpow_inv_natCast_pow]; field
       all_goals positivity
-  have := (tendsto_natCast_atTop.atTop_pow₀ 2).inv_atTop.const_add_zero 1 |>.one_rpow_const 3⁻¹
+  have := (tendsto_natCast_atTop.atTop_pow₀ two_ne_zero).inv_atTop.const_add_zero 1 |>.one_rpow_const 3⁻¹
   simp [cbrt, tendsto_inv_iff₀]; convert ((this.pow 2).add this).add_const 1; norm_num
 
 theorem Zad5c : Tendsto (fun n : ℕ => (n ^ 2 + 5 : ℝ) ^ (n⁻¹ : ℝ)) atTop (𝓝 1) := by

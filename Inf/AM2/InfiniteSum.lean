@@ -1,5 +1,4 @@
 import Inf.AM1.Tendsto
-import Mathlib.Tactic.Peel
 
 /-! ## Worth noting:
 

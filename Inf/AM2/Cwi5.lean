@@ -98,9 +98,10 @@ theorem Zad3a : Summable (fun (n : ℕ) => (2 : ℝ) ^ (log n) ^ 2 * (x - 3) ^ n
     (fun hx => not_summable_powerSeries_of_norm_gt_inv (by simpa) one_ne_zero (by simp; grind))
   · apply mt fun h => h.tendsto_atTop_zero'.comp (tendsto_const_mul_atTop' two_pos)
     apply not_tendsto_nhds_of_tendsto_atTop; norm_num [Function.comp_def]
-    exact ((tendsto_natCast_atTop.const_mul_atTop' two_pos).log_atTop.atTop_pow₀ 2).const_rpow_atTop one_lt_two
+    exact ((tendsto_natCast_atTop.const_mul_atTop' two_pos).log_atTop.atTop_pow₀ two_ne_zero)
+      |>.const_rpow_atTop one_lt_two
   · apply mt Summable.tendsto_atTop_zero'; apply not_tendsto_nhds_of_tendsto_atTop
-    norm_num; exact (tendsto_natCast_atTop.log_atTop.atTop_pow₀ 2).const_rpow_atTop one_lt_two
+    norm_num; exact (tendsto_natCast_atTop.log_atTop.atTop_pow₀ two_ne_zero).const_rpow_atTop one_lt_two
 
 theorem Zad3b {x : ℝ} :
     Summable (fun (n : ℕ) => (n + 7) * (x + 3) ^ n / ((n ^ 2 + 1) * 9 ^ n)) (conditional ℕ)

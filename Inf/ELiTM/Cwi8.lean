@@ -24,7 +24,11 @@ theorem Zad1h : #NNReal = #ℝ := by
 
 alias Zad2 := Equiv.Set.congr
 
-noncomputable def Zad3 : Set α ≃ (α → Bool) := (Equiv.refl α).arrowCongr Equiv.propEquivBool
+noncomputable def Zad3 : Set α ≃ (α → Bool) where
+  toFun s a := by classical exact decide (a ∈ s)
+  invFun f := {a | f a}
+  left_inv s := by simp
+  right_inv f := by simp
 
 theorem Zad4 : #(ℕ → Bool) = #(ℕ → ℝ) := by simp [mk_real]
 

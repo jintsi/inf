@@ -176,12 +176,6 @@ theorem _root_.tendsto_const_mul_atTop' {C : R} (h : 0 < C) : Tendsto (fun x => 
 
 end
 
-/-! `Mathlib.Order.Filter.AtTopBot.Ring` -/
-
-theorem atTop_pow₀ [Semiring R] [PartialOrder R] [IsOrderedRing R] (n : ℕ) [NeZero n]
-    {l : Filter α} {f : α → R} (hf : Tendsto f l atTop) : Tendsto (fun x => f x ^ n) l atTop :=
-  (tendsto_pow_atTop (NeZero.ne n)).comp hf
-
 /-! `Mathlib.Order.Filter.AtTopBot.Field` -/
 
 variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K] in

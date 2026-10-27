@@ -200,9 +200,9 @@ theorem Zad1c : ∫ p in {(x, y) : ℝ × ℝ | y ≤ x ^ 2 + y ^ 2 ∧ x ^ 2 + 
         exact cos_nonneg_of_neg_pi_div_two_le_of_le (by linarith) h2
   _ = ∫ p in {(r, t) | (t ∈ Set.Icc 0 (π / 2)) ∧ r ∈ Set.Icc (sin t) (2 * sin t)},
       p.1 * (fun (x, y) => x * y ^ 2) (polarCoord.symm p) := by
-    apply setIntegral_congr_set; symm; convert insert_ae_eq_self ((0, 0) : ℝ × ℝ) _; swap
-    · infer_instance
-    apply Set.ext; simp; intro r t; nth_rw 1 [le_iff_eq_or_lt']; simp [or_and_right]
+    apply setIntegral_congr_set; symm; convert insert_ae_eq_self ((0, 0) : ℝ × ℝ) _ with ⟨r, t⟩
+    swap; · infer_instance
+    simp; nth_rw 1 [le_iff_eq_or_lt']; simp [or_and_right]
     apply or_congr_left; constructor
     · simpa +contextual using fun _ _ => ge_antisymm
     · simpa +contextual using fun _ _ => pi_div_two_pos.le
