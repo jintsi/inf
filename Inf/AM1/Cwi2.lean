@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
-import Mathlib.Data.Nat.Choose.Sum
 import Mathlib.Algebra.Order.Archimedean.Real.Basic
+import Mathlib.Data.Nat.Choose.Sum
 import Mathlib.Data.Nat.Cast.Order.Field
 import Mathlib.Order.ConditionallyCompleteLattice.Group
 

@@ -124,5 +124,5 @@ theorem Zad19 [DivisionSemiring R] {a : ℕ → R} (h : ∀ n, a (n + 1) = a n /
   | succ n ih => rw [h, inv_div, add_div, mul_div_cancel_right₀ _ (hne n), one_div, ih,
       ← add_assoc, add_comm 2, Nat.cast_add_one, mul_add_one]
 
-alias Zad23 := Nat.infinite_setOf_prime
+alias Zad23 := Nat.infinite_setOfPred_prime
 alias Zad24 := Nat.primeFactorsList_unique

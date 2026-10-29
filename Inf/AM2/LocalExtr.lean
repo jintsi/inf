@@ -3,6 +3,7 @@ import Inf.ALG2.Sylvester
 import Mathlib.Analysis.Calculus.Taylor
 import Mathlib.Analysis.Calculus.Deriv.Shift
 import Mathlib.Analysis.Calculus.DerivativeTest
+import Mathlib.Analysis.Matrix.PosDef
 
 /-! # Second partial derivative test -/
 
@@ -21,12 +22,14 @@ theorem fderiv_fderiv_apply_same (hf : ∀ᶠ x in nhds a, DifferentiableAt ℝ 
     (hf' : DifferentiableAt ℝ (fderiv ℝ f) a) :
     fderiv ℝ (fderiv ℝ f) a v v = deriv (deriv fun x => f (a + x • v)) (0 : ℝ) := by
   rw [fderiv_apply_eq_deriv hf']; symm
-  convert deriv_clm_apply (c := fun x => fderiv ℝ f (a + x • v)) ?_ (differentiableAt_const v) using 1
+  convert deriv_clm_apply (c := fun x => fderiv ℝ f (a + x • v)) ?_ (differentiableAt_const v)
+    using 1
   swap; simp; rfl; swap
   · change DifferentiableAt ℝ (fderiv ℝ f ∘ (a + · • v)) 0; apply DifferentiableAt.comp
     · simpa
     · fun_prop
-  have : Tendsto (fun x : ℝ => a + x • v) (𝓝 0) (𝓝 a) := by apply Continuous.tendsto'; fun_prop; simp
+  have : Tendsto (fun x : ℝ => a + x • v) (𝓝 0) (𝓝 a) := by
+    apply Continuous.tendsto'; fun_prop; simp
   apply EventuallyEq.deriv_eq; filter_upwards [this.eventually hf] with x hx
   convert! fderiv_comp_deriv (l := f) (f := (a + · • v)) x hx (by fun_prop)
   simp; rw [deriv_smul_const] <;> simp
@@ -90,8 +93,8 @@ theorem eventually_posDef_hessian (hf : ContDiffAt ℝ 2 f a) (h : (hessian b f 
 
 /-- The **second partial derivative test**, minimum version: if the Hessian matrix is
 positive-definite at a stationary point, then it is a local minimum. -/
-theorem isLocalMin_of_hessian (hf : ContDiffAt ℝ 2 f a) (ha : fderiv ℝ f a = 0) (h : (hessian b f a).PosDef) :
-    IsLocalMin f a := by
+theorem isLocalMin_of_hessian (hf : ContDiffAt ℝ 2 f a) (ha : fderiv ℝ f a = 0)
+    (h : (hessian b f a).PosDef) : IsLocalMin f a := by
   obtain ⟨s, hs, hcs, h⟩ : ∃ s ∈ 𝓝 a, Convex ℝ s ∧ ∀ x ∈ s,
       ContDiffAt ℝ 2 f x ∧ (hessian b f x).PosDef :=
     (locallyConvexSpace_iff_exists_convex_subset ℝ E).mp inferInstance a _
@@ -113,20 +116,21 @@ theorem isLocalMin_of_hessian (hf : ContDiffAt ℝ 2 f a) (ha : fderiv ℝ f a =
   simp [← deriv_comp_const_add, add_smul, ← add_assoc]
   have hc : a + c • (v - a) ∈ s := hcs.add_smul_sub_mem (mem_of_mem_nhds hs) hv
       (by simpa using (Set.uIoo_subset_uIcc_self hc))
-  rw [deriv_deriv_eq_hessian b (((h _ hc).1.eventually (by simp)).mono
-    fun x hx => hx.differentiableAt two_ne_zero) ((h _ hc).1.fderiv_right_succ.differentiableAt_one)]
+  rw [deriv_deriv_eq_hessian b (((h _ hc).1.eventually (by simp)).mono fun x hx =>
+    hx.differentiableAt two_ne_zero) ((h _ hc).1.fderiv_right_succ.differentiableAt_one)]
   exact (h _ hc).2.posSemidef.dotProduct_mulVec_nonneg _
 
 /-- The **second partial derivative test**, maximum version: if the Hessian matrix is
 negative-definite at a stationary point, then it is a local maximum. -/
-theorem isLocalMax_of_hessian (hf : ContDiffAt ℝ 2 f a) (ha : fderiv ℝ f a = 0) (h : (-hessian b f a).PosDef) :
-    IsLocalMax f a := by
+theorem isLocalMax_of_hessian (hf : ContDiffAt ℝ 2 f a) (ha : fderiv ℝ f a = 0)
+    (h : (-hessian b f a).PosDef) : IsLocalMax f a := by
   rw [← neg_neg f]; apply IsLocalMin.neg
   apply isLocalMin_of_hessian b hf.neg (by simpa)
   convert h; simp [hessian]; rfl
 
 theorem IsLocalMin.posSemidef_hessian' (hf : ∀ᶠ x in nhds a, DifferentiableAt ℝ f x)
-    (hf' : DifferentiableAt ℝ (fderiv ℝ f) a) (h : IsLocalMin f a) : (hessian b f a).PosSemidef := by
+    (hf' : DifferentiableAt ℝ (fderiv ℝ f) a) (h : IsLocalMin f a) :
+    (hessian b f a).PosSemidef := by
   rw [Matrix.posSemidef_iff_dotProduct_mulVec]; use isSymm_hessian hf hf'; simp; intro x
   let v := b.equivFun.symm x; have : b.equivFun v = x := b.equivFun.apply_symm_apply x
   simp [← this, ← deriv_deriv_eq_hessian b hf hf']
@@ -139,29 +143,34 @@ theorem IsLocalMin.posSemidef_hessian' (hf : ∀ᶠ x in nhds a, DifferentiableA
     simp_all [sign_eq_neg_one_iff]
   apply (Continuous.tendsto' (by fun_prop) 0 a (by simp) :
     Tendsto (fun x : ℝ => a + x • v) (𝓝 0) (𝓝 a)).frequently
-  refine Frequently.filter_mono ?_ (nhdsWithin_le_nhds (s := (Set.Ioi 0))); apply Eventually.frequently
+  refine Frequently.filter_mono ?_ (nhdsWithin_le_nhds (s := (Set.Ioi 0)))
+  apply Eventually.frequently
   rw [(nhdsGT_basis 0).eventually_iff] at h'; rcases h' with ⟨i, hi, h'⟩
-  filter_upwards [eventually_mem_nhdsWithin, (eventually_lt_nhds hi).filter_mono nhdsWithin_le_nhds]
+  filter_upwards [eventually_mem_nhdsWithin,
+    (eventually_lt_nhds hi).filter_mono nhdsWithin_le_nhds]
   suffices StrictAntiOn (fun x => f (a + x • v)) (Set.Ico 0 i) by
     intro x hx0 hxi; simpa using this ⟨le_rfl, hi⟩ ⟨hx0.le, hxi⟩ hx0
   apply strictAntiOn_of_deriv_neg (convex_Ico 0 i) ?_ (by simpa using h')
-  intro x ⟨hx0, hxi⟩; apply ContinuousAt.continuousWithinAt; rcases eq_or_lt_of_le' hx0 with rfl | h
+  intro x ⟨hx0, hxi⟩; apply ContinuousAt.continuousWithinAt
+  rcases eq_or_lt_of_le' hx0 with rfl | h
   · exact hf.self_of_nhds.continuousAt.comp_of_eq
       (show ContinuousAt (fun x : ℝ => a + x • v) 0 by fun_prop) (by simp)
   exact (differentiableAt_of_deriv_ne_zero (h' ⟨h, hxi⟩).ne).continuousAt
 
 theorem IsLocalMin.posSemidef_hessian (hf : ContDiffAt ℝ 2 f a) (h : IsLocalMin f a) :
-    (hessian b f a).PosSemidef :=
-  h.posSemidef_hessian' b ((hf.eventually (by simp)).mono fun x hx => hx.differentiableAt two_ne_zero)
-    hf.fderiv_right_succ.differentiableAt_one
+    (hessian b f a).PosSemidef := h.posSemidef_hessian' b
+  ((hf.eventually (by simp)).mono fun x hx => hx.differentiableAt two_ne_zero)
+  hf.fderiv_right_succ.differentiableAt_one
 
 theorem IsLocalMax.negSemidef_hessian' (hf : ∀ᶠ x in nhds a, DifferentiableAt ℝ f x)
-    (hf' : DifferentiableAt ℝ (fderiv ℝ f) a) (h : IsLocalMax f a) : (-hessian b f a).PosSemidef := by
+    (hf' : DifferentiableAt ℝ (fderiv ℝ f) a) (h : IsLocalMax f a) :
+    (-hessian b f a).PosSemidef := by
   convert h.neg.posSemidef_hessian' b (hf.mono fun x => DifferentiableAt.neg)
     (by eta_expand; simpa [fderiv_neg]); simp [hessian, fderiv_neg]; rfl
 
 theorem IsLocalMax.negSemidef_hessian (hf : ContDiffAt ℝ 2 f a) (h : IsLocalMax f a) :
-    (-hessian b f a).PosSemidef := by convert h.neg.posSemidef_hessian b hf.neg; simp [hessian]; rfl
+    (-hessian b f a).PosSemidef := by
+  convert h.neg.posSemidef_hessian b hf.neg; simp [hessian]; rfl
 
 end
 
@@ -179,5 +188,5 @@ theorem isLocalExtr_of_det_hessian_pos (hf : ContDiffAt ℝ 2 f a) (ha : fderiv 
 
 theorem det_hessian_nonneg_of_isLocalExtr (hf : ContDiffAt ℝ 2 f a) (h : IsLocalExtr f a) :
     (0 : ℝ) ≤ (hessian (Basis.finTwoProd ℝ) f a).det :=
-  h.elim (fun hmin => (hmin.posSemidef_hessian _ hf).det_nonneg)
-    fun hmax => by simpa [det_neg] using (hmax.negSemidef_hessian (Basis.finTwoProd ℝ) hf).det_nonneg
+  h.elim (fun hmin => (hmin.posSemidef_hessian _ hf).det_nonneg) fun hmax => by
+    simpa [det_neg] using (hmax.negSemidef_hessian (Basis.finTwoProd ℝ) hf).det_nonneg

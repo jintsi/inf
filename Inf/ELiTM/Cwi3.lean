@@ -73,10 +73,12 @@ theorem Zad9d {a b c : Set α} : (a ∩ b) \ c ∪ (a ∩ c) \ b = (a ∩ (b ∪
 theorem Zad9e {a b c d : Set α} : (a ∪ d) ∩ c ∪ b \ d = a \ d ∩ c ∪ b \ d ↔ Disjoint d c := by
   simp [Set.disjoint_iff, Set.ext_iff]; congr!; tauto
 
-theorem Zad9f {a b c d : Set α} : ((a ∩ d ∪ c) ∩ b) \ d = (a \ d ∪ c) ∩ (b \ d) ↔ a ∩ b ⊆ c ∪ d := by
+theorem Zad9f {a b c d : Set α} :
+    ((a ∩ d ∪ c) ∩ b) \ d = (a \ d ∪ c) ∩ (b \ d) ↔ a ∩ b ⊆ c ∪ d := by
   simp [Set.ext_iff, Set.subset_def]; congr!; tauto
 
-theorem Zad9g {a b c d : Set α} : (a ∩ b ∪ c \ d) ∩ (d \ a) = (c ∩ d) \ (a ∪ b) ↔ c ∩ d ⊆ a ∪ b := by
+theorem Zad9g {a b c d : Set α} :
+    (a ∩ b ∪ c \ d) ∩ (d \ a) = (c ∩ d) \ (a ∪ b) ↔ c ∩ d ⊆ a ∪ b := by
   simp [Set.ext_iff, Set.subset_def]; congr!; tauto
 
 alias Zad9h := Set.prod_union

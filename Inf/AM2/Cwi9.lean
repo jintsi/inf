@@ -1,6 +1,4 @@
-import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.PolarCoord
-import Mathlib.MeasureTheory.Measure.Lebesgue.Integral
 import Inf.AM2.Cwi3
 
 open MeasureTheory intervalIntegral Real Topology Filter
@@ -9,24 +7,28 @@ open MeasureTheory intervalIntegral Real Topology Filter
 theorem intervalIntegral.continuous_parametric_intervalIntegral_of_continuous_of_continuous
     [NormedAddCommGroup E] [NormedSpace ℝ E] [TopologicalSpace X] [NullSingletonClass μ]
     [IsLocallyFiniteMeasure μ] {f : X → ℝ → E} {a b : X → ℝ} (hf : Continuous f.uncurry)
-    (ha : Continuous a) (hb : Continuous b) : Continuous fun x => ∫ (t : ℝ) in a x..b x, f x t ∂μ := by
+    (ha : Continuous a) (hb : Continuous b) :
+    Continuous fun x => ∫ (t : ℝ) in a x..b x, f x t ∂μ := by
   rw [continuous_congr fun x => ?_]; pick_goal 3
   · rw [← integral_interval_sub_left (a := 0)] <;> apply Continuous.intervalIntegrable <;> fun_prop
   fun_prop
 
 theorem measurableSet_region_between_cc_of_continuousOn [TopologicalSpace α] [MeasurableSpace α]
     [OpensMeasurableSpace α] (hf : ContinuousOn f s) (hg : ContinuousOn g s)
-    (hs : MeasurableSet s) : MeasurableSet {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)} := by
+    (hs : MeasurableSet s) :
+    MeasurableSet {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)} := by
   classical
   have hf' := hf.measurable_piecewise continuous_zero.continuousOn hs
   have hg' := hg.measurable_piecewise continuous_zero.continuousOn hs
   convert measurableSet_region_between_cc hf' hg' hs using 3 with p; simp +contextual
 
 theorem integral_region_between_cc [MeasureSpace α] [SFinite (volume : Measure α)]
-    [NormedAddCommGroup β] [NormedSpace ℝ β] {f g : α → ℝ} {F : α × ℝ → β} (hfg : ∀ x ∈ s, f x ≤ g x)
-    (hs : MeasurableSet s) (hs' : MeasurableSet {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)})
+    [NormedAddCommGroup β] [NormedSpace ℝ β] {f g : α → ℝ} {F : α × ℝ → β}
+    (hfg : ∀ x ∈ s, f x ≤ g x) (hs : MeasurableSet s)
+    (hs' : MeasurableSet {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)})
     (hF : IntegrableOn F {p | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)}) :
-    ∫ p in {p | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)}, F p = ∫ x in s, ∫ y in f x..g x, F (x, y) := calc
+    ∫ p in {p | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)}, F p
+    = ∫ x in s, ∫ y in f x..g x, F (x, y) := calc
   ∫ p in {(x, y) | (x ∈ s) ∧ y ∈ Set.Icc (f x) (g x)}, F p
   _ = ∫ x, ∫ y, {(x, y) | (x ∈ s) ∧ y ∈ Set.Icc (f x) (g x)}.indicator F (x, y) := by
     rw [← MeasureTheory.integral_indicator hs', Measure.volume_eq_prod, integral_prod]
@@ -34,7 +36,8 @@ theorem integral_region_between_cc [MeasureSpace α] [SFinite (volume : Measure 
   _ = ∫ x in s, ∫ y, {(x, y) | (x ∈ s) ∧ y ∈ Set.Icc (f x) (g x)}.indicator F (x, y) := by
     symm; apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx; convert integral_zero ℝ β with y; simp [hx]
-  _ = ∫ x in s, ∫ y in f x..g x, {(x, y) | (x ∈ s) ∧ y ∈ Set.Icc (f x) (g x)}.indicator F (x, y) := by
+  _ = ∫ x in s, ∫ y in f x..g x,
+      {(x, y) | (x ∈ s) ∧ y ∈ Set.Icc (f x) (g x)}.indicator F (x, y) := by
     apply setIntegral_congr_fun hs; intro x hx; dsimp
     rw [integral_of_le (hfg x hx), ← integral_Icc_eq_integral_Ioc]; symm
     apply setIntegral_eq_integral_of_forall_compl_eq_zero; simp +contextual
@@ -46,7 +49,8 @@ theorem integral_normal_domain_cc {F : ℝ × ℝ → β} [NormedAddCommGroup β
     (hf : ContinuousOn f (Set.Icc a b)) (hg : ContinuousOn g (Set.Icc a b)) (hab : a ≤ b)
     (hfg : ∀ x ∈ Set.Icc a b, f x ≤ g x)
     (hF : ContinuousOn F {p | (p.1 ∈ Set.Icc a b) ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)}) :
-    ∫ p in {p | (p.1 ∈ Set.Icc a b) ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)}, F p = ∫ x in a..b, ∫ y in f x..g x, F (x, y) := by
+    ∫ p in {p | (p.1 ∈ Set.Icc a b) ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)}, F p
+    = ∫ x in a..b, ∫ y in f x..g x, F (x, y) := by
   rw [integral_of_le hab, ← integral_Icc_eq_integral_Ioc]
   have hf' := (hf.measurable_piecewise continuous_zero.continuousOn measurableSet_Icc)
   have hg' := (hg.measurable_piecewise continuous_zero.continuousOn measurableSet_Icc)
@@ -59,13 +63,15 @@ theorem integral_normal_domain_cc {F : ℝ × ℝ → β} [NormedAddCommGroup β
   obtain ⟨bg, hbg⟩ := isCompact_Icc.bddAbove_image hg; simp [upperBounds, -Set.mem_Icc] at hbg
   apply Bornology.IsBounded.subset (t := Set.Icc a b ×ˢ Set.Icc bf bg)
   · simp [Metric.isBounded_Icc]
-  intro (x, y); simp [-Set.mem_Icc]; intro hx; simp [hx.1, hx.2]; grw [hbf x hx, ← hbg x hx]; trivial
+  intro (x, y); simp [-Set.mem_Icc]; intro hx
+  simp [hx.1, hx.2]; grw [hbf x hx, ← hbg x hx]; trivial
 
 theorem integral_normal_domain_cc' {F : ℝ × ℝ → β} [NormedAddCommGroup β] [NormedSpace ℝ β]
     (hf : ContinuousOn f (Set.Icc a b)) (hg : ContinuousOn g (Set.Icc a b)) (hab : a ≤ b)
     (hfg : ∀ y ∈ Set.Icc a b, f y ≤ g y)
     (hF : ContinuousOn F {(x, y) | (y ∈ Set.Icc a b) ∧ x ∈ Set.Icc (f y) (g y)}) :
-    ∫ p in {(x, y) | (y ∈ Set.Icc a b) ∧ x ∈ Set.Icc (f y) (g y)}, F p = ∫ y in a..b, ∫ x in f y..g y, F (x, y) := by
+    ∫ p in {(x, y) | (y ∈ Set.Icc a b) ∧ x ∈ Set.Icc (f y) (g y)}, F p
+    = ∫ y in a..b, ∫ x in f y..g y, F (x, y) := by
   trans ∫ p in {(y, x) | (y ∈ Set.Icc a b) ∧ x ∈ Set.Icc (f y) (g y)}, F p.swap
   · rw [← MeasureTheory.integral_indicator, Measure.volume_eq_prod, ← integral_prod_swap,
       ← MeasureTheory.integral_indicator]; rfl
@@ -93,9 +99,12 @@ theorem Zad1a : ∫ p in {(x, y) | 3 * √x ≤ y ∧ y ≤ 4 - x ^ 2}, p.1 * p.
     trans 3
     · simp_all
     · norm_num [le_sub_comm]; simp_all [abs_of_nonneg]
-  _ = (∫ x in -2..0, ∫ y in 3 * √x..4 - x ^ 2, x * y) + ∫ x in 0..1, ∫ y in 3 * √x..4 - x ^ 2, x * y := by
-    symm; apply integral_add_adjacent_intervals <;> apply Continuous.intervalIntegrable <;> fun_prop
-  _ = (∫ x in -2..0, x * (4 - x ^ 2) ^ 2 / 2) + ∫ x in 0..1, x * ((4 - x ^ 2) ^ 2 - 9 * x) / 2 := by
+  _ = (∫ x in -2..0, ∫ y in 3 * √x..4 - x ^ 2, x * y)
+      + ∫ x in 0..1, ∫ y in 3 * √x..4 - x ^ 2, x * y := by
+    symm; apply integral_add_adjacent_intervals
+      <;> apply Continuous.intervalIntegrable <;> fun_prop
+  _ = (∫ x in -2..0, x * (4 - x ^ 2) ^ 2 / 2)
+      + ∫ x in 0..1, x * ((4 - x ^ 2) ^ 2 - 9 * x) / 2 := by
     congr 1; all_goals
       apply integral_congr; intro x hx; simp at hx; dsimp; rw [intervalIntegral.integral_const_mul]
     · simp [sqrt_eq_zero_of_nonpos hx.2, mul_div_assoc]
@@ -109,7 +118,8 @@ lemma Zad1b_cos_add_sin_pos (h : t ∈ Set.Icc (π / 4) (π / 2)) : 0 < cos t + 
 
 theorem Zad1b : ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1 ∧ x ≤ y ∧ 1 ≤ x + y},
     1 / (p.1 ^ 2 + p.2 ^ 2) ^ (3 / 2 : ℝ) = 1 - π / 4 := calc
-  ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1 ∧ x ≤ y ∧ 1 ≤ x + y}, 1 / (p.1 ^ 2 + p.2 ^ 2) ^ (3 / 2 : ℝ)
+  ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1 ∧ x ≤ y ∧ 1 ≤ x + y},
+      1 / (p.1 ^ 2 + p.2 ^ 2) ^ (3 / 2 : ℝ)
   _ = ∫ p, {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1 ∧ x ≤ y ∧ 1 ≤ x + y}.indicator
       (fun (x, y) => 1 / (x ^ 2 + y ^ 2) ^ (3 / 2 : ℝ)) p := by
     rw [MeasureTheory.integral_indicator]; simp; fun_prop
@@ -232,13 +242,13 @@ theorem Zad1d : ∫ p in {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ x + y}, p.1 - 
 
 theorem _root_.region_between_cc_ae_eq_regionBetween [MeasurableSpace α] {μ : Measure α}
     [SFinite μ] (hf : Measurable f) (hg : Measurable g) :
-    {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)} =ᵐ[μ.prod volume] regionBetween f g s := by
+    {p : α × ℝ | p.1 ∈ s ∧ p.2 ∈ Set.Icc (f p.1) (g p.1)}
+    =ᵐ[μ.prod volume] regionBetween f g s := by
   rw [Set.ofPred_and, regionBetween, Set.ofPred_and]
   apply EventuallyEqSet.rfl.inter; unfold EventuallyEqSet EventuallyEq
   rw [Measure.ae_prod_iff_ae_ae (by simp; fun_prop)]
   filter_upwards with x using Ioo_ae_eq_Icc.symm
 
-set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad2a : volume {(x, y) : ℝ × ℝ | y ^ 2 ≤ 1 - x ∧ y ^ 2 ≤ x / 2 + 1} = 4 := calc
   volume {(x, y) : ℝ × ℝ | y ^ 2 ≤ 1 - x ∧ y ^ 2 ≤ x / 2 + 1}
   _ = volume {(x, y) : ℝ × ℝ | y ∈ Set.Icc (-1) 1 ∧ x ∈ Set.Icc (2 * y ^ 2 - 2) (1 - y ^ 2)} := by
@@ -268,7 +278,8 @@ theorem _root_.region_between_oc_ae_eq_cc' {s : Set α} [MeasurableSpace α] {μ
   rw [Measure.ae_prod_iff_ae_ae (by simp; fun_prop), Measure.ae_ae_comm (by simp; fun_prop)]
   filter_upwards with x using Ioc_ae_eq_Icc
 
-theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y ^ 2 ∧ 0 ≤ x} = 1 / 2 := calc
+theorem Zad2b :
+    volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y ^ 2 ∧ 0 ≤ x} = 1 / 2 := calc
   volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y ^ 2 ∧ 0 ≤ x}
   _ = .ofReal (∫ p in {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y ^ 2 ∧ 0 ≤ x}, 1) := by
     rw [ofReal_setIntegral_one_of_measure_ne_top ?_]
@@ -292,7 +303,8 @@ theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y 
         · grw [neg_neg, ← ht]; apply sin_neg_of_neg_of_neg_pi_lt <;> linarith
         · trans √2 / 2
           · rw [← cos_neg, ← cos_pi_div_four]; apply cos_lt_cos_of_nonneg_of_le_pi <;> linarith
-          · rw [← sin_neg, ← sin_pi_div_four]; apply sin_lt_sin_of_lt_of_le_pi_div_two <;> try linarith
+          · rw [← sin_neg, ← sin_pi_div_four]
+            apply sin_lt_sin_of_lt_of_le_pi_div_two <;> try linarith
             contrapose! ht; rw [← cos_neg]; apply cos_neg_of_pi_div_two_lt_of_lt <;> linarith
       · apply sq_lt_sq'
         · grw [← ht, neg_neg_iff_pos]; apply sin_pos_of_pos_of_lt_pi <;> linarith
@@ -303,12 +315,15 @@ theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y 
     · intro hr ht1 ht2 h; constructor
       · and_intros <;> linarith [pi_pos]
       · apply cos_nonneg_of_neg_pi_div_two_le_of_le <;> linarith
-  _ = .ofReal (∫ p in {(r, t) : ℝ × ℝ | t ∈ Set.Icc (-π / 4) (π / 4) ∧ r ∈ Set.Ioc 0 √(cos t ^ 2 - sin t ^ 2)}, p.1) := by
+  _ = .ofReal (∫ p in {(r, t) : ℝ × ℝ | t ∈ Set.Icc (-π / 4) (π / 4)
+      ∧ r ∈ Set.Ioc 0 √(cos t ^ 2 - sin t ^ 2)}, p.1) := by
     congr! 8 with ⟨_, _⟩ r t; rw [and_left_comm, Set.mem_Ioc]; congr! 1; apply and_congr_right
     intro hr; rw [le_sqrt' hr]; convert mul_le_mul_iff_right₀ (pow_pos hr 2); ring
-  _ = .ofReal (∫ p in {(r, t) : ℝ × ℝ | t ∈ Set.Icc (-π / 4) (π / 4) ∧ r ∈ Set.Icc 0 √(cos t ^ 2 - sin t ^ 2)}, p.1) := by
+  _ = .ofReal (∫ p in {(r, t) : ℝ × ℝ | t ∈ Set.Icc (-π / 4) (π / 4)
+      ∧ r ∈ Set.Icc 0 √(cos t ^ 2 - sin t ^ 2)}, p.1) := by
     rw [Measure.volume_eq_prod, setIntegral_congr_set]
-    apply region_between_oc_ae_eq_cc' (g := fun t => √(cos t ^ 2 - sin t ^ 2)) measurable_zero; fun_prop
+    apply region_between_oc_ae_eq_cc' (g := fun t => √(cos t ^ 2 - sin t ^ 2)) measurable_zero
+    fun_prop
   _ = .ofReal (∫ t in -π / 4..π / 4, ∫ r in 0..√(cos t ^ 2 - sin t ^ 2), r) := by
     congr 1; exact integral_normal_domain_cc' (g := fun t => √(cos t ^ 2 - sin t ^ 2))
       continuous_zero.continuousOn (by fun_prop) (by linarith [pi_pos]) (by simp) continuousOn_fst
@@ -320,11 +335,12 @@ theorem Zad2b : volume {(x, y) : ℝ × ℝ | (x ^ 2 + y ^ 2) ^ 2 ≤ x ^ 2 - y 
     rw [intervalIntegral.integral_sub] <;> try apply Continuous.intervalIntegrable; fun_prop
     simp [neg_div]; ring_nf; norm_num [ENNReal.ofReal_div_of_pos]
 
-set_option backward.isDefEq.respectTransparency.types false in
-theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧
-    z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)} = 120 * NNReal.pi := calc
-  volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)}
-  _ = volume {((x, y), z) : (ℝ × ℝ) × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36 ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)} := by
+theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36
+    ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)} = 120 * NNReal.pi := calc
+  volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36
+      ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)}
+  _ = volume {((x, y), z) : (ℝ × ℝ) × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36
+      ∧ z ∈ Set.Icc 0 (4 * x ^ 2 + 9 * y ^ 2 + 2)} := by
     symm; convert volume_preserving_prodAssoc.measure_preimage_equiv _; rfl
     all_goals infer_instance
   _ = volume {(p, z) : (ℝ × ℝ) × ℝ | p ∈ {(x, y) | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36} ∧
@@ -334,7 +350,8 @@ theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤
     apply measure_congr; rw [Measure.volume_eq_prod]
     convert region_between_cc_ae_eq_regionBetween ?_ ?_ using 1; rfl
     infer_instance; all_goals fun_prop
-  _ = .ofReal (∫ p in {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36}, 4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2 - 0) := by
+  _ = .ofReal (∫ p in {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36},
+      4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2 - 0) := by
     have : IsCompact {(x, y) : ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤ 36} := by
       apply Metric.isCompact_of_isClosed_isBounded
       · apply isClosed_le <;> fun_prop
@@ -342,7 +359,8 @@ theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤
         rw [Metric.isBounded_iff_subset_closedBall 0]; use 3
         simp [Set.subset_def, abs_le]; intro x y h; and_intros <;> nlinarith
     exact volume_regionBetween_eq_integral integrableOn_zero
-      (ContinuousOn.integrableOn_compact this (by fun_prop)) (by simp; fun_prop) (by intros; nlinarith)
+      (ContinuousOn.integrableOn_compact this (by fun_prop))
+      (by simp; fun_prop) (by intros; nlinarith)
   _ = .ofReal (∫ p in (3 : ℝ →L[ℝ] ℝ).prodMap 2 '' {(x, y) : ℝ × ℝ | x ^ 2 + y ^ 2 ≤ 1},
         4 * p.1 ^ 2 + 9 * p.2 ^ 2 + 2) := by
     simp; congr; simp [funext_iff, mul_comm, ← eq_div_iff_mul_eq]; field_simp; norm_num
@@ -358,7 +376,8 @@ theorem Zad3 : volume {(x, y, z) : ℝ × ℝ × ℝ | 4 * x ^ 2 + 9 * y ^ 2 ≤
       ← MeasureTheory.integral_indicator (measurableSet_Ioc.prod measurableSet_Ioo)]
     simp [Set.indicator, ← ite_and, mul_pow, ← mul_add]; grind
   _ = .ofReal (∫ r in 0..1, 2 * π * (216 * r ^ 3 + 12 * r)) := by
-    rw [integral_of_le zero_le_one, Measure.volume_eq_prod, setIntegral_prod]; simp [← two_mul, pi_nonneg]
+    rw [integral_of_le zero_le_one, Measure.volume_eq_prod, setIntegral_prod]
+    simp [← two_mul, pi_nonneg]
     apply ContinuousOn.integrableOn_of_subset_isCompact (K := Set.Icc 0 1 ×ˢ Set.Icc (-π) π)
     · fun_prop
     · simp [isCompact_Icc]

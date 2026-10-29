@@ -1,7 +1,7 @@
 import Mathlib.Combinatorics.Pigeonhole
 import Mathlib.Data.Nat.Fib.Basic
 import Mathlib.Combinatorics.Digraph.Basic
-import Mathlib.Combinatorics.SimpleGraph.UniversalVerts
+import Mathlib.Combinatorics.SimpleGraph.Finite
 import Mathlib.Order.Interval.Finset.Fin
 import Mathlib.Data.Int.Interval
 
@@ -23,7 +23,8 @@ and `Fintype.exists_le_card_fiber_of_mul_le_card` -/
 theorem Finset.exists_le_card_fiber_of_mul_le_card {α β : Type*} [DecidableEq β] [Fintype β]
     {s : Finset α} (f : α → β) {n : ℕ} [Nonempty β] (hn : Fintype.card β * n ≤ s.card) :
     ∃ y, n ≤ card {x ∈ s | f x = y} := by
-  convert s.exists_le_card_fiber_of_mul_le_card_of_maps_to ?hf univ_nonempty hn <;> try simp; try rfl
+  convert s.exists_le_card_fiber_of_mul_le_card_of_maps_to ?hf univ_nonempty hn <;> try simp
+  rfl
 
 namespace MD1.Cwi1
 
@@ -55,7 +56,7 @@ theorem Zad3 [Fintype V] [Nonempty V] {G : Digraph V} (h : G.IsTournament) :
   revert V; apply Fintype.induction_empty_option
   · intro V' V _ e ih _ G hG
     specialize @ih e.nonempty ⟨fun v w => G.Adj (e v) (e w)⟩ ⟨fun v w => hG.total (e v) (e w)⟩
-    exact Iff.mp (e.exists_congr fun v => e.forall_congr fun w => e.exists_congr fun u => Iff.rfl) ih
+    exact (e.exists_congr fun v => e.forall_congr fun w => e.exists_congr fun u => by rfl).mp ih
   · simp
   · rintro V _ ih - G hG; by_cases! IsEmpty V
     · use none; simp [Option.forall]; use none; simpa using hG.total none none
@@ -67,8 +68,8 @@ theorem Zad3 [Fintype V] [Nonempty V] {G : Digraph V} (h : G.IsTournament) :
     specialize ih w; rcases ih with ⟨u, ih⟩; use u; and_intros; swap; exact ih.2
     exact (hG.total u none).resolve_left (h u ih.1)
 
-theorem Zad4 [Fintype V] [DecidableEq V] {G : Digraph V} [DecidableRel G.Adj] (h : G.IsTournament) :
-    ∃ p : List V, p.IsChain G.Adj ∧ ∀ v, p.count v = 1 := by
+theorem Zad4 [Fintype V] [DecidableEq V] {G : Digraph V} [DecidableRel G.Adj]
+    (h : G.IsTournament) : ∃ p : List V, p.IsChain G.Adj ∧ ∀ v, p.count v = 1 := by
   revert V; apply Fintype.induction_empty_option
   · intro V' V _ e ih _ G _ hG; have := e.decidableEq
     specialize @ih _ ⟨fun v w => G.Adj (e v) (e w)⟩ (fun v w => inferInstance)
@@ -141,7 +142,8 @@ theorem Zad8 {n : ℕ} [NeZero n] (f : Fin n → ℤ) :
       exists x + 1, y, this
       rw [Fin.Icc_add_one_eq_Ioc (by lia), show Finset.Ioc x y = Finset.Icc 0 y \ Finset.Icc 0 x by
           rw [← Finset.coe_inj]; simp [Set.ext_iff, and_comm],
-        Finset.sum_sdiff_eq_sub (Finset.Icc_subset_Icc_right hxy.le), Int.sub_emod, h, sub_self]; rfl
+        Finset.sum_sdiff_eq_sub (Finset.Icc_subset_Icc_right hxy.le), Int.sub_emod, h, sub_self]
+      rfl
     · simp [NeZero.pos]
     · simp [Int.emod_lt_of_pos, NeZero.pos]; gconvert h
       exact this.lt_of_le' (Int.emod_nonneg _ (NeZero.ne _))

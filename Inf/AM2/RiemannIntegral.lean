@@ -35,8 +35,9 @@ noncomputable def intervalPartition : Prepartition (interval hab) where
     simpa [intervalBox, fun I J => (Box.le_TFAE I J).out 1 4, Pi.le_def, -le_add_iff_nonneg_right]
       using fun i => intervalBox_bounds hab hn
   pairwiseDisjoint := by
-    rw [Finset.coe_image, Finset.coe_range]; apply Set.Pairwise.image; unfold Set.Pairwise Function.onFun
-    simp_rw [Set.mem_Iio]; intro i hi j hj hne; apply Disjoint.of_image (f := Equiv.funUnique _ _)
+    rw [Finset.coe_image, Finset.coe_range]; apply Set.Pairwise.image
+    unfold Set.Pairwise Function.onFun; simp_rw [Set.mem_Iio]; intro i hi j hj hne
+    apply Disjoint.of_image (f := Equiv.funUnique _ _)
     simp_rw [Equiv.image_eq_preimage_symm, Equiv.funUnique_symm_apply, Set.preimage, intervalBox,
       Box.mem_coe, mem_interval, uniqueElim_const, Set.ofPred_mem_eq, Set.Ioc_disjoint_Ioc]
     have := sub_pos_of_lt hab
@@ -70,7 +71,8 @@ lemma intervalPartition_index_lt (x : Unit → ℝ) (hx : a < x () ∧ x () ≤ 
     intervalPartition_index a b n x < n := by
   rw [intervalPartition_index]
   apply Nat.sub_one_lt_of_le (by simp; bound [Nat.zero_lt_of_ne_zero hn, hx])
-  rw [Nat.ceil_le, mul_div_right_comm, mul_le_iff_le_one_left (by simp; lia), div_le_one₀ (by simpa)]
+  rw [Nat.ceil_le, mul_div_right_comm,
+    mul_le_iff_le_one_left (by simp; lia), div_le_one₀ (by simpa)]
   simpa using hx.2
 
 theorem intervalPartition_isPartition : (intervalPartition hab hn).IsPartition := by
@@ -83,7 +85,8 @@ theorem intervalPartition_isPartition : (intervalPartition hab hn).IsPartition :
 noncomputable def taggedIntervalPartition' (t : ℕ → ℝ)
     (ht : ∀ i < n, t i ∈ Set.Icc a b) : TaggedPrepartition (interval hab) where
   toPrepartition := intervalPartition hab hn
-  tag := fun J _ => if J.upper () ≤ a ∨ b < J.upper () then b else t (intervalPartition_index a b n J.upper)
+  tag J _ :=
+    if J.upper () ≤ a ∨ b < J.upper () then b else t (intervalPartition_index a b n J.upper)
   tag_mem_Icc := by
     intro ⟨l, u, hlt⟩; dsimp only; split
     case isTrue => exact Box.upper_mem_Icc _
@@ -129,9 +132,10 @@ theorem intervalPartition_isSubordinate (t : ℕ → ℝ)
   obtain ⟨_, _, hJ⟩ := hJ; rw [← hJ]
   simp_rw [add_sub_add_left_eq_sub, mul_add_one, add_div, add_sub_cancel_left]; assumption
 
-theorem tendsto_intervalPartition_toFilteriUnion (t : ℕ → ℕ → ℝ)
-    (ht : ∀ n : ℕ, n ≠ 0 → ∀ i : ℕ, t n i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
-    Tendsto (fun n : ℕ => taggedIntervalPartition hab n.succ_ne_zero (t (n + 1)) (ht _ n.succ_ne_zero))
+theorem tendsto_intervalPartition_toFilteriUnion (t : ℕ → ℕ → ℝ) (ht : ∀ n : ℕ, n ≠ 0 →
+      ∀ i : ℕ, t n i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
+    Tendsto (fun n : ℕ =>
+      taggedIntervalPartition hab n.succ_ne_zero (t (n + 1)) (ht _ n.succ_ne_zero))
     atTop (IntegrationParams.Riemann.toFilteriUnion (interval hab) ⊤) := by
   simp_rw [(IntegrationParams.Riemann.hasBasis_toFilteriUnion_top _).tendsto_right_iff,
     IntegrationParams.RCond, IntegrationParams.Riemann, true_implies]; intro r hr
@@ -164,15 +168,17 @@ theorem ContinuousOn.tendsto_integralSum_intervalIntegral {f : ℝ → E}
     (hc : ContinuousOn f (Set.Icc a b)) (l : IntegrationParams := IntegrationParams.Riemann) :
     Tendsto (fun π => ∑ J ∈ π.boxes, (J.upper () - J.lower ()) • f (π.tag J ()))
     (l.toFilteriUnion (interval hab) ⊤) (𝓝 (∫ x in a..b, f x)) := by
-  convert (config := {transparency := .default}) hc.hasBoxIntegral_dim1 hab l with _ J _
+  convert (transparency := .default) hc.hasBoxIntegral_dim1 hab l with _ J _
   rw [Measure.toBoxAdditive_apply, Measure.real_def, Box.coe_eq_pi,
     Real.volume_pi_Ioc_toReal J.lower_le_upper, Fintype.prod_unique]
 
 open Classical in
 include hab in
-theorem tendsto_sum_intervalIntegral {f : ℝ → E} (hc : ContinuousOn f (Set.Icc a b)) {t : ℕ → ℕ → ℝ}
-    (ht : ∀ n : ℕ, n ≠ 0 → ∀ i : ℕ, t n i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
-    Tendsto (fun n : ℕ => ((b - a) / n) • ∑ i ∈ Finset.range n, f (t n i)) atTop (𝓝 (∫ x in a..b, f x)) := by
+theorem tendsto_sum_intervalIntegral {f : ℝ → E} (hc : ContinuousOn f (Set.Icc a b))
+    {t : ℕ → ℕ → ℝ} (ht : ∀ n : ℕ, n ≠ 0 →
+      ∀ i : ℕ, t n i ∈ Set.Icc (a + (b - a) * i / n) (a + (b - a) * (i + 1) / n)) :
+    Tendsto (fun n : ℕ =>
+      ((b - a) / n) • ∑ i ∈ Finset.range n, f (t n i)) atTop (𝓝 (∫ x in a..b, f x)) := by
   rw [← tendsto_add_atTop_iff_nat 1]
   convert (hc.tendsto_integralSum_intervalIntegral hab).comp
     (tendsto_intervalPartition_toFilteriUnion hab t ht) with n
@@ -204,14 +210,17 @@ theorem tendsto_sum_midpoint_intervalIntegral {f : ℝ → E} (hc : ContinuousOn
     atTop (𝓝 (∫ x in a..b, f x)) :=
   tendsto_sum_intervalIntegral hab hc fun n hn i => Set.mem_Icc.mpr (by field_simp; grind)
 
-theorem tendsto_sum_left_intervalIntegral_zero {a : ℝ} (ha : 0 < a) {f : ℝ → E} (hc : ContinuousOn f (Set.Icc 0 a)) :
-    Tendsto (fun n : ℕ => (a / n) • ∑ i ∈ Finset.range n, f (a * i / n)) atTop (𝓝 (∫ x in 0..a, f x)) := by
+theorem tendsto_sum_left_intervalIntegral_zero {a : ℝ} (ha : 0 < a) {f : ℝ → E}
+    (hc : ContinuousOn f (Set.Icc 0 a)) : Tendsto (fun n : ℕ =>
+      (a / n) • ∑ i ∈ Finset.range n, f (a * i / n)) atTop (𝓝 (∫ x in 0..a, f x)) := by
   convert tendsto_sum_left_intervalIntegral ha hc using 5 <;> simp
 
-theorem tendsto_sum_right_intervalIntegral_zero {a : ℝ} (ha : 0 < a) {f : ℝ → E} (hc : ContinuousOn f (Set.Icc 0 a)) :
-    Tendsto (fun n : ℕ => (a / n) • ∑ i ∈ Finset.range n, f (a * (i + 1) / n)) atTop (𝓝 (∫ x in 0..a, f x)) := by
+theorem tendsto_sum_right_intervalIntegral_zero {a : ℝ} (ha : 0 < a) {f : ℝ → E}
+    (hc : ContinuousOn f (Set.Icc 0 a)) : Tendsto (fun n : ℕ =>
+      (a / n) • ∑ i ∈ Finset.range n, f (a * (i + 1) / n)) atTop (𝓝 (∫ x in 0..a, f x)) := by
   convert tendsto_sum_right_intervalIntegral ha hc using 5 <;> simp
 
-theorem tendsto_sum_right_intervalIntegral_zero_one {f : ℝ → E} (hc : ContinuousOn f (Set.Icc 0 1)) :
-    Tendsto (fun n : ℕ => (n : ℝ)⁻¹ • ∑ i ∈ Finset.range n, f ((i + 1) / n)) atTop (𝓝 (∫ x in 0..1, f x)) := by
+theorem tendsto_sum_right_intervalIntegral_zero_one {f : ℝ → E}
+    (hc : ContinuousOn f (Set.Icc 0 1)) : Tendsto (fun n : ℕ =>
+      (n : ℝ)⁻¹ • ∑ i ∈ Finset.range n, f ((i + 1) / n)) atTop (𝓝 (∫ x in 0..1, f x)) := by
   convert tendsto_sum_right_intervalIntegral zero_lt_one hc using 3 <;> simp

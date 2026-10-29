@@ -101,8 +101,8 @@ theorem Zad6d {s t : ι → Set α} : (⋂ i, s i) ∪ (⋃ i, t i)ᶜ ⊆ ⋂ i
 
 alias Zad8 := Set.iInter_union_of_antitone
 
-theorem Zad9a {s : ι → Set α} {t : ι' → Set β} : (⋃ i, s i) ×ˢ ⋃ j, t j = ⋃ i, ⋃ j, s i ×ˢ t j := by
-  ext x; simp
+theorem Zad9a {s : ι → Set α} {t : ι' → Set β} :
+    (⋃ i, s i) ×ˢ ⋃ j, t j = ⋃ i, ⋃ j, s i ×ˢ t j := by ext x; simp
 
 theorem Zad9b [Nonempty ι] [Nonempty ι'] {s : ι → Set α} {t : ι' → Set β} :
     (⋂ i, s i) ×ˢ ⋂ j, t j = ⋂ i, ⋂ j, s i ×ˢ t j := by ext x; simp [forall_and]

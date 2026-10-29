@@ -1,10 +1,7 @@
 import Mathlib.Order.Height
-import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Order.Monotone.Monovary
 import Mathlib.Order.Interval.Basic
 import Mathlib.Combinatorics.SetFamily.Intersecting
-import Mathlib.Data.Finset.Sups
-import Mathlib.Tactic.Peel
 import Mathlib.Data.Nat.Log
 import Mathlib.Combinatorics.SetFamily.LYM
 
@@ -41,55 +38,55 @@ theorem exists_isChain_or_isAntichain_of_mul_lt_card [Fintype α] [DecidableEq �
     ∨ ∃ t : Finset α, IsAntichain (· ≤ ·) (SetLike.coe t) ∧ s < #t := by
   contrapose! h; exact card_le_mul_of_isChain_isAntichain h.1 h.2
 
-set_option backward.isDefEq.respectTransparency.types false in
-/-- **Erdős–Szekeres Theorem**: A sequence of more than `r * s` distinct values has an
+/-- **Erdős–Szekeres Theorem**: A sequence of more than `r * s` distinct values contains an
 increasing subsequence of length longer than `r` or a decreasing subsequence of length longer than
 `s`. -/
 theorem erdos_szekeres [Fintype α] [LinearOrder α] [LinearOrder β]
     {r s : ℕ} (hn : r * s < card α) {f : α → β} (hf : f.Injective) :
     (∃ t : Finset α, r < #t ∧ StrictMonoOn f t) ∨ ∃ t : Finset α, s < #t ∧ StrictAntiOn f t := by
-  let P := (univ : Finset α).map ⟨fun x => (x, f x), fun _ _ h => (Prod.mk.inj h).left⟩
+  let P := (univ : Finset α).map ⟨fun x => (x, f x), id fun _ _ h => (Prod.mk.inj h).left⟩
   have hP : r * s < card ↥P := by simpa [P]
   rcases exists_isChain_or_isAntichain_of_mul_lt_card hP with ⟨t, ht, hr⟩ | ⟨t, ht, hs⟩
-  · left; exists t.map ⟨fun x => x.val.1, by simp [Function.Injective, P]⟩
+  · left; exists t.map ⟨fun x => x.val.1, by rw [Function.Injective]; simp [P]⟩
     simp [hr, StrictMonoOn, P]; intro x hx y hy h
     exact lt_of_le_of_ne (by simpa [h.le, h] using ht.le_of_not_gt hy hx) (hf.ne h.ne)
-  · right; exists t.map ⟨fun x => x.val.1, by simp [Function.Injective, P]⟩
+  · right; exists t.map ⟨fun x => x.val.1, by rw [Function.Injective]; simp [P]⟩
     simp [hs, StrictAntiOn, P]; intro x hx y hy h
     exact lt_of_le_of_ne' (by simpa [h.le] using ht.not_lt hx hy : _ ∧ _).right (hf.ne h.ne)
 
-lemma Equiv.strictMonoOn_trans_iff [PartialOrder α] {f : α ≃ β} {g : β ≃ α} {s : Set α} :
-    StrictMonoOn (f.trans g) s ↔ MonovaryOn g f.symm (f '' s) := by
+lemma Equiv.monovaryOn_symm_image [PartialOrder α] {f g : β ≃ α} {s : Set α} :
+    MonovaryOn f g (g.symm '' s) ↔ StrictMonoOn (f ∘ g.symm) s := by
   simp [MonovaryOn]; constructor
-  · intro h a ha b hb hab; apply le_of_lt; simpa using h ha hb hab
-  · refine fun h => MonotoneOn.strictMonoOn_of_injOn ?_ (f.trans g).injective.injOn
+  · refine fun h => MonotoneOn.strictMonoOn_of_injOn ?_ (g.symm.trans f).injective.injOn
     intro a ha b hb hab; rcases eq_or_lt_of_le hab with rfl | hab
     · rfl
     · apply h <;> simpa
+  · intro h a ha b hb hab; apply le_of_lt; simpa using h ha hb hab
 
 namespace MD1.Cwi6
 
 theorem Zad1 (h : k ^ 3 < n) (σ₁ σ₂ σ₃ : Equiv.Perm (Fin n)) : ∃ s : Finset (Fin n), k < #s ∧
-    (MonovaryOn σ₁.symm σ₂.symm s ∨ MonovaryOn σ₁.symm σ₃.symm s ∨ MonovaryOn σ₂.symm σ₃.symm s) := by
+    (MonovaryOn σ₁ σ₂ s ∨ MonovaryOn σ₁ σ₃ s ∨ MonovaryOn σ₂ σ₃ s) := by
   rw [pow_three, ← Fintype.card_fin n] at h
-  rcases erdos_szekeres h (σ₂.trans σ₁.symm).injective with ⟨s, hk, hs⟩ | ⟨s, hk, hs⟩
-  · use s.map σ₂; simp_all [← Equiv.strictMonoOn_trans_iff]
-  rw [← card_map (σ₂.trans σ₃.symm).toEmbedding, ← card_coe] at hk
-  rcases erdos_szekeres hk (Subtype.restrict_injective _ (σ₃.trans σ₁.symm).injective)
+  rcases erdos_szekeres h (σ₂.symm.trans σ₁).injective with ⟨s, hk, hs⟩ | ⟨s, hk, hs⟩
+  · use s.map σ₂.symm; simp_all [Equiv.monovaryOn_symm_image]
+  rw [← card_map (σ₂.symm.trans σ₃).toEmbedding, ← card_coe] at hk
+  rcases erdos_szekeres hk (Subtype.restrict_injective _ (σ₃.symm.trans σ₁).injective)
       with ⟨t, hk, ht⟩ | ⟨t, hk, ht⟩
-  · use ((t.map (Function.Embedding.subtype _))).map σ₃
-    simp_all [← Equiv.strictMonoOn_trans_iff, StrictMonoOn, -Equiv.trans_toEmbedding]
-  have hs' : StrictAntiOn (σ₁.trans σ₂.symm) (s.map (σ₂.trans σ₁.symm).toEmbedding) := by
+  · use ((t.map (Function.Embedding.subtype _))).map σ₃.symm
+    simp_all [Equiv.monovaryOn_symm_image, StrictMonoOn, -Equiv.trans_toEmbedding]
+  have hs' : StrictAntiOn (σ₁.symm.trans σ₂) (s.map (σ₂.symm.trans σ₁).toEmbedding) := by
     simp [StrictAntiOn, -Equiv.trans_toEmbedding]; intro x hx y hy; rw [← hs.lt_iff_gt hx hy]; simp
-  have := hs'.comp ht (by simp [Set.MapsTo, -Equiv.trans_toEmbedding]; intro x h _; exists _, h; simp)
-  use ((t.map (Function.Embedding.subtype _))).map σ₃
-  simp_all [← Equiv.strictMonoOn_trans_iff, StrictMonoOn, -Equiv.trans_toEmbedding]
+  have := hs'.comp ht (by
+    simp [Set.MapsTo, -Equiv.trans_toEmbedding]; intro x h _; exists _, h; simp)
+  use ((t.map (Function.Embedding.subtype _))).map σ₃.symm
+  simp_all [Equiv.monovaryOn_symm_image, StrictMonoOn, -Equiv.trans_toEmbedding]
 
 local instance Zad2.le [Preorder α] : LE (NonemptyInterval α) where
   le x y := x.snd < y.fst ∨ x = y
 
 @[simp]
-lemma Zad2.le_def [Preorder α] {x y : NonemptyInterval α} : x ≤ y ↔ x.snd < y.fst ∨ x = y := Iff.rfl
+lemma Zad2.le_def [Preorder α] {x y : NonemptyInterval α} : x ≤ y ↔ x.snd < y.fst ∨ x = y := .rfl
 
 local instance Zad2.preorder [Preorder α] : Preorder (NonemptyInterval α) where
   lt x y := x.snd < y.fst
@@ -141,7 +138,8 @@ theorem Zad4 [Nonempty α] {F : Finset (Finset α)}
     apply h; simp [-mem_compls, forall_mem_compls, ← compl_inter]
     simpa [Set.Intersecting, disjoint_iff_inter_eq_empty] using hs
 
-theorem Zad5i_le (hF : Pairwise fun x y => ∃ s ∈ F, ¬(x ∈ s ↔ y ∈ s)) : Nat.clog 2 (card α) ≤ #F := by
+theorem Zad5i_le (hF : Pairwise fun x y => ∃ s ∈ F, ¬(x ∈ s ↔ y ∈ s)) :
+    Nat.clog 2 (card α) ≤ #F := by
   rw [Nat.clog_le_iff_le_pow (by simp), ← card_powerset]
   apply card_le_card_of_injOn (fun x => {s ∈ F | x ∈ s}) (by simp [-coe_filter])
   rw [coe_univ, Set.injOn_univ, Function.injective_iff_pairwise_ne]
@@ -162,7 +160,8 @@ theorem Zad5i_exists : ∃ (F : Finset (Finset α)), (Pairwise fun x y => ∃ s 
   rw [card_image_of_injOn, card_range]; simp [Set.InjOn, Finset.ext_iff, Nat.lt_clog_iff_pow_lt]
   intro x hx y hy h; contrapose! h; use e.symm ⟨2 ^ x, hx⟩; simp [h]
 
-theorem Zad5ii_le (hF : Pairwise fun x y => ∃ s ∈ F, x ∈ s ∧ y ∉ s) : card α ≤ (#F).choose (#F / 2) := by
+theorem Zad5ii_le (hF : Pairwise fun x y => ∃ s ∈ F, x ∈ s ∧ y ∉ s) :
+    card α ≤ (#F).choose (#F / 2) := by
   have : Function.Injective fun x => ({s | x ∈ s.val} : Finset F) := by
     rw [Function.injective_iff_pairwise_ne]
     exact hF.mono (by simp [Function.onFun, Finset.ext_iff]; grind only)

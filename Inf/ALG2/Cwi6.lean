@@ -10,7 +10,8 @@ theorem Zad1 (hA : A ∈ unitaryGroup n α) (hB : B ∈ unitaryGroup n α) :
     A * B ∈ unitaryGroup n α := Submonoid.mul_mem _ hA hB
 
 theorem Zad2 [CommRing R] [NoZeroDivisors R] [LinearOrder R] [Nontrivial R] [IsOrderedRing R]
-    (hA : A ∈ orthogonalGroup n R) (hB : B ∈ orthogonalGroup n R) (h : A.det + B.det = 0) : (A + B).det = 0 := by
+    (hA : A ∈ orthogonalGroup n R) (hB : B ∈ orthogonalGroup n R) (h : A.det + B.det = 0) :
+    (A + B).det = 0 := by
   suffices -A.det ^ 2 * (A + B).det = (A + B).det by
     rw [mul_left_eq_self₀] at this; apply this.resolve_left; apply ne_of_lt
     grw [← zero_lt_one, neg_nonpos, sq_nonneg]
@@ -20,7 +21,8 @@ theorem Zad2 [CommRing R] [NoZeroDivisors R] [LinearOrder R] [Nontrivial R] [IsO
   simp [-transpose_add, ← add_eq_zero_iff_neg_eq.mp h]; ring
 
 theorem Zad3 {A : Matrix n n K} (hA : A.IsHermitian) :
-    spectrum K A ⊆ Set.range RCLike.ofReal := hA.spectrum_eq_image_range ▸ Set.image_subset_range _ _
+    spectrum K A ⊆ Set.range RCLike.ofReal :=
+  hA.spectrum_eq_image_range ▸ Set.image_subset_range _ _
 
 theorem Zad4 {A : Matrix n n ℂ} (hA : A.IsHermitian) (hz : Complex.im z ≠ 0) :
     (A + scalar n z).Nondegenerate := by
@@ -36,18 +38,21 @@ theorem Zad5 {A B : Matrix n n K} (hA : A.IsHermitian) :
 
 theorem Zad6 {A : Matrix n n K} (hA : A.IsHermitian) (h : IsNilpotent A) : A = 0 := by
   revert h; rw [hA.spectral_theorem, IsNilpotent]
-  simpa [-Unitary.conjStarAlgAut_apply, ← map_pow, diagonal_pow] using fun k => eq_zero_of_pow_eq_zero
+  simpa [-Unitary.conjStarAlgAut_apply, ← map_pow, diagonal_pow]
+    using fun k => eq_zero_of_pow_eq_zero
 
-lemma _root_.Matrix.isHermitian_algebraMap (a : ℝ) : (algebraMap ℝ (Matrix n n K) a).IsHermitian := by
+lemma _root_.Matrix.isHermitian_algebraMap (a : ℝ) :
+    (algebraMap ℝ (Matrix n n K) a).IsHermitian := by
   simp [algebraMap_eq_diagonal, isHermitian_diagonal_iff, IsSelfAdjoint]
 
 theorem _root_.Matrix.IsHermitian.spectrum_add_algebraMap {A : Matrix n n K} (hA : A.IsHermitian)
     (a : ℝ) : spectrum ℝ (A + algebraMap _ _ a) = (fun v => v + a) '' spectrum ℝ A := by
   have hA' := hA.add (isHermitian_algebraMap a)
   suffices spectrum K (A + algebraMap _ _ a) = (fun v => v + algebraMap _ _ a) '' spectrum K A by
-    simp only [IsHermitian.spectrum_eq_image_range, ← IsHermitian.spectrum_real_eq_range_eigenvalues,
-      hA, hA'] at this
-    rw [← Set.image_eq_image RCLike.ofReal_injective (β := K), this]; simp [Set.ext_iff, -Set.image_add_right]
+    simp only [IsHermitian.spectrum_eq_image_range,
+      ← IsHermitian.spectrum_real_eq_range_eigenvalues, hA, hA'] at this
+    rw [← Set.image_eq_image RCLike.ofReal_injective (β := K), this]
+    simp [Set.ext_iff, -Set.image_add_right]
   simp [Set.ext_iff, Matrix.mem_spectrum_iff_isRoot_charpoly]
   simp [← sub_neg_eq_add, algebraMap_eq_diagonal, ← scalar_apply, ← map_neg, charpoly_sub_scalar]
 

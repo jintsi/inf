@@ -86,8 +86,8 @@ theorem Zad2h_image : (fun n : ℕ => n.primeFactors.sum id) '' {4, 6} = {2, 5} 
   simp [Nat.primeFactors_mul, -Nat.reduceMul, show 4 = 2 * 2 from rfl,
     show 6 = 2 * 3 from rfl, Nat.prime_two, Nat.prime_three]
 
-theorem Zad2h_preimage : (fun n : ℕ => n.primeFactors.sum id) ⁻¹' {2, 5} =
-    {n | (∃ k, n = 2 ^ (k + 1)) ∨ (∃ k l, n = 2 ^ (k + 1) * 3 ^ (l + 1)) ∨ ∃ k, n = 5 ^ (k + 1)} := by
+theorem Zad2h_preimage : (fun n : ℕ => n.primeFactors.sum id) ⁻¹' {2, 5} = {n |
+    (∃ k, n = 2 ^ (k + 1)) ∨ (∃ k l, n = 2 ^ (k + 1) * 3 ^ (l + 1)) ∨ ∃ k, n = 5 ^ (k + 1)} := by
   ext n; simp; congr!
   · constructor; swap
     · rintro ⟨k, rfl⟩; simp [Nat.primeFactors_prime_pow _ Nat.prime_two]
@@ -125,8 +125,8 @@ theorem Zad2h_preimage : (fun n : ℕ => n.primeFactors.sum id) ⁻¹' {2, 5} =
         intro x hx; apply le_antisymm
         · rw [← h]; apply Finset.single_le_sum_of_canonicallyOrdered hx
         apply (Nat.prime_of_mem_primeFactors hx).five_le_of_ne_two_of_ne_three
-        · contrapose! h2; rwa [← h2]
-        contrapose! h2; subst x; rename' hx => h3
+        · contrapose h2; rwa [← h2]
+        contrapose h2; subst x; rename' hx => h3
         suffices n.primeFactors.erase 3 = {2} by
           simp [Finset.ext_iff, -Nat.mem_primeFactors] at this; exact ((this 2).mpr rfl).2
         rw [Finset.eq_singleton_iff_nonempty_unique_mem]; and_intros

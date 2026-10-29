@@ -24,7 +24,8 @@ theorem Zad1a : ¬IntervalIntegrable (fun x => (x * log x)⁻¹) MeasureTheory.v
 theorem Zad1b : ∫ x in Set.Iic (-2), (1 - x ^ 2)⁻¹ = -(log 3 / 2) := by
   simp_rw [← integral_comp_neg_Ioi, neg_sq,
     show -(log 3 / 2) = 0 - (log (2 + 1) - log (2 - 1)) / 2 by norm_num [neg_div]]
-  apply MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonpos' (g := fun x => (log (x + 1) - log (x - 1)) / 2)
+  apply MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonpos'
+    (g := fun x => (log (x + 1) - log (x - 1)) / 2)
   · simp_rw [Set.mem_Ici]; intro x hx; apply AM1.Cwi8.Zad2a <;> bound
   · simp_rw [Set.mem_Ioi]; intro x hx; simp [le_abs]; bound
   apply Tendsto.congr' (f₁ := fun x => log (1 + 2 / (x - 1)) / 2)
@@ -41,22 +42,27 @@ theorem Zad1c : ∫ x in Set.Ioi 0, exp (-x) * sin (x / 2) = 2 / 5 := by
   · apply integrable_of_isBigO_exp_neg zero_lt_one (by fun_prop)
     apply Asymptotics.isBigO_of_le
     simpa using fun x => mul_le_of_le_one_right (exp_nonneg (-x)) (abs_sin_le_one (x / 2))
-  · refine ((tendsto_neg_atTop.rexp_atBot.const_mul_zero (2 / 5)).zero_mul_isBoundedUnder_le ?_).neg_zero
+  · refine tendsto_neg_atTop.rexp_atBot.const_mul_zero (2 / 5)
+      |>.zero_mul_isBoundedUnder_le ?_ |>.neg_zero
     simp [IsBoundedUnder, IsBounded, -neg_add_rev]; use 3, 0; intro x _
     grw [abs_add_le, abs_mul, Nat.abs_ofNat, abs_sin_le_one, abs_cos_le_one]; norm_num
 
 theorem Zad1d : ∫ (x : ℝ), 8 * x / (x ^ 4 + 4 * x ^ 2 + 3) = 0 := by
-  have h : ∫ x in Set.Ioi 0, 8 * x / (x ^ 4 + 4 * x ^ 2 + 3) = 0 - (2 * log (1 - 2 / (0 ^ 2 + 3))) := by
-    apply MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonneg' (g := fun x => 2 * log (1 - 2 / (x ^ 2 + 3)))
+  have h : ∫ x in Set.Ioi 0, 8 * x / (x ^ 4 + 4 * x ^ 2 + 3)
+      = 0 - (2 * log (1 - 2 / (0 ^ 2 + 3))) := by
+    apply MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonneg'
+      (g := fun x => 2 * log (1 - 2 / (x ^ 2 + 3)))
     · intro x _;
       convert! (((((hasDerivAt_pow 2 x).add_const 3).const_div 2 (by positivity)).const_sub 1
         ).log (by field_simp; apply div_ne_zero <;> nlinarith)).const_mul 2 using 1
       field (disch := nlinarith)
     · simp_rw [Set.mem_Ioi]; bound
-    · exact ((((tendsto_pow_atTop two_ne_zero).atTop_add_const 3).const_div_atTop 2).const_sub_zero 1
-        ).log_one.const_mul_zero 2
-  have h2 : ∫ x in Set.Iic 0, 8 * x / (x ^ 4 + 4 * x ^ 2 + 3) = (2 * log (1 - 2 / (0 ^ 2 + 3))) := by
-    rw [← neg_zero, ← integral_comp_neg_Ioi]; ring_nf at *; rw [MeasureTheory.integral_neg, h, neg_neg]
+    · exact ((tendsto_pow_atTop two_ne_zero).atTop_add_const 3).const_div_atTop 2
+        |>.const_sub_zero 1 |>.log_one.const_mul_zero 2
+  have h2 : ∫ x in Set.Iic 0, 8 * x / (x ^ 4 + 4 * x ^ 2 + 3)
+      = (2 * log (1 - 2 / (0 ^ 2 + 3))) := by
+    rw [← neg_zero, ← integral_comp_neg_Ioi]; ring_nf at *
+    rw [MeasureTheory.integral_neg, h, neg_neg]
   rw [← integral_Iic_add_Ioi, h, h2, add_sub_cancel] <;>
     (apply MeasureTheory.Integrable.of_integral_ne_zero; norm_num [h, h2])
 

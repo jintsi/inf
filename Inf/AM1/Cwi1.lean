@@ -7,13 +7,13 @@ alias Zad1_inc := StrictMono.comp
 
 alias Zad1_dec := StrictAnti.comp
 
-theorem Zad2a [LinearOrder Z] : (fun (⟨k, l⟩ : Z × Z) => min k l).Surjective := by
+theorem Zad2a [SemilatticeInf Z] : (fun (⟨k, l⟩ : Z × Z) => min k l).Surjective := by
   simp [Function.Surjective]
-  exact fun b => ⟨b, b, min_self b⟩
+  exact fun b => ⟨b, b, inf_idem b⟩
 
 theorem Zad2b : ¬(fun (⟨k, l⟩ : ℤ × ℤ) => min k l).Injective := by
   simp [Function.Injective]
-  exact ⟨0, 1, 0, 2, rfl, fun _ => nofun⟩
+  exact ⟨0, 0, 0, 1, rfl, fun _ => nofun⟩
 
 theorem Zad3_inj : Set.InjOn (fun x : ℝ => x ^ 2 - 4 * x + 1) (Set.Iio 2) := by
   simp [Set.InjOn]

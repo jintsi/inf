@@ -34,14 +34,17 @@ theorem Zad5 : !![(1 : ℚ), 2; 2, 1] ^ 2021 =
     Matrix.conj_pow (by simp [isUnit_iff_isUnit_det]), diagonal_pow]
   simp [← vecMulᵣ_eq, vecMulᵣ, vecHead, vecTail, inv_def]; norm_num; grind => ring
 
-theorem Zad6 : !![(0 : ℤ), 1; 2, 1] ^ 2023 - !![0, 1; 2, 1] ^ 2022 - 2 • !![0, 1; 2, 1] ^ 2021 = 0 := calc
+theorem Zad6 :
+    !![(0 : ℤ), 1; 2, 1] ^ 2023 - !![0, 1; 2, 1] ^ 2022 - 2 • !![0, 1; 2, 1] ^ 2021 = 0 := calc
   !![(0 : ℤ), 1; 2, 1] ^ 2023 - !![0, 1; 2, 1] ^ 2022 - 2 • !![0, 1; 2, 1] ^ 2021
   _ = !![0, 1; 2, 1] ^ 2021 * (!![0, 1; 2, 1] ^ 2 - !![0, 1; 2, 1] - 2) := by grind only
-  _ = !![0, 1; 2, 1] ^ 2021 * 0 := by congr; ext i j; fin_cases i <;> fin_cases j <;> simp [sq, ofNat_apply]
+  _ = !![0, 1; 2, 1] ^ 2021 * 0 := by congr; ext i j; fin_cases i <;> fin_cases j
+    <;> simp [sq, ofNat_apply]
   _ = 0 := by simp
 
-theorem Zad7 [CommRing R] [Nontrivial R] [Fintype n] [DecidableEq n] [Nontrivial n]
-    (M : Matrix n n R) : ¬LinearIndepOn R (fun i => M ^ i) (Finset.range (Fintype.card n ^ 2)) := by
+theorem Zad7
+    [CommRing R] [Nontrivial R] [Fintype n] [DecidableEq n] [Nontrivial n] (M : Matrix n n R) :
+    ¬LinearIndepOn R (fun i => M ^ i) (Finset.range (Fintype.card n ^ 2)) := by
   rw [not_linearIndepOn_finset_iff]; exists fun i => M.charpoly.coeff i; and_intros
   · rw [← Polynomial.aeval_eq_sum_range', Zad4]
     rw [charpoly_natDegree_eq_dim]; exact lt_self_pow₀ Fintype.one_lt_card one_lt_two
@@ -71,7 +74,8 @@ theorem Zad10 [CommRing R] [Fintype n] [DecidableEq n] (A B : Matrix n n R) :
   · simp [mul_comm]
 
 theorem ZadD1 [Semiring R] [PartialOrder R] [IsOrderedRing R] [Fintype n] [DecidableEq n]
-    (A B : Matrix n n R) : A ∈ rowStochastic R n → B ∈ rowStochastic R n → A * B ∈ rowStochastic R n :=
+    (A B : Matrix n n R) :
+    A ∈ rowStochastic R n → B ∈ rowStochastic R n → A * B ∈ rowStochastic R n :=
   (rowStochastic R n).mul_mem
 
 theorem ZadD4 [CommRing R] [Fintype n] [DecidableEq n] [Nonempty n] {M : Matrix n n R}

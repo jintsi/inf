@@ -37,7 +37,8 @@ noncomputable scoped instance innerProductSpace : InnerProductSpace K (Matrix n 
   add_left A B C := by simp [add_mul]
   smul_left A B r := by simp
   norm_sq_eq_re_inner A := by
-    rw [frobenius_norm_def, one_div, ← Nat.cast_ofNat, rpow_inv_natCast_pow (by positivity) two_ne_zero]
+    rw [frobenius_norm_def, one_div, ← Nat.cast_ofNat,
+      rpow_inv_natCast_pow (by positivity) two_ne_zero]
     simpa [trace, Matrix.mul_apply, RCLike.norm_sq_eq_def] using Finset.sum_comm
 
 @[simp]

@@ -40,7 +40,8 @@ theorem Zad1 : #{s : Finset (Fin n × Fin n) | #s = n ∧ Set.Pairwise (s : Set 
 /-
 set_option backward.isDefEq.respectTransparency.types false
 theorem Zad2 [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β] :
-    #{s : Finset (α × β) | #s = k ∧ Set.Pairwise (s : Set (α × β)) fun x y => x.1 ≠ y.1 ∧ x.2 ≠ y.2}
+    #{s : Finset (α × β) | #s = k ∧
+        Set.Pairwise (s : Set (α × β)) fun x y => x.1 ≠ y.1 ∧ x.2 ≠ y.2}
     = (Fintype.card α).choose k * (Fintype.card β).choose k * k.factorial := by
   trans #(powersetCard k (univ : Finset α) ×ˢ powersetCard k (univ : Finset β) ×ˢ
     ({s : Finset (Fin k × Fin k) | #s = k ∧
@@ -56,8 +57,10 @@ theorem Zad2 [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β] :
       simp [← exists_and_right, ← exists_and_left]; use r.val.1, r.val.2; simp⟩
   case hi =>
     intro s hs; generalize_proofs ha hb; simp at hs; simp [*]; and_intros
-    · rw [card_image_of_injOn, card_attach, hs.1]; intro x hx y hy; simp [Equiv.Finset.prod, ← Prod.ext_iff]
-    · apply Pairwise.range_pairwise; simp [Pairwise, Equiv.Finset.prod, -Prod.mk.injEq, Function.onFun]
+    · rw [card_image_of_injOn, card_attach, hs.1]; intro x hx y hy
+      simp [Equiv.Finset.prod, ← Prod.ext_iff]
+    · apply Pairwise.range_pairwise
+      simp [Pairwise, Equiv.Finset.prod, -Prod.mk.injEq, Function.onFun]
       intro _ _ hx _ _ hy; exact hs.2 hx hy
   case j =>
     intro (a, b, s) h; simp at h
@@ -137,7 +140,8 @@ theorem composition_length_card (n k : ℕ) [NeZero n] :
       rw [Finset.card_union_of_disjoint, Finset.card_union_of_disjoint]
         <;> simp [Finset.filter_eq', add_comm 1, NeZero.ne]
       · apply Eq.congr_left
-        apply Finset.card_nbij (fun i => (i.castSucc.cast (Nat.sub_one_add_one (NeZero.ne n))).succ)
+        apply Finset.card_nbij
+          (fun i => (i.castSucc.cast (Nat.sub_one_add_one (NeZero.ne n))).succ)
           <;> simp [Set.MapsTo, Set.SurjOn, Set.subset_def]
         · exact fun x hx => ⟨x, hx, rfl⟩
         · intro x y hy hx; exists y, hy; rw [← Fin.val_inj]; simp [hx.symm]

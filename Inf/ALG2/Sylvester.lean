@@ -1,4 +1,6 @@
-import Mathlib.Analysis.Matrix.Order
+import Mathlib.Analysis.RCLike.Basic
+import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.LinearAlgebra.Matrix.SchurComplement
 
 open Matrix
 open scoped ComplexOrder

@@ -26,7 +26,8 @@ theorem Zad1c : ¬LinearIndependent (M := ℚ[X]) ℚ
 theorem Zad2 (s : ℚ) :
     LinearIndependent ℚ ![![2, 1, 0, s], ![0, 1, 2, 2], ![0, 1, 1, 2], ![s, 0, 2, s]]
     ↔ (s ≠ 0 ∧ s ≠ 4) := by
-  simp [linearIndependent_finSucc, Fin.tail_def, mem_span_singleton, mem_span_pair, mem_span_triple]
+  simp [linearIndependent_finSucc, Fin.tail_def,
+    mem_span_singleton, mem_span_pair, mem_span_triple]
   apply and_congr
   · exact ⟨fun h hs => (h hs (1 / 2) (by norm_num)).right hs, Not.elim⟩
   · constructor

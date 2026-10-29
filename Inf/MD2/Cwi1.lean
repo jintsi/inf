@@ -2,7 +2,7 @@ import Mathlib.Data.Set.Card.Arithmetic
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Inf.MD2.SimpleGraph
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Finite
-import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+--import Mathlib.Combinatorics.SimpleGraph.DegreeSum
 
 theorem List.IsPrefix.tail {l₁ l₂ : List α} (h : l₁ <+: l₂) : l₁.tail <+: l₂.tail := by
   rcases l₁ with (_ | ⟨a₁, l₁⟩); · simp
@@ -20,7 +20,8 @@ open SimpleGraph
 theorem Zad1 [Finite V] {G : SimpleGraph V} (hG : G.Connected) {n : ℕ} (hV : n < Nat.card V) :
     ∃ s : Finset V, s.card = n ∧ (G.induce sᶜ).Connected := by
   induction n generalizing V with
-  | zero => use ∅; simp; rw [Finset.coe_empty, Set.compl_empty]; rwa [(induceUnivIso G).connected_iff]
+  | zero =>
+    use ∅; simp; rw [Finset.coe_empty, Set.compl_empty]; rwa [(induceUnivIso G).connected_iff]
   | succ n ih =>
     have : Nontrivial V := by rw [← Finite.one_lt_card_iff_nontrivial]; omega
     let ⟨v, hv⟩ := hG.exists_connected_induce_compl_singleton_of_finite_nontrivial
@@ -80,11 +81,12 @@ theorem Zad2 {G : SimpleGraph V} (hG : G.Connected) {k : ℕ}
   · unfold r r₁; simp; intro w hw; apply (Walk.support_takeUntilP_prefix_support ..).tail.mem at hw
     revert hw; simp; apply Walk.forall_mem_dropLast_support_takeUntilP_not
 
-theorem Zad3 {G : SimpleGraph V} : Nat.card V ≤ Set.ncard G.edgeSet + Nat.card G.ConnectedComponent := by
+theorem Zad3 {G : SimpleGraph V} :
+    Nat.card V ≤ Set.ncard G.edgeSet + Nat.card G.ConnectedComponent := by
   cases finite_or_infinite V; swap; · simp
   rw [← Set.ncard_univ, ← G.iUnion_connectedComponentSupp, Set.ncard_iUnion_of_finite]
   case hs => unfold Set.Finite; infer_instance
-  case h => intro C D; contrapose; simp [Function.onFun, Set.not_disjoint_iff]; intro x rfl rfl; rfl
+  case h => intro C D; contrapose; simp [Function.onFun, Set.not_disjoint_iff]; intro x rfl; simp
   have := Fintype.ofFinite V
   classical rw [finsum_eq_sum_of_fintype, ← G.sum_connectedComponent_ncard_edgeSet,
     Nat.card_eq_fintype_card, Fintype.card_eq_sum_ones, ← Finset.sum_add_distrib]
@@ -97,8 +99,8 @@ theorem Zad4 [Fintype V] [DecidableEq V] {G : SimpleGraph V} [DecidableRel G.Adj
   intro e he; contrapose h; simp_rw [not_forall, Nat.not_even_iff_odd]
   cases e with | h u v
   let G' := ((G.deleteEdges {s(u, v)}).connectedComponentMk v).toSimpleGraph
-  classical have ⟨w, hwv, hw⟩ :=
-    G'.exists_ne_odd_degree_of_exists_odd_degree ⟨v, ConnectedComponent.connectedComponentMk_mem⟩ (by
+  classical have ⟨w, hwv, hw⟩ := G'.exists_ne_odd_degree_of_exists_odd_degree ⟨v,
+    ConnectedComponent.connectedComponentMk_mem⟩ (by
       unfold G'; rw [ConnectedComponent.degree_toSimpleGraph]
       specialize hv v; rw [← card_neighborFinset_eq_degree] at ⊢ hv
       simp [deleteEdges]; rw (transparency := .default) [neighborFinset_sdiff]

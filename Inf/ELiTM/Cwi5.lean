@@ -1,5 +1,4 @@
 import Mathlib.Analysis.InnerProductSpace.Orthogonal
-import Mathlib.Algebra.Polynomial.Degree.Defs
 
 open scoped SetRel in
 def SetRel.IsAntisymm (R : SetRel α α) := Std.Antisymm (· ~[R] ·)
@@ -80,7 +79,8 @@ theorem A_refl [Semiring R] : @Std.Refl R A where
 theorem A_symm [Semiring R] : @Std.Symm R A where
   symm a b h := by simpa [A, add_comm] using h
 theorem A_trans [Ring R] : IsTrans R A where
-  trans a b c := by simp [A]; intro ha hc; convert (ha.add hc).sub (dvd_mul_right 2 b); noncomm_ring
+  trans a b c := by
+    simp [A]; intro ha hc; convert (ha.add hc).sub (dvd_mul_right 2 b); noncomm_ring
 
 theorem B_symm [Semiring R] : Std.Symm fun x y : R => 3 ∣ x + y where
   symm a b h := by simpa [A, add_comm] using h
@@ -158,7 +158,8 @@ theorem Zad4k : ¬Equivalence fun s t : Set α => u ⊂ s ∩ t := by
   intro h; simpa [Set.ssubset_def] using h.refl ∅
 
 open Polynomial in
-theorem Zad4l [Semiring R] [Nontrivial R] : ¬Equivalence fun p q : R[X] => Even (p * q).degree := by
+theorem Zad4l [Semiring R] [Nontrivial R] :
+    ¬Equivalence fun p q : R[X] => Even (p * q).degree := by
   intro h; convert @h.trans 1 0 X; simp [Even]; use ⟨⊥, rfl⟩; intro
   | ⊥ => simp
   | (n : ℕ) => norm_cast; omega
@@ -170,7 +171,8 @@ theorem Zad5 (hr : Equivalence r) (hs : Equivalence s) : Equivalence (r ⊓ s) w
 
 theorem Zad7_eq : Relation.Comp (α := α) Eq Eq = Eq := Relation.comp_eq
 
-theorem Zad7_lt [Preorder α] [DenselyOrdered α] : Relation.Comp (α := α) (· < ·) (· < ·) = (· < ·) := by
+theorem Zad7_lt [Preorder α] [DenselyOrdered α] :
+    Relation.Comp (α := α) (· < ·) (· < ·) = (· < ·) := by
   ext x y; constructor
   · simp [Relation.Comp]; exact fun _ => lt_trans
   · exact exists_between

@@ -92,7 +92,8 @@ theorem ZadD3b : !![1+I, I, 1-I; I, I, 0; 1, 0, 4]⁻¹ =
                     -3 + I, 3 - I, 3 - I] := by
   apply inv_eq_left_inv; norm_num; ring_nf; norm_num [← one_fin_three]
 
-theorem ZadD4 [DecidableEq n] [Fintype n] {A : Matrix n n ℂ} (hA : A.IsHermitian) : A.det.im = 0 := by
+theorem ZadD4 [DecidableEq n] [Fintype n] {A : Matrix n n ℂ} (hA : A.IsHermitian) :
+    A.det.im = 0 := by
   apply A.det.im_eq_zero_iff_isSelfAdjoint.mpr
   rw [IsSelfAdjoint, ← det_conjTranspose, hA]
 

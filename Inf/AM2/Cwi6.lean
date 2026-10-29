@@ -9,12 +9,13 @@ namespace AM2.Cwi6
 alias Zad4 := isClosed_singleton
 alias Zad5a := IsOpen.inter
 alias Zad5b := isOpen_iUnion
+
 /-- This fails to hold when `ι` is infinite.
 
 **Alias** of `isOpen_iInter_of_finite`. -/
 alias Zad5c := isOpen_iInter_of_finite
 
-/-- Not that here we have to explicitly specify that x ≠ 0. -/
+/-- Note that here we have to explicitly specify that x ≠ 0. -/
 abbrev Zad6.A := {(x, y) : ℝ × ℝ | x ≠ 0 ∧ (x ^ 2 - y - 1) / x ≤ 0}
 
 open Zad6 in
@@ -25,7 +26,8 @@ theorem Zad6a : ¬IsOpen A := by
 open Zad6 in
 theorem Zad6b : ¬IsClosed A := by
   simpa [← isOpen_compl_iff, Metric.isOpen_iff, Metric.ball, Set.subset_def, dist] using
-    ⟨0, -1, by tauto, fun e he => ⟨-e / 2, by grind, -1, by simpa, by linarith, by simp [sq]; linarith⟩⟩
+    ⟨0, -1, by tauto, fun e he =>
+      ⟨-e / 2, by grind, -1, by simpa, by linarith, by simp [sq]; linarith⟩⟩
 
 open ContractingWith in
 theorem Zad7 {n : ℕ} (hn : n ≠ 0) : ∃! x ∈ Set.Ioo (0 : ℝ) 1, x ^ n - (n + 1) * (1 - x) = 0 := by
@@ -40,12 +42,14 @@ theorem Zad7 {n : ℕ} (hn : n ≠ 0) : ∃! x ∈ Set.Ioo (0 : ℝ) 1, x ^ n - 
       |>.resolve_left (by contrapose h1; congr)
     use x, ⟨hx, Subtype.ext_iff.mp hf⟩, fun y ⟨hy, hf⟩ => Subtype.ext_iff.mp <|
       hu ⟨y, Set.mem_Icc_of_Ioo hy⟩ (Subtype.ext hf)
-  use fixedPoint (K := n / (n + 1)) f ?_, ?_, ?_, fixedPoint_isFixedPt ?_, fun y => fixedPoint_unique ?_
+  use fixedPoint (K := n / (n + 1)) f ?_, ?_, ?_, fixedPoint_isFixedPt ?_,
+    fun y => fixedPoint_unique ?_
   · simp [ContractingWith, lipschitzWith_iff_dist_le_mul, -NNReal.coe_div, f, Subtype.dist_eq,
       -Set.mem_Icc, ← lipschitzOnWith_iff_dist_le_mul]; use by bound
     apply (convex_Icc 0 1).lipschitzOnWith_of_nnnorm_deriv_le (by fun_prop)
     intro x hx; simp [f', ← Nat.cast_add_one, -Nat.cast_add]; field_simp
-    apply pow_le_one₀ (by simp); rw [x.nnnorm_of_nonneg hx.left, ← NNReal.coe_le_one]; exact hx.right
+    apply pow_le_one₀ (by simp); rw [x.nnnorm_of_nonneg hx.left, ← NNReal.coe_le_one]
+    exact hx.right
   all_goals
     intro h; have := h ▸ fixedPoint_isFixedPt _
     simp [Function.IsFixedPt, f, Subtype.ext_iff, f', hn, n.cast_add_one_ne_zero] at this

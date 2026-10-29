@@ -89,8 +89,10 @@ theorem Zad3a : Summable (fun (n : ℕ) => (2 : ℝ) ^ (log n) ^ 2 * (x - 3) ^ n
     ↔ x ∈ Set.Ioo 2 4 := by
   have : Tendsto (fun (n : ℕ) => |(2 : ℝ) ^ (log n) ^ 2| ^ (n : ℝ)⁻¹) atTop (𝓝 1) := by
     simp [abs_rpow_of_nonneg, ← rpow_mul]; apply Tendsto.const_rpow_zero ?_ two_ne_zero
-    apply squeeze_zero (by bound) (fun n => by grw [log_natCast_le_rpow_div n (inv_pos_of_pos three_pos)])
-    apply ((tendsto_rpow_neg_atTop (inv_pos_of_pos three_pos)).const_mul_zero 9).natCast_atTop.congr'
+    apply squeeze_zero (by bound)
+      (fun n => by grw [log_natCast_le_rpow_div n (inv_pos_of_pos three_pos)])
+    apply (tendsto_rpow_neg_atTop (inv_pos_of_pos three_pos)).const_mul_zero 9
+      |>.natCast_atTop.congr'
     filter_upwards [eventually_ne_atTop 0] with n hn; field_simp; norm_num [mul_assoc]
     rw [← rpow_add_one (by simpa), ← rpow_two, ← rpow_mul (by simp)]; congr; norm_num
   apply iff_mem_Ioo_cases (x := x)
@@ -100,8 +102,8 @@ theorem Zad3a : Summable (fun (n : ℕ) => (2 : ℝ) ^ (log n) ^ 2 * (x - 3) ^ n
     apply not_tendsto_nhds_of_tendsto_atTop; norm_num [Function.comp_def]
     exact ((tendsto_natCast_atTop.const_mul_atTop' two_pos).log_atTop.atTop_pow₀ two_ne_zero)
       |>.const_rpow_atTop one_lt_two
-  · apply mt Summable.tendsto_atTop_zero'; apply not_tendsto_nhds_of_tendsto_atTop
-    norm_num; exact (tendsto_natCast_atTop.log_atTop.atTop_pow₀ two_ne_zero).const_rpow_atTop one_lt_two
+  · apply mt Summable.tendsto_atTop_zero'; apply not_tendsto_nhds_of_tendsto_atTop; norm_num
+    exact (tendsto_natCast_atTop.log_atTop.atTop_pow₀ two_ne_zero).const_rpow_atTop one_lt_two
 
 theorem Zad3b {x : ℝ} :
     Summable (fun (n : ℕ) => (n + 7) * (x + 3) ^ n / ((n ^ 2 + 1) * 9 ^ n)) (conditional ℕ)
@@ -109,17 +111,19 @@ theorem Zad3b {x : ℝ} :
   simp_rw [mul_div_right_comm]
   have : Tendsto (fun (n : ℕ) => (n + 7 : ℝ) / ((n ^ 2 + 1) * 9 ^ n)
       / ((n + 1 + 7) / (((n + 1) ^ 2 + 1) * 9 ^ (n + 1)))) atTop (𝓝 9) := by
-    simp_rw [pow_succ]; field_simp; simp_rw [mul_div_right_comm _ (9 : ℝ)]; apply Tendsto.one_mul_const
+    simp_rw [pow_succ]; field_simp; simp_rw [mul_div_right_comm _ (9 : ℝ)]
+    apply Tendsto.one_mul_const
     simp_rw [← div_div, mul_comm, div_div, mul_div_mul_comm]; apply Tendsto.mul_one; swap
-    · convert (tendsto_natCast_add_atTop (8 : ℝ)).inv_atTop.const_sub_zero 1 using 2; field
+    · convert (tendsto_natCast_add_atTop (8 : ℝ)).inv_atTop₀.const_sub_zero 1 using 2; field
     have X := tendsto_natCast_atTop (R := ℝ)
-    convert (((X.atTop_mul_atTop₀ X).atTop_add_const 1).inv_atTop).const_add_zero 1
-      |>.add_zero ((X.atTop_add X.inv_atTop).const_div_atTop 2) using 2; field
+    convert (((X.atTop_mul_atTop₀ X).atTop_add_const 1).inv_atTop₀).const_add_zero 1
+      |>.add_zero ((X.atTop_add X.inv_atTop₀).const_div_atTop 2) using 2; field
   apply iff_mem_Ico_cases (x := x)
     (fun hx => (summable_powerSeries_of_norm_lt_of_tendsto (by simpa (maxDischargeDepth := 3)
       [abs_of_nonneg, add_nonneg, sq_nonneg]) (by simp; grind)).to_conditional)
-    (fun hx => not_summable_powerSeries_of_norm_gt_of_tendsto (by simpa (maxDischargeDepth := 3)
-      [abs_of_nonneg, add_nonneg, sq_nonneg]) (by filter_upwards with n; positivity) (by simp; grind))
+    (fun hx => not_summable_powerSeries_of_norm_gt_of_tendsto
+      (by simpa (maxDischargeDepth := 3) [abs_of_nonneg, add_nonneg, sq_nonneg])
+      (by filter_upwards with n; positivity) (by simp; grind))
   · norm_num [← div_div, mul_comm_div, ← div_pow, mul_div_left_comm]
     apply summable_alternating_of_antitone_tendsto_zero
       (antitone_nat_of_succ_le fun n => by field_simp; norm_cast; ring_nf; bound)
@@ -127,15 +131,17 @@ theorem Zad3b {x : ℝ} :
     · filter_upwards [eventually_ne_atTop 0] with n hn using
         div_le_div_of_nonneg_left (by bound) (by positivity) (le_add_of_nonneg_right zero_le_one)
     simp_rw [sq, add_div, div_self_mul_self', ← sq]
-    exact (tendsto_inv_atTop_zero.zero_add ((tendsto_pow_atTop two_ne_zero).const_div_atTop 7)).natCast_atTop
+    exact tendsto_inv_atTop_zero.zero_add ((tendsto_pow_atTop two_ne_zero).const_div_atTop 7)
+      |>.natCast_atTop
   · norm_num [← div_div]; rw [← summable_iff_conditional_of_nonneg (by bound)]
     apply mt (Summable.of_nonneg_of_le (show ∀ (n : ℕ), 0 ≤ (n + 7 : ℝ) / (n + 7) ^ 2 by bound)
       fun n => by field_simp; ring_nf; bound)
     simp_rw [sq, div_self_mul_self']; norm_cast
     exact mt (Summable.comp_nat_add (f := fun n => _⁻¹)) not_summable_natCast_inv
 
+open Nat in
 theorem Zad3c (x : ℝ) :
-    Summable fun (n : ℕ) => (-1) ^ n * (x ^ (2 * n + 1) / ((2 * n + 1) * (2 * n + 1).factorial)) := by
+    Summable fun (n : ℕ) => (-1) ^ n * (x ^ (2 * n + 1) / ((2 * n + 1) * (2 * n + 1)!)) := by
   by_cases hx : x = 0
   · subst hx; simp
   let cx := ⌈|x|⌉₊
@@ -148,8 +154,8 @@ theorem Zad3c (x : ℝ) :
     _ = (2 * (n + 1) + 1) ^ 2 * (2 * n + 1 + 1) * cx ^ 2 := by ring
 
 /-
-theorem Zad3d {x : ℝ} :
-    Summable (fun (n : ℕ) => ((5 + (-1) ^ (n + 1)) / (9 + 3 * (-1) ^ n)) ^ n * (1 + x) ^ (3 * n)) (conditional ℕ)
+theorem Zad3d {x : ℝ} : Summable (fun (n : ℕ) =>
+    ((5 + (-1) ^ (n + 1)) / (9 + 3 * (-1) ^ n)) ^ n * (1 + x) ^ (3 * n)) (conditional ℕ)
     ↔ x ∈ Set.Ioo (-2) 0 := by
   rw [calc x ∈ Set.Ioo (-2) 0
     _ ↔ |1 + x| < 1 := by grind
@@ -157,7 +163,8 @@ theorem Zad3d {x : ℝ} :
     _ ↔ (1 + x) ^ 3 ∈ Set.Ioo (-1) 1 := by rw [abs_lt, Set.mem_Ioo]
   ]
   simp_rw [pow_mul]
-  apply iff_mem_Ioo_cases (p := fun y => Summable (fun n => ((5 + _ ^ (n + 1)) / (9 + 3 * _ ^ n)) ^ n * y ^ n) _)
+  apply iff_mem_Ioo_cases (p := fun y =>
+    Summable (fun n => ((5 + _ ^ (n + 1)) / (9 + 3 * _ ^ n)) ^ n * y ^ n) _)
   · sorry
   · sorry
   all_goals

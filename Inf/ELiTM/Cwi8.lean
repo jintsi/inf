@@ -33,8 +33,8 @@ noncomputable def Zad3 : Set α ≃ (α → Bool) where
 theorem Zad4 : #(ℕ → Bool) = #(ℕ → ℝ) := by simp [mk_real]
 
 theorem Zad5a : Set.ncard {x : ℕ | ∃ y, x = Real.sin y} = 2 := by
-  trans Set.ncard {0, 1}; congr 1
-  · ext n; simp; constructor
+  trans Set.ncard {0, 1}
+  · congr 1; ext n; simp; constructor
     · intro ⟨y, hy⟩; suffices n ≤ 1 by omega
       simpa [← hy] using Real.sin_le_one y
     · rintro (rfl | rfl)
@@ -136,13 +136,12 @@ theorem Zad5m : #{f : ℕ → ℕ // StrictMono f} = 𝔠 := by
     intro f; simp [add_assoc, Nat.add_sub_add_right]; simp [Finset.sum_range_succ]
     ext n; split <;> rfl
 
-set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad5n : #{f : ℕ → ℝ // StrictMono f} = 𝔠 := by
   trans #(ℝ × (ℕ → NNReal)); swap; simp [mk_real]
   trans #{f : ℕ → ℝ // Monotone f}
   · apply le_antisymm (mk_subtype_mono fun f => StrictMono.monotone)
     rw [le_def]; use fun ⟨f, hf⟩ => ⟨fun n => f n + n, by
-      intro m n hmn; simp; grw [hmn]; simpa using hf hmn.le⟩
+      unfold StrictMono; intro m n hmn; simp; grw [hmn]; simpa using hf hmn.le⟩
     intro ⟨f, hf⟩ ⟨g, hg⟩; simp [funext_iff]
   apply mk_congr; constructor
   case toFun =>
@@ -168,7 +167,8 @@ theorem Zad5r : #{p : ℝ × ℝ // p.1 ^ 2 + p.2 ^ 2 = 1} = 𝔠 := by
   apply le_antisymm
   · grw [mk_subtype_le]; simp [mk_real]
   rw [← mk_Icc_real one_pos, le_def]
-  use fun ⟨x, hx⟩ => ⟨(√x, √(1 - x)), by simp; rw [Real.sq_sqrt, Real.sq_sqrt, add_sub_cancel] <;> simp_all⟩
+  use fun ⟨x, hx⟩ => ⟨(√x, √(1 - x)), by
+    simp; rw [Real.sq_sqrt, Real.sq_sqrt, add_sub_cancel] <;> simp_all⟩
   intro ⟨x, hx⟩ ⟨y, hy⟩; simp; rw [Real.sqrt_inj hx.1 hy.1]; tauto
 
 theorem Zad5s [AddGroup G] (a : G) : #{p : G × G // p.1 - p.2 = a} = #G :=

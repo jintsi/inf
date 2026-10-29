@@ -20,7 +20,7 @@ theorem Multiset.inf_induction [LinearOrder α] {p : Multiset α → Prop} (empt
   have : l.Pairwise (· ≤ ·) := s.pairwise_sort _
   revert this; induction l with
   | nil => simpa
-  | cons a l ih => simp [← cons_coe]; intro ha hl; apply cons <;> simp_all
+  | cons a l ih => simp [← cons_coe]; exact fun ha hl ↦ cons a (↑l) ha (ih hl)
 
 namespace Nat.Partition
 
@@ -49,7 +49,8 @@ def conj (p : Partition n) : Partition n where
 @[simp]
 theorem conj_conj {p : Partition n} : p.conj.conj = p := by
   ext1; simp only [conj_parts]
-  have : (map (fun k => countP (fun x => k < x) p.parts) (range p.parts.sup)).sup = p.parts.card := by
+  have : (map (fun k => countP (fun x => k < x) p.parts) (range p.parts.sup)).sup
+      = p.parts.card := by
     apply le_antisymm (by simp [countP_le_card])
     by_cases! h : p.parts = 0; · simp [h]
     apply le_sup; simp [countP_eq_card]
@@ -96,12 +97,14 @@ open Nat.Partition Finset PowerSeries
 
 namespace MD1.Cwi9
 
-theorem Zad1a {n k : ℕ} : #{p : n.Partition | p.parts.card = k} = #{p : n.Partition | p.parts.sup = k} := by
+theorem Zad1a {n k : ℕ} :
+    #{p : n.Partition | p.parts.card = k} = #{p : n.Partition | p.parts.sup = k} := by
   apply card_equiv conjEquiv; simp
 
 alias Zad1b := card_odds_eq_card_distincts
 
-theorem Zad1c {n k : ℕ} : #{p : (n + k).Partition | p.parts.card = k} = #(restricted n (· ≤ k)) := by
+theorem Zad1c {n k : ℕ} :
+    #{p : (n + k).Partition | p.parts.card = k} = #(restricted n (· ≤ k)) := by
   rw [Zad1a]; apply card_bij'
   case i =>
     intro p hp; simp at hp; use p.parts.erase k
@@ -116,7 +119,9 @@ theorem Zad1c {n k : ℕ} : #{p : (n + k).Partition | p.parts.card = k} = #(rest
     intro p _; by_cases hk : k = 0
     · simp [hk]; exact p
     use k ::ₘ p.parts <;> simp_all [p.parts_pos, p.parts_sum] <;> lia
-  case hi => simp [restricted]; intro p hp i; grw [Multiset.erase_subset]; intro hi; grw [p.parts.le_sup hi, hp]
+  case hi =>
+    simp [restricted]; intro p hp i; grw [Multiset.erase_subset]
+    intro hi; grw [p.parts.le_sup hi, hp]
   case hj =>
     split
     case isFalse => simp [restricted]
@@ -204,17 +209,16 @@ theorem Zad6 [CommRing R] :
     sorry
 -/
 
-set_option backward.isDefEq.respectTransparency.types false in
-theorem Zad7 [CommRing R] (k : ℕ) :
-    (mk fun n => n.stirlingSecond k : R⟦X⟧) = X ^ k * ∏ i ∈ range k, rescale (i + 1 : R) (mk 1) := by
+theorem Zad7 [CommRing R] (k : ℕ) : (mk fun n => n.stirlingSecond k : R⟦X⟧)
+    = X ^ k * ∏ i ∈ range k, rescale (i + 1 : R) (mk 1) := by
   trans X ^ k * ∏ i ∈ range (k + 1), rescale (i : R) (mk 1); swap
   · simp [prod_range_succ']
   ext n; simp [coeff_X_pow_mul']; split
   case isFalse hk => simp_all [Nat.stirlingSecond_eq_zero_of_lt]
   case isTrue hk =>
     simp [coeff_prod]; norm_cast; congr; rw [Cwi5.Zad5a hk]
-    apply sum_bij' (fun s _ => s.toMultiset.toFinsupp) (fun f hf => ⟨f.toMultiset, by
-        rw [mem_finsuppAntidiag'] at hf; simpa using! hf.left⟩)
+    apply sum_bij' (fun s _ => s.toMultiset.toFinsupp) (fun f hf => Sym.mk f.toMultiset (by
+        rw [mem_finsuppAntidiag'] at hf; simpa using! hf.left))
     · simp [Sym.ext_iff] --left_neg (epic @[to_additive] fail)
     · simp --right_neg
     · simp [Multiset.prod_eq_prod_toEnumFinset, Multiset.toEnumFinset]

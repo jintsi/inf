@@ -80,7 +80,8 @@ theorem Zad2a.C_to_B [Field K] [CharZero K] : B.toMatrix (C (K := K)) = !![3, -4
   rw [ofDetNeZero_toMatrix]; norm_num [-Matrix.cons_transpose, Matrix.inv_def]
 
 noncomputable abbrev Zad2b.B [Field K] [CharZero K] :=
-  (Pi.basisFun K (Fin 3)).ofDetNeZero !![1, 1, 0; 0, 1, 1; 1, 0, 1] (by simp [Matrix.det_fin_three])
+  (Pi.basisFun K (Fin 3)).ofDetNeZero !![1, 1, 0; 0, 1, 1; 1, 0, 1]
+    (by simp [Matrix.det_fin_three])
 
 noncomputable abbrev Zad2b.C [Field K] [CharZero K] :=
   (Pi.basisFun K (Fin 3)).ofDetNeZero !![2, 1, 1; 1, 2, 1; 1, 1, 2]
@@ -141,7 +142,8 @@ noncomputable abbrev Zad3b.B [Field K] [CharZero K] :=
     (by simp [Matrix.det_fin_two, toMatrix_apply])
 
 noncomputable abbrev Zad3b.C [CommRing R] :=
-  (Pi.basisFun R (Fin 3)).ofDetNeZero !![1, 1, 0; 0, 0, 1; 1, 0, 1] (by simp [Matrix.det_fin_three])
+  (Pi.basisFun R (Fin 3)).ofDetNeZero !![1, 1, 0; 0, 0, 1; 1, 0, 1]
+    (by simp [Matrix.det_fin_three])
 
 open Zad3b in
 set_option backward.isDefEq.respectTransparency.types false in
@@ -202,7 +204,7 @@ theorem Zad5.G_values [Field K] [CharZero K] :
     convert congrArg Subtype.val (constr_basis (M' := K[X]_4) _ _ _ (2 : Fin 4));
     convert congrArg Subtype.val (constr_basis (M' := K[X]_4) _ _ _ (3 : Fin 4))
   ]
-  all_goals simp [Fin.sum_univ_four] <;> ac_nf
+  all_goals simp [Fin.sum_univ_four]; all_goals ac_nf
 
 theorem Zad5.toMatrix_G [Field K] [CharZero K] :
     LinearMap.toMatrix (degreeLT.basis K 4) (degreeLT.basis K 4) G =
@@ -232,7 +234,8 @@ theorem ZadD1 [DivisionRing K] (f : (Fin 3 → K) →ₗ[K] Fin 5 → K)
   suffices finrank K f.range = finrank K (Fin 3 → K) by
     rw [← f.finrank_range_add_finrank_ker] at this; simpa [f.ker_eq_bot] using this
   rw [h]; simp
-  convert finrank_span_eq_card (R := K) (b := ![![(1 : K), 0, 1, -1, 0], ![0, 1, 0, 1, 0], ![1, 1, 1, 1, 1]]) ?_
+  convert finrank_span_eq_card (R := K)
+    (b := ![![(1 : K), 0, 1, -1, 0], ![0, 1, 0, 1, 0], ![1, 1, 1, 1, 1]]) ?_
   all_goals try (ext; simp; tauto)
   · simp
   · simp [linearIndependent_finSucc, Submodule.mem_span_singleton, Submodule.mem_span_pair]

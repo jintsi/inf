@@ -38,7 +38,8 @@ theorem Zad1b (hx : -1 < x) : x / (1 + x) ≤ log (1 + x) ∧ log (1 + x) ≤ x 
     · apply continuousOn_log.mono; simpa
     · apply differentiableOn_log.mono; simp [hx.le]
     · simp; intro c hl hu; exact inv_anti₀ hx hl.le
-  · rw [← neg_le_neg_iff, ← zero_sub (log _), ← log_one, ← sub_add_cancel_left 1, ← one_mul (_ - _)]
+  · rw [← neg_le_neg_iff, ← zero_sub (log _), ← log_one, ← sub_add_cancel_left 1,
+      ← one_mul (_ - _)]
     apply Convex.mul_sub_le_image_sub_of_le_deriv (convex_Icc (1 + x) 1) ?_ ?_ ?_
         (1 + x) ⟨le_rfl, hx'⟩ 1 ⟨hx', le_rfl⟩ hx'
     · apply continuousOn_log.mono; simpa
@@ -74,7 +75,8 @@ theorem Zad6a : Tendsto (fun x => (arcsin (3 * x) - 3 * arcsin x) / x ^ 3) (𝓝
   · simpa using! eventually_mem_nhdsWithin
   · exact tendsto_nhdsWithin_of_tendsto_nhds (Continuous.tendsto' (by fun_prop) _ _ (by simp))
   · exact tendsto_nhdsWithin_of_tendsto_nhds (Continuous.tendsto' (by fun_prop) _ _ (by simp))
-  · apply Tendsto.congr' (f₁ := fun x => 8 / ((1 - 9 * x ^ 2) * (1 - x ^ 2) * (√(1 - 9 * x ^ 2)⁻¹ + √(1 - x ^ 2)⁻¹)))
+  · apply Tendsto.congr'
+      (f₁ := fun x => 8 / ((1 - 9 * x ^ 2) * (1 - x ^ 2) * (√(1 - 9 * x ^ 2)⁻¹ + √(1 - x ^ 2)⁻¹)))
     · apply h.mp; simp_rw [eventually_nhdsWithin_iff, Set.mem_compl_singleton_iff,
         Metric.eventually_nhds_iff, dist_eq, sub_zero]; simp +contextual [deriv_comp_mul_left]
       exists 1 / 3, (by simp); intro x hb hx _ _

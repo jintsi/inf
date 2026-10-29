@@ -1,7 +1,5 @@
 import Inf.AM1.Cwi1
 import Inf.AM1.Cwi4
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.ArctanDeriv
-import Mathlib.Analysis.Calculus.Deriv.Inv
 
 namespace AM1.Cwi5
 
@@ -18,7 +16,7 @@ theorem Zad1 : HasDerivAt (fun x => √(5 - 2 * x)) (-1 / 3) (-2) := by
 
 open scoped Classical in
 /-- This one reuses `AM1.Cwi4.Zad8` to not duplicate proofs. -/
-theorem Zad2 {x : ℝ} : DifferentiableAt ℝ (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
+theorem Zad2 : DifferentiableAt ℝ (fun x => if Irrational x then 0 else x ^ 2) x ↔ x = 0 := by
   use fun h => Cwi4.Zad8.mp h.continuousAt
   intro rfl
   apply HasDerivAt.differentiableAt (f' := 0)
@@ -34,15 +32,16 @@ theorem Zad3 {x : ℝ} : DifferentiableAt ℝ (fun x => x / (1 + (1 / x).exp)) x
     · filter_upwards [eventually_mem_nhdsWithin]; simp +contextual
     intro h
     have hl : Tendsto (fun x : ℝ => (1 + x⁻¹.exp)⁻¹) (𝓝[<] 0) (𝓝 1) :=
-      ((tendsto_exp_comp_nhds_zero.mpr tendsto_inv_nhdsLT_zero).const_add_zero 1).inv_one
+      ((tendsto_exp_comp_nhds_zero.mpr tendsto_inv_nhdsLT_zero).const_add_zero 1).inv_one₀
     have hr : Tendsto (fun x : ℝ => (1 + x⁻¹.exp)⁻¹) (𝓝[>] 0) (𝓝 0) :=
-      (tendsto_const_nhds.add_atTop (tendsto_exp_comp_atTop.mpr tendsto_inv_nhdsGT_zero)).inv_tendsto_atTop
+      tendsto_const_nhds.add_atTop (tendsto_exp_comp_atTop.mpr tendsto_inv_nhdsGT_zero)
+      |>.inv_tendsto_atTop
     exact one_ne_zero <| (tendsto_nhds_unique hl (tendsto_nhdsWithin_mono_left (by simp) h)).trans
       (tendsto_nhds_unique (tendsto_nhdsWithin_mono_left (by simp) h) hr)
   · intro hx; fun_prop (disch := positivity)
 
 /-- Zad. 5 -/
-theorem _root_.Real.hasDerivAt_cot {x : ℝ} (h : sin x ≠ 0) : HasDerivAt cot (-1 / sin x ^ 2) x := by
+theorem _root_.Real.hasDerivAt_cot (h : sin x ≠ 0) : HasDerivAt cot (-1 / sin x ^ 2) x := by
   rw [funext Real.cot_eq_cos_div_sin]
   convert! HasDerivAt.fun_div (Real.hasDerivAt_cos x) (Real.hasDerivAt_sin x) h using 2
   simp [← neg_add', -neg_add_rev, ← sq]

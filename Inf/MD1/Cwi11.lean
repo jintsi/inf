@@ -1,8 +1,5 @@
-import Mathlib.Combinatorics.SimpleGraph.Acyclic
 import Mathlib.Algebra.BigOperators.Pi
-import Mathlib.Combinatorics.SimpleGraph.Diam
 import Mathlib.Combinatorics.SimpleGraph.Girth
-import Mathlib.Combinatorics.SimpleGraph.Hamiltonian
 
 theorem List.isChain_scanr {f : α → β → β} (hf : ∀ a b, R (f a b) b) :
     IsChain R (scanr f init as) := by
@@ -74,21 +71,23 @@ theorem SimpleGraph.hypercubeGraph_degree [Fintype d] [DecidableEq d] (v : d →
 /-- The shortest path between two vertices on a hypercube. -/
 noncomputable def SimpleGraph.hypercube_path [Fintype d] [DecidableEq d] (u v : d → Fin 2) :
     (hypercubeGraph d).Walk u v := by
-  refine (Walk.ofSupport ((Finset.toList {i | u i ≠ v i}).scanl (fun v i => v + Pi.single i 1) u)
+  refine (Walk.ofSupport ((toList {i | u i ≠ v i}).scanl (fun v i => v + Pi.single i 1) u)
     (by simp) (List.isChain_scanl fun v i => by use i)).copy (by simp) ?_
   simp [List.getLast_scanl]
-  calc (Finset.toList {i | u i ≠ v i}).foldl (fun v i => v + Pi.single i 1) u
-  _ = ((Finset.toList {i | u i ≠ v i}).map fun i => Pi.single i 1).foldl (fun v i => v + i) u := by
+  calc (toList {i | u i ≠ v i}).foldl (fun v i => v + Pi.single i 1) u
+  _ = ((toList {i | u i ≠ v i}).map fun i => Pi.single i 1).foldl (fun v i => v + i) u := by
     simp [List.foldl_map]
-  _ = u + ((Finset.toList {i | u i ≠ v i}).map fun i => Pi.single i 1).foldl (fun v i => v + i) 0 := by
+  _ = u + ((toList {i | u i ≠ v i}).map fun i => Pi.single i 1).foldl (fun v i => v + i) 0 := by
     convert List.foldl_assoc; simp; infer_instance
-  _ = u + ((Finset.toList {i | u i ≠ v i}).map fun i => Pi.single i 1).sum := by rw [List.sum_eq_foldl]
+  _ = u + ((toList {i | u i ≠ v i}).map fun i => Pi.single i 1).sum := by rw [List.sum_eq_foldl]
   _ = u + ∑ i ∈ {i | u i ≠ v i}, Pi.single i 1 := by simp
-  _ = v := by ext1 i; simp; generalize u i = x; generalize v i = y; fin_cases x <;> fin_cases y <;> simp
+  _ = v := by
+    ext1 i; simp; generalize u i = x; generalize v i = y; fin_cases x <;> fin_cases y <;> simp
 
 theorem SimpleGraph.hypercube_dist [Fintype d] [DecidableEq d] (u v : d → Fin 2) :
     (hypercubeGraph d).dist u v = #{i | u i ≠ v i} := by
-  rw [dist_eq_sInf, csInf_eq_iff] <;> simp [Set.range_nonempty_iff_nonempty] <;> use! hypercube_path u v
+  rw [dist_eq_sInf, csInf_eq_iff] <;> simp [Set.range_nonempty_iff_nonempty]
+    <;> use! hypercube_path u v
   · simp [hypercube_path]
   intro p; induction p with simp
   | @cons u v w h p ih =>
@@ -113,14 +112,13 @@ theorem Zad5ii [Fintype d] [DecidableEq d] : (hypercubeGraph d).diam = Fintype.c
   · apply ciSup_le; simp [hypercube_dist, card_le_univ]
   · apply le_ciSup_of_le hb (0, 1); simp [hypercube_dist]
 
-set_option backward.isDefEq.respectTransparency.types false in
 theorem Zad5iii [Nontrivial d] [DecidableEq d] : (hypercubeGraph d).girth = 4 := by
   obtain ⟨i, j, hij⟩ := exists_pair_ne d
   let w := Walk.nil' (G := hypercubeGraph d) 0
-    |>.cons (u := Pi.single i 1) (by symm; use i; rw [zero_add])
-    |>.cons (u := Pi.single i 1 + Pi.single j 1) (by symm; use j)
-    |>.cons (u := Pi.single j 1) (by use i; rw [add_comm])
-    |>.cons (u := 0) (by use j; rw [zero_add])
+    |>.cons (u := Pi.single i 1) (by symm; simp; use i)
+    |>.cons (u := Pi.single i 1 + Pi.single j 1) (by symm; simp; use j)
+    |>.cons (u := Pi.single j 1) (by simp; use i; rw [add_comm])
+    |>.cons (u := 0) (by simp; use j)
   have hw : w.IsCycle := by
     rw [Walk.isCycle_iff_isPath_tail_and_le_length]; and_intros; swap
     · simp [w]
@@ -132,7 +130,7 @@ theorem Zad5iii [Nontrivial d] [DecidableEq d] : (hypercubeGraph d).girth = 4 :=
   suffices ∀ v (p : (hypercubeGraph d).Walk v v), p.IsCycle → p.length ≠ 3 by
     contrapose! this; simp_rw [eq_comm, ← this, exists_girth_eq_length]
     simp [IsAcyclic]; exists 0, w
-  intro v p h; contrapose! h; exfalso; match p, h with
+  intro v p h; contrapose h; exfalso; match p, h with
   | .cons h1 (.cons h2 (.cons h3 .nil)), _ =>
     simp_all; rename_i u w
     rcases h1 with ⟨i1, rfl⟩; rcases h2 with ⟨i2, rfl⟩; rcases h3 with ⟨i3, h⟩

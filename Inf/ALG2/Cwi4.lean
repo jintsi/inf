@@ -32,8 +32,8 @@ theorem LinearIndependent.measure_parallelepiped_eq_sqrt_det_gram [NormedAddComm
 namespace ALG2.Cwi4
 
 theorem Zad1 [RCLike K] {A : Matrix (Fin n) (Fin n) K} (hA : A.IsHermitian) :
-    (∀ x ≠ 0, star x ⬝ᵥ A *ᵥ x < 0) ↔
-    ∀ i : Fin n, 0 < (-1) ^ (i.val + 1) * (A.submatrix (Fin.castLE i.isLt) (Fin.castLE i.isLt)).det := by
+    (∀ x ≠ 0, star x ⬝ᵥ A *ᵥ x < 0) ↔ ∀ i : Fin n,
+      0 < (-1) ^ (i.val + 1) * (A.submatrix (Fin.castLE i.isLt) (Fin.castLE i.isLt)).det := by
   simpa [posDef_iff_dotProduct_mulVec, hA.neg, neg_mulVec, submatrix_neg, det_neg]
     using posDef_sylvester hA.neg
 
@@ -57,7 +57,8 @@ theorem Zad4b : MeasureTheory.volume (parallelepiped
   simp [Basis.det, det_fin_three, Basis.toMatrix]
 
 noncomputable def Zad5.B := (degreeLT.basis ℝ 2).ofDetNeZero
-  ![⟨1 + X, by rw [mem_degreeLT]; compute_degree!⟩, ⟨1 - 2 * X, by rw [mem_degreeLT]; compute_degree!⟩]
+  ![⟨1 + X, by rw [mem_degreeLT]; compute_degree!⟩,
+    ⟨1 - 2 * X, by rw [mem_degreeLT]; compute_degree!⟩]
   (by norm_num [det_fin_two, Basis.toMatrix_apply, coeff_one])
 
 theorem Zad5.B_eq : (B i).val = ![1 + X, 1 - 2 * X] i := by revert i; simp [B]
@@ -116,8 +117,9 @@ noncomputable def Orientation.crossProduct : E [⋀^Fin n]→ₗ[ℝ] E :=
 theorem Orientation.mixed_product_apply : ⟪o.crossProduct v, w⟫ = o.volumeForm (Fin.snoc v w) := by
   simp [crossProduct]
 
-theorem Orientation.mixed_product_eq_det (b : OrthonormalBasis (Fin n.succ) ℝ E)
-    (hb : b.toBasis.orientation = o) {v w} : ⟪o.crossProduct v, w⟫ = b.toBasis.det (Fin.snoc v w) := by
+theorem Orientation.mixed_product_eq_det
+    (b : OrthonormalBasis (Fin n.succ) ℝ E) (hb : b.toBasis.orientation = o) {v w} :
+    ⟪o.crossProduct v, w⟫ = b.toBasis.det (Fin.snoc v w) := by
   rwa [mixed_product_apply, volumeForm_robust]
 
 theorem Orientation.repr_crossProduct_apply (b : OrthonormalBasis (Fin n.succ) ℝ E)
@@ -147,5 +149,6 @@ end CrossProduct
 namespace ALG2.Cwi4
 
 open EuclideanSpace in
-theorem Zad7 : positiveOrientation.crossProduct ![!₂[(1 : ℝ), 1, 2], !₂[2, 1, -1]] = !₂[-3, 5, -1] := by
+theorem Zad7 :
+    positiveOrientation.crossProduct ![!₂[(1 : ℝ), 1, 2], !₂[2, 1, -1]] = !₂[-3, 5, -1] := by
   simp [cross_apply]; norm_num

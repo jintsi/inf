@@ -1,6 +1,5 @@
 import Mathlib.Analysis.Complex.Trigonometric
 import Mathlib.Data.Nat.Fib.Basic
-import Mathlib.Data.Nat.EvenOddRec
 import Mathlib.LinearAlgebra.Matrix.Block
 
 namespace ALG1.Cwi4
@@ -107,7 +106,8 @@ theorem Zad6d : !![2, 1; 3, 2] * !![24, 13; -34, -18] * !![-3, 2; 5, -3]
 
 theorem ZadD1a : !![2, 1, 1; 3, 0, 1] * !![3, 1; 2, 1; 1, 0] = !![9, 3; 10, 3] := by simp
 
-theorem ZadD1a' : !![3, 1; 2, 1; 1, 0] * !![2, 1, 1; 3, 0, 1] = !![9, 3, 4; 7, 2, 3; 2, 1, 1] := by simp
+theorem ZadD1a' : !![3, 1; 2, 1; 1, 0] * !![2, 1, 1; 3, 0, 1] =
+    !![9, 3, 4; 7, 2, 3; 2, 1, 1] := by simp
 
 theorem ZadD1b : !![3, 2, 1; 0, 1, 2] * !![1; 2; 3] = !![10; 8] := by simp
 

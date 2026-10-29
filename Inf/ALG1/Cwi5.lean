@@ -1,6 +1,5 @@
 import Mathlib.Algebra.Polynomial.Eval.SMul
 import Mathlib.Analysis.Calculus.FDeriv.Add
-import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Data.ZMod.Basic
 
 /-! # Some notes from `Mathlib/Algebra/Module/Defs.lean`:
@@ -22,7 +21,7 @@ structure IsSubmodule (R : Type u) {M : Type v} [Semiring R] [AddCommMonoid M] [
 
 namespace ALG1.Cwi5
 
-theorem Zad1a : ¬IsSubmodule ℝ {(x, _, _) : ℝ × ℝ × ℝ | x ≠ 0} := by
+theorem Zad1a [Semiring R] : ¬IsSubmodule R {(x, _, _) : R × R × R | x ≠ 0} := by
   simp [mt IsSubmodule.zero_mem]
 
 theorem Zad1b [Semiring R] : IsSubmodule R {(x, y, z) : R × R × R | x + 3 * y = z} := by
@@ -30,11 +29,12 @@ theorem Zad1b [Semiring R] : IsSubmodule R {(x, y, z) : R × R × R | x + 3 * y 
     simp +contextual [mul_add, ← add_assoc, add_right_comm _ _ (_ * _)]
   simp [(show (3 : R) = 1 + 1 + 1 by norm_num), add_mul, mul_add]
 
-theorem Zad1c : ¬IsSubmodule ℝ {(x, y, _) : ℝ × ℝ × ℝ | y = x ^ 2} :=
- fun this => by simpa [sq] using this.smul_mem 2 (show (1, 1, 1) ∈ _ by simp)
+theorem Zad1c [Semiring R] [CharZero R] : ¬IsSubmodule R {(x, y, _) : R × R × R | y = x ^ 2} :=
+  fun this => by simpa [sq, ← Nat.cast_ofNat (R := R), -Nat.cast_ofNat, ← Nat.cast_mul]
+    using this.smul_mem 2 (show (1, 1, 1) ∈ _ by simp)
 
-theorem Zad1d : ¬IsSubmodule ℝ {(x, _, z) : ℝ × ℝ × ℝ | x * z = 0} :=
- fun this => by simpa using this.add_mem (a := (1, 0, 0)) (b := (0, 0, 1))
+theorem Zad1d [Semiring R] [Nontrivial R] : ¬IsSubmodule R {(x, _, z) : R × R × R | x * z = 0} :=
+  fun this => by simpa using this.add_mem (a := (1, 0, 0)) (b := (0, 0, 1))
 
 theorem Zad1e [Semiring R] : IsSubmodule R {(x, y, z) : R × R × R | x = 0 ∧ y = 2 * z} := by
   apply IsSubmodule.mk <;> simp +contextual [mul_add]; simp [two_mul, mul_add]
@@ -42,11 +42,13 @@ theorem Zad1e [Semiring R] : IsSubmodule R {(x, y, z) : R × R × R | x = 0 ∧ 
 theorem Zad1f [Semiring R] : IsSubmodule R {(a, b) : R × R | a + b = 0} := by
   apply IsSubmodule.mk <;> simp +contextual [add_add_add_comm, ← mul_add]
 
-theorem Zad1g : ¬IsSubmodule ℝ {(a, b, c) : ℝ × ℝ × ℝ | 4 * a + 2 * b + c = 1} :=
- fun this => by simpa using this.zero_mem
+theorem Zad1g [Semiring R] [Nontrivial R] :
+    ¬IsSubmodule R {(a, b, c) : R × R × R | 4 * a + 2 * b + c = 1} :=
+  fun this => by simpa using this.zero_mem
 
-theorem Zad1h : ¬IsSubmodule ℝ {(a, b, c) : ℝ × ℝ × ℝ | (a + b + c) * c = 0} :=
- fun this => by simpa using this.add_mem (a := (0, -1, 1)) (b := (0, 1, 0))
+theorem Zad1h [Ring R] [Nontrivial R] :
+    ¬IsSubmodule R {(a, b, c) : R × R × R | (a + b + c) * c = 0} :=
+  fun this => by simpa using this.add_mem (a := (0, -1, 1)) (b := (0, 1, 0))
 
 theorem Zad4 [Semiring R] [AddCommMonoid M] [Module R M] {M₁ M₂ : Set M} :
     IsSubmodule R M₁ → IsSubmodule R M₂ → IsSubmodule R (M₁ ∩ M₂) := by

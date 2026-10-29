@@ -5,7 +5,7 @@ import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.NumberTheory.PrimeCounting
 import Mathlib.LinearAlgebra.Matrix.Symmetric
 import Mathlib.Data.Sym.Card
-import Mathlib.Data.Sym.Sym2.Order
+import Mathlib.Order.Sym2
 import Mathlib.Algebra.DirectSum.Decomposition
 import Mathlib.Algebra.Field.ZMod
 import Mathlib.Data.Matrix.Reflection
@@ -44,7 +44,8 @@ theorem Zad2b (n : ℕ) : LinearIndependent ℚ fun (i : Fin n) => Real.log (Nat
   have h : ∀ i, (x i).den ∣ den := fun i => Finset.dvd_lcm (Finset.mem_univ i)
   apply_fun Real.exp ∘ (↑den * ·); simp [Finset.mul_sum, Real.exp_sum, ← Real.log_pow]
   rw [Real.exp_log]; swap; simp [pow_pos, Nat.Prime.pos]
-  rw [Fintype.prod_congr (g := fun i => (Nat.nth Nat.Prime i.val : ℝ) ^ ((x i).num * den / (x i).den))]
+  rw [Fintype.prod_congr (g := fun i =>
+      (Nat.nth Nat.Prime i.val : ℝ) ^ ((x i).num * den / (x i).den))]
   case h =>
     intro i
     rw [← Real.exp_log (x := _ ^ _), Real.log_zpow, ← mul_assoc]; congr; norm_cast
@@ -96,20 +97,22 @@ noncomputable def _root_.SymmMatrix.basis (n : Type*) [Finite n] (R : Type*) [Se
     toFun M := Sym2.lift ⟨M.val, M.prop.transpose.apply⟩
     map_add' := by simp [funext_iff, Sym2.forall]
     map_smul' := by simp [funext_iff, Sym2.forall]
-    invFun c := ⟨.of fun i j => c s(i, j), by simp [SymmMatrix, Matrix.IsSymm.ext_iff, Sym2.eq_swap]⟩
+    invFun c := ⟨.of fun i j => c s(i, j),
+      by simp [SymmMatrix, Matrix.IsSymm.ext_iff, Sym2.eq_swap]⟩
     left_inv M := by ext; simp
     right_inv c := by simp [funext_iff, Sym2.forall]
   }
 
 /-- Basis for `SkewSymmMatrix`. -/
-noncomputable def _root_.SkewSymmMatrix.basis (n : Type*) [Fintype n] [LinearOrder n] (R : Type*) [Ring R]
-    [IsAddTorsionFree R] : Module.Basis (Sym2.diagSetᶜ : Set (Sym2 n)) R (SkewSymmMatrix n R) :=
+noncomputable def _root_.SkewSymmMatrix.basis
+    (n : Type*) [Fintype n] [LinearOrder n] (R : Type*) [Ring R] [IsAddTorsionFree R] :
+    Module.Basis (Sym2.diagSetᶜ : Set (Sym2 n)) R (SkewSymmMatrix n R) :=
   Module.Basis.ofEquivFun {
     toFun M s := M.val s.val.sup s.val.inf
     map_add' _ _ := rfl
     map_smul' _ _ := rfl
-    invFun c := ⟨.of fun i j => if h : j < i then c ⟨s(i, j), by simp [h.ne']⟩ else if h : i < j
-        then -c ⟨s(j, i), by simp [h.ne']⟩ else 0, by
+    invFun c := ⟨.of fun i j => if h : j < i then c ⟨s(i, j), by simp [h.ne']⟩ else
+        if h : i < j then -c ⟨s(j, i), by simp [h.ne']⟩ else 0, by
       ext i j; rcases lt_trichotomy i j with h | h | h
       · simp [h, h.asymm]
       · simp [h.not_lt, h.not_gt]
@@ -141,7 +144,8 @@ instance Zad3b (R : Type*) [Field R] [CharZero R] [DecidableEq R] (n : ℕ) :
     case property =>
       fin_cases k <;> (dsimp; apply smul_mem; ext i j; simp [add_comm])
   case left_inv =>
-    intro m; ext i j; simp [DirectSum.coeAddMonoidHom_eq_dfinsuppSum, DFinsupp.equivFunOnFintype]; ring
+    intro m; ext i j
+    simp [DirectSum.coeAddMonoidHom_eq_dfinsuppSum, DFinsupp.equivFunOnFintype]; ring
   case right_inv =>
     intro ds; ext k i j; fin_cases k <;>
       (simp [DirectSum.coeAddMonoidHom_eq_dfinsuppSum, DFinsupp.equivFunOnFintype]; field_simp)
@@ -157,8 +161,8 @@ theorem Zad3c : (fun k => (DirectSum.decompose ![SymmMatrix (Fin 2) ℚ, SkewSym
     Pi.smul_def]
   fin_cases k <;> fin_cases i <;> fin_cases j <;> simp <;> norm_num
 
-/-- The subspace of vectors in `Fin n → ZMod 2` with an even number of 1s (or alternatively, whose
-coordinates sum to 0 mod 2). -/
+/-- The subspace of vectors in `Fin n → ZMod 2` with an even number of 1s
+(or alternatively, whose coordinates sum to 0 mod 2). -/
 def Zad4.A (n : ℕ) : Submodule (ZMod 2) (Fin n → ZMod 2) where
   carrier := {v | Finset.univ.sum v = 0}
   add_mem' := fun ha hb => Finset.sum_add_distrib.trans (ha ▸ hb ▸ add_zero _)
@@ -338,7 +342,8 @@ def Zad9.B : Submodule ℚ (ℚ × ℚ × ℚ × ℚ) := span ℚ {(2, 1, 3, 2),
 
 set_option backward.isDefEq.respectTransparency false
 theorem Zad9.directSum : DirectSum.IsInternal ![A, B] := by
-  rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by simp [Set.ext_iff]), isCompl_iff_disjoint]
+  rw [DirectSum.isInternal_submodule_iff_isCompl _ zero_ne_one (by simp [Set.ext_iff]),
+    isCompl_iff_disjoint]
   · simp [disjoint_def, A, B, mem_span_triple]; grind only
   simp [A, B]; grw [← LinearIndependent.fintype_card_le_finrank (b := ![
       ⟨(1, 1, 5, 2), mem_span_of_mem (by simp)⟩, ⟨(0, 1, 1, 1), mem_span_of_mem (by simp)⟩]),
@@ -350,5 +355,6 @@ theorem Zad9.directSum : DirectSum.IsInternal ![A, B] := by
 
 theorem ZadD1 {K : Type u} {V : Type v} [DivisionRing K] [AddCommGroup V] [Module K V]
     (s t : Submodule K V) [FiniteDimensional K s] [FiniteDimensional K t] :
-    Module.finrank K (s + t) = Module.finrank K s + Module.finrank K t - Module.finrank K ↥(s ⊓ t) := by
+    Module.finrank K (s + t) =
+    Module.finrank K s + Module.finrank K t - Module.finrank K ↥(s ⊓ t) := by
   rw [← finrank_sup_add_finrank_inf_eq s t, add_tsub_cancel_right, Submodule.add_eq_sup]

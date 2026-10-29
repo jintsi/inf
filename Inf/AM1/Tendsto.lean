@@ -41,31 +41,37 @@ end
 
 /-! `Mathlib.Topology.Algebra.Group.Basic` -/
 
-theorem neg_zero [TopologicalSpace G] [NegZeroClass G] [ContinuousNeg G] {f : α → G}
-    (hf : Tendsto f l (𝓝 0)) : Tendsto (fun x => -f x) l (𝓝 0) := _root_.neg_zero (G := G) ▸ hf.neg
+@[to_additive]
+theorem inv_one [TopologicalSpace G] [InvOneClass G] [ContinuousInv G] {f : α → G}
+    (hf : Tendsto f l (𝓝 1)) : Tendsto (fun x => (f x)⁻¹) l (𝓝 1) :=
+  _root_.inv_one (G := G) ▸ hf.inv
 
-section variable [TopologicalSpace G] [SubNegZeroMonoid G] [ContinuousSub G] (C : G)
+section variable [TopologicalSpace G] [DivInvOneMonoid G] [ContinuousDiv G] (C : G)
 
-theorem sub_zero {f g : α → G} (hf : Tendsto f l (𝓝 a)) (hg : Tendsto g l (𝓝 0)) :
-    Tendsto (fun x => f x - g x) l (𝓝 (a)) := _root_.sub_zero a ▸ hf.sub hg
+@[to_additive]
+theorem div_one {f g : α → G} (hf : Tendsto f l (𝓝 a)) (hg : Tendsto g l (𝓝 1)) :
+    Tendsto (fun x => f x / g x) l (𝓝 a) := _root_.div_one a ▸ hf.div' hg
 
-theorem const_sub_zero (hf : Tendsto f l (𝓝 0)) : Tendsto (fun x => C - f x) l (𝓝 C) := by
-  simpa using tendsto_const_nhds.sub hf
+@[to_additive]
+theorem const_div_one (hf : Tendsto f l (𝓝 1)) : Tendsto (fun x => C / f x) l (𝓝 C) := by
+  simpa using tendsto_const_nhds.div' hf
 
 end
 
-variable [TopologicalSpace G] [SubNegMonoid G] [ContinuousSub G] (C : G) in
-theorem zero_sub {f g : α → G} (hf : Tendsto f l (𝓝 0)) (hg : Tendsto g l (𝓝 a)) :
-    Tendsto (fun x => f x - g x) l (𝓝 (-a)) := _root_.zero_sub a ▸ hf.sub hg
+variable [TopologicalSpace G] [DivInvMonoid G] [ContinuousDiv G] (C : G) in
+@[to_additive]
+theorem one_div {f g : α → G} (hf : Tendsto f l (𝓝 1)) (hg : Tendsto g l (𝓝 a)) :
+    Tendsto (fun x => f x / g x) l (𝓝 a⁻¹) := _root_.one_div a ▸ hf.div' hg
 
-variable [TopologicalSpace G] [SubNegMonoid G] [SeparatelyContinuousAdd G] (C : G) in
-theorem zero_sub_const (hf : Tendsto f l (𝓝 0)) : Tendsto (fun x => f x - C) l (𝓝 (-C)) :=
-  (hf.zero_add_const (-C)).congr fun x => (sub_eq_add_neg (f x) C).symm
+variable [TopologicalSpace G] [DivInvMonoid G] [SeparatelyContinuousMul G] (C : G) in
+@[to_additive]
+theorem one_div_const (hf : Tendsto f l (𝓝 1)) : Tendsto (fun x => f x / C) l (𝓝 C⁻¹) :=
+  (hf.one_mul_const C⁻¹).congr fun x => (div_eq_mul_inv (f x) C).symm
 
 /-! `Mathlib.Topology.Algebra.GroupWithZero` -/
 
-theorem inv_one [Zero G₀] [InvOneClass G₀] [TopologicalSpace G₀] [ContinuousInv₀ G₀] [NeZero (1 : G₀)]
-    {f : α → G₀} (hf : Tendsto f l (𝓝 1)) : Tendsto (fun x => (f x)⁻¹) l (𝓝 1) :=
+theorem inv_one₀ [Zero G₀] [InvOneClass G₀] [TopologicalSpace G₀] [ContinuousInv₀ G₀]
+    [NeZero (1 : G₀)] {f : α → G₀} (hf : Tendsto f l (𝓝 1)) : Tendsto (fun x => (f x)⁻¹) l (𝓝 1) :=
   _root_.inv_one (G := G₀) ▸ hf.inv₀ one_ne_zero
 
 theorem mul_zero [MulZeroClass G₀] [TopologicalSpace G₀] [ContinuousMul G₀] {f g : α → G₀}
@@ -77,30 +83,32 @@ theorem zero_mul [MulZeroClass G₀] [TopologicalSpace G₀] [ContinuousMul G₀
   simpa using hf.mul hg
 
 theorem const_mul_zero [MulZeroClass G₀] [TopologicalSpace G₀] [SeparatelyContinuousMul G₀]
-    (C : G₀) {l : Filter α} {f : α → G₀} (hf : Tendsto f l (𝓝 0)) : Tendsto (fun x => C * f x) l (𝓝 0) := by
-  simpa using hf.const_mul C
+    (C : G₀) {l : Filter α} {f : α → G₀} (hf : Tendsto f l (𝓝 0)) :
+    Tendsto (fun x => C * f x) l (𝓝 0) := by simpa using hf.const_mul C
 
 theorem zero_mul_const [MulZeroClass G₀] [TopologicalSpace G₀] [SeparatelyContinuousMul G₀]
-    (C : G₀) {l : Filter α} {f : α → G₀} (hf : Tendsto f l (𝓝 0)) : Tendsto (fun x => f x * C) l (𝓝 0) := by
-  simpa using hf.mul_const C
+    (C : G₀) {l : Filter α} {f : α → G₀} (hf : Tendsto f l (𝓝 0)) :
+    Tendsto (fun x => f x * C) l (𝓝 0) := by simpa using hf.mul_const C
 
 theorem zero_pow [TopologicalSpace M] [MonoidWithZero M] [ContinuousMul M] (n : ℕ) [NeZero n]
     {l : Filter α} {f : α → M} (hf : Tendsto f l (𝓝 0)) : Tendsto (fun x => f x ^ n) l (𝓝 0) :=
   _root_.zero_pow (M₀ := M) (NeZero.ne n) ▸ hf.pow n
 
 theorem zero_div_const [GroupWithZero G₀] [TopologicalSpace G₀] [SeparatelyContinuousMul G₀]
-    (C : G₀) {l : Filter α} {f : α → G₀} (hf : Tendsto f l (𝓝 0)) : Tendsto (fun x => f x / C) l (𝓝 0) :=
-  (hf.zero_mul_const C⁻¹).congr fun x => (div_eq_mul_inv (f x) C).symm
+    (C : G₀) {l : Filter α} {f : α → G₀} (hf : Tendsto f l (𝓝 0)) :
+    Tendsto (fun x => f x / C) l (𝓝 0) := by simpa [div_eq_mul_inv] using (hf.zero_mul_const C⁻¹)
 
-theorem const_div [Zero G₀] [DivInvMonoid G₀] [TopologicalSpace G₀] [ContinuousInv₀ G₀] [SeparatelyContinuousMul G₀]
-    (C : G₀) {l : Filter α} {f : α → G₀} {a : G₀} (hf : Tendsto f l (𝓝 a)) (h : a ≠ 0) :
-    Tendsto (fun x => C / f x) l (𝓝 (C / a)) := by simpa [div_eq_mul_inv] using (hf.inv₀ h).const_mul C
+theorem const_div [Zero G₀] [DivInvMonoid G₀] [TopologicalSpace G₀] [ContinuousInv₀ G₀]
+    [SeparatelyContinuousMul G₀] (C : G₀) {l : Filter α} {f : α → G₀} {a : G₀}
+    (hf : Tendsto f l (𝓝 a)) (h : a ≠ 0) : Tendsto (fun x => C / f x) l (𝓝 (C / a)) := by
+  simpa [div_eq_mul_inv] using (hf.inv₀ h).const_mul C
 
 /-! `Mathlib.Topology.Algebra.Order.Group` -/
 
-theorem abs_zero [TopologicalSpace G] [AddCommGroup G] [LinearOrder G] [IsOrderedAddMonoid G]
-    [OrderTopology G] {l : Filter α} {f : α → G} (hf : Tendsto f l (𝓝 0)) :
-    Tendsto (fun x => |f x|) l (𝓝 0) := _root_.abs_zero (α := G) ▸ hf.abs
+@[to_additive]
+theorem mabs_one [TopologicalSpace G] [CommGroup G] [LinearOrder G] [IsOrderedMonoid G]
+    [OrderTopology G] {l : Filter α} {f : α → G} (hf : Tendsto f l (𝓝 1)) :
+    Tendsto (fun x => |f x|ₘ) l (𝓝 1) := _root_.mabs_one (α := G) ▸ hf.mabs
 
 /-! `Mathlib.Order.Filter.AtTopBot.Basic` -/
 
@@ -109,45 +117,59 @@ theorem atTop_add_nat (C : ℕ) (hf : Tendsto f l atTop) : Tendsto (fun n => f n
 
 /-! `Mathlib.Order.Filter.AtTopBot.Group` -/
 
-section variable [AddCommGroup G] [PartialOrder G] [IsOrderedAddMonoid G] (C : G)
+section variable [CommGroup G] [PartialOrder G] [IsOrderedMonoid G] (C : G)
 
-alias _root_.tendsto_neg_atTop := tendsto_neg_atTop_atBot
+@[to_additive]
+alias _root_.tendsto_inv_atTop := tendsto_inv_atTop_atBot
 
-alias _root_.tendsto_neg_atBot := tendsto_neg_atBot_atTop
+@[to_additive]
+alias _root_.tendsto_inv_atBot := tendsto_inv_atBot_atTop
 
-alias ⟨_, neg_atTop⟩ := tendsto_neg_atBot_iff
+@[to_additive]
+alias ⟨_, inv_atTop⟩ := tendsto_inv_atBot_iff
 
-alias ⟨_, neg_atBot⟩ := tendsto_neg_atTop_iff
+@[to_additive]
+alias ⟨_, inv_atBot⟩ := tendsto_inv_atTop_iff
 
-theorem const_add_atTop (hf : Tendsto f l atTop) : Tendsto (fun x => C + f x) l atTop :=
-  tendsto_atTop_add_const_left l C hf
+@[to_additive const_add_atTop]
+theorem const_mul_atTop'' (hf : Tendsto f l atTop) : Tendsto (fun x => C * f x) l atTop :=
+  tendsto_atTop_mul_const_left l C hf
 
-theorem const_add_atBot (hf : Tendsto f l atBot) : Tendsto (fun x => C + f x) l atBot :=
-  tendsto_atBot_add_const_left l C hf
+@[to_additive const_add_atBot]
+theorem const_mul_atBot'' (hf : Tendsto f l atBot) : Tendsto (fun x => C * f x) l atBot :=
+  tendsto_atBot_mul_const_left l C hf
 
-theorem atTop_add_const (hf : Tendsto f l atTop) : Tendsto (fun x => f x + C) l atTop :=
-  tendsto_atTop_add_const_right l C hf
+@[to_additive atTop_add_const]
+theorem atTop_mul_const'' (hf : Tendsto f l atTop) : Tendsto (fun x => f x * C) l atTop :=
+  tendsto_atTop_mul_const_right l C hf
 
-theorem atBot_add_const (hf : Tendsto f l atBot) : Tendsto (fun x => f x + C) l atBot :=
-  tendsto_atBot_add_const_right l C hf
+@[to_additive atBot_add_const]
+theorem atBot_mul_const'' (hf : Tendsto f l atBot) : Tendsto (fun x => f x * C) l atBot :=
+  tendsto_atBot_mul_const_right l C hf
 
-theorem const_sub_atTop (hf : Tendsto f l atTop) : Tendsto (fun x => C - f x) l atBot :=
-  (hf.neg_atTop.const_add_atBot C).congr fun x => (sub_eq_add_neg C (f x)).symm
+@[to_additive const_sub_atTop]
+theorem const_div_atTop' (hf : Tendsto f l atTop) : Tendsto (fun x => C / f x) l atBot :=
+  (hf.inv_atTop.const_mul_atBot'' C).congr fun x => (div_eq_mul_inv C (f x)).symm
 
-theorem const_sub_atBot (hf : Tendsto f l atBot) : Tendsto (fun x => C - f x) l atTop :=
-  (hf.neg_atBot.const_add_atTop C).congr fun x => (sub_eq_add_neg C (f x)).symm
+@[to_additive const_sub_atBot]
+theorem const_div_atBot' (hf : Tendsto f l atBot) : Tendsto (fun x => C / f x) l atTop :=
+  (hf.inv_atBot.const_mul_atTop'' C).congr fun x => (div_eq_mul_inv C (f x)).symm
 
-theorem atTop_sub_const (hf : Tendsto f l atTop) : Tendsto (fun x => f x - C) l atTop :=
-  (hf.atTop_add_const (-C)).congr fun x => (sub_eq_add_neg (f x) C).symm
+@[to_additive atTop_sub_const]
+theorem atTop_div_const' (hf : Tendsto f l atTop) : Tendsto (fun x => f x / C) l atTop :=
+  (hf.atTop_mul_const'' C⁻¹).congr fun x => (div_eq_mul_inv (f x) C).symm
 
-theorem atBot_sub_const (hf : Tendsto f l atBot) : Tendsto (fun x => f x - C) l atBot :=
-  (hf.atBot_add_const (-C)).congr fun x => (sub_eq_add_neg (f x) C).symm
+@[to_additive atBot_sub_const]
+theorem atBot_div_const' (hf : Tendsto f l atBot) : Tendsto (fun x => f x / C) l atBot :=
+  (hf.atBot_mul_const'' C⁻¹).congr fun x => (div_eq_mul_inv (f x) C).symm
 
-theorem _root_.tendsto_add_atTop : Tendsto (fun x => x + C) atTop atTop :=
-  tendsto_id.atTop_add_const C
+@[to_additive]
+theorem _root_.tendsto_mul_atTop : Tendsto (fun x => x * C) atTop atTop :=
+  tendsto_id.atTop_mul_const'' C
 
-theorem _root_.tendsto_sub_atTop : Tendsto (fun x => x - C) atTop atTop :=
-  tendsto_id.atTop_sub_const C
+@[to_additive]
+theorem _root_.tendsto_div_atTop : Tendsto (fun x => x / C) atTop atTop :=
+  tendsto_id.atTop_div_const' C
 
 end
 
@@ -171,16 +193,16 @@ end
 
 section variable [Semiring R] [LinearOrder R] [IsStrictOrderedRing R] [Archimedean R]
 
-theorem _root_.tendsto_const_mul_atTop' {C : R} (h : 0 < C) : Tendsto (fun x => C * x) atTop atTop :=
-  tendsto_id.const_mul_atTop' h
+theorem _root_.tendsto_const_mul_atTop' {C : R} (h : 0 < C) :
+    Tendsto (fun x => C * x) atTop atTop := tendsto_id.const_mul_atTop' h
 
 end
 
 /-! `Mathlib.Order.Filter.AtTopBot.Field` -/
 
 variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K] in
-theorem _root_.tendsto_const_mul_atTop {C : K} (h : 0 < C) : Tendsto (fun x => C * x) atTop atTop :=
-  tendsto_id.const_mul_atTop h
+theorem _root_.tendsto_const_mul_atTop {C : K} (h : 0 < C) :
+    Tendsto (fun x => C * x) atTop atTop := tendsto_id.const_mul_atTop h
 
 variable [Field K] [LinearOrder K] [IsStrictOrderedRing K] in
 theorem _root_.tendsto_const_mul_atTop_of_neg {C : K} (h : C < 0) :
@@ -188,15 +210,17 @@ theorem _root_.tendsto_const_mul_atTop_of_neg {C : K} (h : C < 0) :
 
 /-! `Mathlib.Topology.Algebra.Order.Field` -/
 
-variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K] [TopologicalSpace K] [OrderTopology K] in
-theorem inv_atTop {f : α → K} (h : Tendsto f l atTop) : Tendsto (fun x => (f x)⁻¹) l (𝓝 0) :=
+variable [Semifield K] [LinearOrder K] [IsStrictOrderedRing K]
+  [TopologicalSpace K] [OrderTopology K] in
+theorem inv_atTop₀ {f : α → K} (h : Tendsto f l atTop) : Tendsto (fun x => (f x)⁻¹) l (𝓝 0) :=
   h.inv_tendsto_atTop
 
-variable [Field K] [LinearOrder K] [IsStrictOrderedRing K] [TopologicalSpace K] [OrderTopology K] in
+variable [Field K] [LinearOrder K] [IsStrictOrderedRing K]
+  [TopologicalSpace K] [OrderTopology K] in
 theorem _root_.tendsto_const_div_atTop (C : K) : Tendsto (fun x => C / x) atTop (𝓝 0) :=
   tendsto_id.const_div_atTop C
 
-/-! `Mathlib.Data.Real.Sqrt` -/
+/-! `Mathlib.Analysis.Real.Sqrt` -/
 
 theorem sqrt_atTop (h : Tendsto f l atTop) : Tendsto (fun x => √(f x)) l atTop :=
   Real.tendsto_sqrt_atTop.comp h
@@ -209,7 +233,7 @@ theorem rexp_atTop (h : Tendsto f l atTop) : Tendsto (fun x => Real.exp (f x)) l
 theorem rexp_atBot (h : Tendsto f l atBot) : Tendsto (fun x => Real.exp (f x)) l (𝓝 0) :=
   Real.tendsto_exp_atBot.comp h
 
-/-! `Mathlib.Analysis.SpecialFunction.Log.Basic` -/
+/-! `Mathlib.Analysis.SpecialFunctions.Log.Basic` -/
 
 theorem log_one (h : Tendsto f l (𝓝 1)) : Tendsto (fun x => Real.log (f x)) l (𝓝 0) :=
   Real.log_one ▸ h.log one_ne_zero
@@ -223,14 +247,14 @@ theorem const_rpow_atTop {f : α → ℝ} {b : ℝ} (hb : 1 < b) (h : Tendsto f 
     Tendsto (fun x => b ^ f x) l atTop := by
   simpa [Real.rpow_def_of_pos (one_pos.trans hb)] using h.const_mul_atTop (Real.log_pos hb)
 
-theorem const_rpow_atTop_of_lt_one {f : α → ℝ} {b : ℝ} (hb₀ : -1 < b) (hb₁ : b < 1) (h : Tendsto f l atTop) :
-    Tendsto (fun x => b ^ f x) l (𝓝 0) :=
+theorem const_rpow_atTop_of_lt_one {f : α → ℝ} {b : ℝ} (hb₀ : -1 < b) (hb₁ : b < 1)
+    (h : Tendsto f l atTop) : Tendsto (fun x => b ^ f x) l (𝓝 0) :=
   (tendsto_rpow_atTop_of_base_lt_one b hb₀ hb₁).comp h
 
 /-! `Mathlib.Analysis.SpecialFunctions.Pow.Continuity` -/
 
-theorem zero_rpow {f g : α → ℝ} {a : ℝ} (hf : Tendsto f l (𝓝 0)) (hg : Tendsto g l (𝓝 a)) (h : 0 < a) :
-    Tendsto (fun x => f x ^ g x) l (𝓝 0) := by simpa [h, h.ne'] using hf.rpow hg
+theorem zero_rpow {f g : α → ℝ} {a : ℝ} (hf : Tendsto f l (𝓝 0)) (hg : Tendsto g l (𝓝 a))
+    (h : 0 < a) : Tendsto (fun x => f x ^ g x) l (𝓝 0) := by simpa [h, h.ne'] using hf.rpow hg
 
 theorem zero_rpow_const {f : α → ℝ} (p : ℝ) (hf : Tendsto f l (𝓝 0)) (h : 0 < p) :
     Tendsto (fun x => f x ^ p) l (𝓝 0) := by simpa [h.ne'] using hf.rpow_const (Or.inr h.le)
@@ -241,11 +265,12 @@ theorem one_rpow {f g : α → ℝ} {a : ℝ} (hf : Tendsto f l (𝓝 1)) (hg : 
 theorem one_rpow_const {f : α → ℝ} (p : ℝ) (hf : Tendsto f l (𝓝 1)) :
     Tendsto (fun x => f x ^ p) l (𝓝 1) := by simpa using hf.rpow_const
 
-theorem rpow_zero {f g : α → ℝ} {a : ℝ} (hf : Tendsto f l (𝓝 a)) (hg : Tendsto g l (𝓝 0)) (h : a ≠ 0) :
-    Tendsto (fun x => f x ^ g x) l (𝓝 1) := by simpa [h] using hf.rpow hg
+theorem rpow_zero {f g : α → ℝ} {a : ℝ} (hf : Tendsto f l (𝓝 a)) (hg : Tendsto g l (𝓝 0))
+    (h : a ≠ 0) : Tendsto (fun x => f x ^ g x) l (𝓝 1) := by simpa [h] using hf.rpow hg
 
 theorem const_rpow_zero {f : α → ℝ} {a : ℝ} (hf : Tendsto f l (𝓝 0)) (h : a ≠ 0) :
     Tendsto (fun x => a ^ f x) l (𝓝 1) := tendsto_const_nhds.rpow_zero hf h
 
-theorem _root_.tendsto_const_rpow_inv (a : ℝ) (ha : a ≠ 0) : Tendsto (fun x : ℝ => a ^ x⁻¹) atTop (𝓝 1) := by
-  simpa using tendsto_const_nhds.rpow tendsto_inv_atTop_zero (.inl ha)
+theorem _root_.tendsto_const_rpow_inv (a : ℝ) (ha : a ≠ 0) :
+    Tendsto (fun x : ℝ => a ^ x⁻¹) atTop (𝓝 1) :=
+  a.rpow_zero ▸ tendsto_const_nhds.rpow tendsto_inv_atTop_zero (.inl ha)

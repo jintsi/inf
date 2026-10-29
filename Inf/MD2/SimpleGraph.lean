@@ -42,7 +42,8 @@ def takeUntilP (P : V → Prop) [DecidablePred P] {u v} : (p : G.Walk u v) → G
 @[simp] theorem takeUntilP_nil : (nil : G.Walk u u).takeUntilP P = nil.copy rfl (by simp) := (rfl)
 
 @[simp] theorem takeUntilP_cons {h : G.Adj u v} {p : G.Walk v w} : (cons h p).takeUntilP P =
-    if hu : P u then nil.copy rfl (by simp [hu]) else cons h ((p.takeUntilP P).copy rfl (by simp [hu])) := (rfl)
+    if hu : P u then nil.copy rfl (by simp [hu]) else
+      cons h ((p.takeUntilP P).copy rfl (by simp [hu])) := (rfl)
 
 theorem support_takeUntilP_prefix_support {u v} (p : G.Walk u v) (P : V → Prop) [DecidablePred P] :
     (p.takeUntilP P).support <+: p.support := by

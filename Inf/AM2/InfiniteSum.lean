@@ -5,7 +5,8 @@ import Inf.AM1.Tendsto
 "Regular" series convergence, i.e. as a sequence of parital sums, is implemented im Mathlib
 as `Summable f (conditional ℕ)`, while unqualified `Summable f` denotes absolute convergence.
 
-The API for working with `conditional ℕ` is surprisingly underdeveloped. That's where this file comes in. -/
+The API for working with `conditional ℕ` is surprisingly underdeveloped.
+That's where this file comes in. -/
 
 open Topology Filter SummationFilter Finset
 
@@ -17,15 +18,17 @@ theorem summable_conditional_iff [AddCommMonoid α] [TopologicalSpace α] {f : �
 
 /-- For the unconditional version, see `summable_congr_atTop`. -/
 theorem summable_congr_atTop' [AddCommGroup α] [TopologicalSpace α] [IsTopologicalAddGroup α]
-    {f g : ℕ → α} (h : f =ᶠ[Filter.atTop] g) : Summable f (conditional ℕ) ↔ Summable g (conditional ℕ) := by
+    {f g : ℕ → α} (h : f =ᶠ[Filter.atTop] g) :
+    Summable f (conditional ℕ) ↔ Summable g (conditional ℕ) := by
   simp only [EventuallyEq, eventually_atTop] at h; obtain ⟨n₀, hn₀⟩ := h
-  exact summable_iff_of_summable_sub (summable_of_ne_finset_zero (s := range n₀) (by simpa [sub_eq_zero]))
+  exact summable_iff_of_summable_sub
+    (summable_of_ne_finset_zero (s := range n₀) (by simpa [sub_eq_zero]))
 
 alias ⟨Summable.congr_atTop', _⟩ := summable_congr_atTop'
 
 /-- An absolutely convergent series also converges conditionally. -/
-theorem Summable.to_conditional [AddCommMonoid α] [TopologicalSpace α] {f : ℕ → α} (h : Summable f) :
-    Summable f (conditional ℕ) := h.mono_filter (conditional ℕ).le_atTop
+theorem Summable.to_conditional [AddCommMonoid α] [TopologicalSpace α] {f : ℕ → α}
+    (h : Summable f) : Summable f (conditional ℕ) := h.mono_filter (conditional ℕ).le_atTop
 
 /-- A series converges unconditionally iff it converges absolutely. -/
 theorem summable_iff_summable_abs_conditional {f : ℕ → ℝ} :
@@ -86,7 +89,8 @@ theorem summable_pow_of_tendsto {f : ℕ → ℝ} (hl : |l| < 1) (hf : Tendsto f
   apply Summable.of_abs; simp_rw [abs_pow]
   obtain ⟨r, hlr, hr1⟩ := exists_between hl
   apply Summable.of_nonneg_atTop_of_le_atTop (f := fun n => r ^ n) (by simp)
-  · filter_upwards [hf.abs.eventually_le_const hlr] with n hf using pow_le_pow_left₀ (abs_nonneg _) hf n
+  · filter_upwards [hf.abs.eventually_le_const hlr] with n hf
+      using pow_le_pow_left₀ (abs_nonneg _) hf n
   · exact summable_geometric_of_lt_one (by grw [← hlr, abs_nonneg]) hr1
 
 theorem summable_of_tendsto_rpow_inv [SeminormedAddCommGroup α] [CompleteSpace α] {f : ℕ → α}
@@ -108,8 +112,9 @@ theorem summable_alternating_of_antitone_tendsto_zero {f : ℕ → ℝ} (hf : An
     (hf0 : Tendsto f atTop (𝓝 0)) : Summable (fun n => (-1) ^ n * f n) (conditional ℕ) :=
   summable_conditional_iff.mpr (hf.tendsto_alternating_series_of_tendsto_zero hf0)
 
-theorem summable_alternating_of_antitone_tendsto_zero' {f : ℕ → ℝ} (hf : ∀ᶠ n in atTop, f (n + 1) ≤ f n)
-    (hf0 : Tendsto f atTop (𝓝 0)) : Summable (fun n => (-1) ^ n * f n) (conditional ℕ) := by
+theorem summable_alternating_of_antitone_tendsto_zero' {f : ℕ → ℝ}
+    (hf : ∀ᶠ n in atTop, f (n + 1) ≤ f n) (hf0 : Tendsto f atTop (𝓝 0)) :
+    Summable (fun n => (-1) ^ n * f n) (conditional ℕ) := by
   rcases by simpa using hf with ⟨a, ha⟩; let F n := if n < a then f a else f n
   have : Antitone F := antitone_nat_of_succ_le (by grind)
   apply (summable_alternating_of_antitone_tendsto_zero this (hf0.congr'
@@ -147,9 +152,9 @@ theorem summable_powerSeries_of_norm_lt_inv [SeminormedRing α] [NormOneClass α
   apply (hf.mul_const ‖x‖).congr'; filter_upwards [eventually_ne_atTop 0]
   simp +contextual [Real.mul_rpow, Real.pow_rpow_inv_natCast]
 
-theorem not_summable_powerSeries_of_norm_gt_inv [SeminormedRing α] [NormOneClass α] [NormMulClass α]
-    {f : ℕ → α} (hf : Tendsto (fun n => ‖f n‖ ^ (n : ℝ)⁻¹) atTop (𝓝 r)) (hr : r ≠ 0)
-    {x : α} (hx : r⁻¹ < ‖x‖) : ¬Summable (fun n => f n * x ^ n) (conditional ℕ) := by
+theorem not_summable_powerSeries_of_norm_gt_inv [SeminormedRing α] [NormOneClass α]
+    [NormMulClass α] {f : ℕ → α} (hf : Tendsto (fun n => ‖f n‖ ^ (n : ℝ)⁻¹) atTop (𝓝 r))
+    (hr : r ≠ 0) {x : α} (hx : r⁻¹ < ‖x‖) : ¬Summable (fun n => f n * x ^ n) (conditional ℕ) := by
   apply not_summable_of_tendsto_rpow_inv (l := r * ‖x‖)
   · rwa [← inv_lt_iff_one_lt_mul₀' ((ge_of_tendsto' hf (by bound)).lt_of_ne' hr)]
   apply (hf.mul_const ‖x‖).congr'; filter_upwards [eventually_ne_atTop 0]

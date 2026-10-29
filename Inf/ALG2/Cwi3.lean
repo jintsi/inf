@@ -28,7 +28,8 @@ end Zad1
 
 open Zad1 in
 theorem Zad1a : (ℝ ∙ ![1, 1, (1 : ℝ)])ᗮ = Submodule.span ℝ {![1, 1, -1], ![1, -1, 0]} := by
-  ext v; simp [Submodule.mem_orthogonal_singleton_iff_inner_right, Submodule.mem_span_pair]; constructor
+  ext v; simp [Submodule.mem_orthogonal_singleton_iff_inner_right, Submodule.mem_span_pair]
+  constructor
   · intro h; exists -v 2, v 0 + v 2; apply funext; simp; linarith
   · rintro ⟨a, b, rfl⟩; simp; ring
 
@@ -50,8 +51,8 @@ theorem Zad2 [Fintype n] [DecidableEq n] : SymmMatrix n ℝ ⟂ SkewSymmMatrix n
 alias Zad3 := parallelogram_law_with_norm
 alias Zad5 := sq_sum_le_card_mul_sum_sq
 
-theorem Zad4 [CommSemiring α] [LinearOrder α] [IsStrictOrderedRing α] [ExistsAddOfLE α] (a b c : α) :
-    a * b + b * c + c * a ≤ a ^ 2 + b ^ 2 + c ^ 2 := by
+theorem Zad4 [CommSemiring α] [LinearOrder α] [IsStrictOrderedRing α] [ExistsAddOfLE α]
+    (a b c : α) : a * b + b * c + c * a ≤ a ^ 2 + b ^ 2 + c ^ 2 := by
   apply le_of_mul_le_mul_left; case a0 => exact two_pos
   apply le_of_add_le_add_left (a := a ^ 2 + b ^ 2 + c ^ 2)
   convert Zad5 (s := .univ) (f := ![a, b, c]) using 1 <;> simp [Fin.sum_univ_three] <;> ring
@@ -64,7 +65,8 @@ open Polynomial
 noncomputable def core : Core ℝ ℝ[X] where
   inner p q := ∫ x in 0..1, p.eval x * q.eval x
   conj_inner_symm p q := by simp [mul_comm]
-  re_inner_nonneg p := by simpa [← sq] using intervalIntegral.integral_nonneg zero_le_one (by bound)
+  re_inner_nonneg p := by
+    simpa [← sq] using intervalIntegral.integral_nonneg zero_le_one (by bound)
   add_left p q r := by simp [add_mul]; apply intervalIntegral.integral_add <;>
     apply ContinuousOn.intervalIntegrable <;> fun_prop
   smul_left p q c := by simp [mul_assoc]
@@ -88,12 +90,13 @@ lemma inner_eq_integral {p q : ℝ[X]} :
 @[simp]
 lemma inner_degreeLT_eq {p q : ℝ[X]_n} : ⟪p, q⟫ =
     ∑ i ∈ Finset.range n, ∑ j ∈ Finset.range n, p.val.coeff i * q.val.coeff j / (i + j + 1) := by
-  simp [inner_eq_integral, eval_eq_sum_degreeLTEquiv p.property, eval_eq_sum_degreeLTEquiv q.property,
+  simp [inner_eq_integral, eval_eq_sum_degreeLTEquiv p.prop, eval_eq_sum_degreeLTEquiv q.prop,
     degreeLTEquiv, Fin.sum_univ_eq_sum_range fun i => _ * _, Finset.sum_mul_sum]
-  rw [intervalIntegral.integral_finsetSum fun i hi => ContinuousOn.intervalIntegrable (by fun_prop)]
-  congr! with i hi
-  rw [intervalIntegral.integral_finsetSum fun j hj => ContinuousOn.intervalIntegrable (by fun_prop)]
-  congr! with j hj; simp [mul_assoc, ← mul_left_comm (q.val.coeff j), ← pow_add]; ring
+  rw [intervalIntegral.integral_finsetSum fun i hi =>
+    ContinuousOn.intervalIntegrable (by fun_prop)]; congr! with i hi
+  rw [intervalIntegral.integral_finsetSum fun j hj =>
+    ContinuousOn.intervalIntegrable (by fun_prop)]; congr! with j hj
+  simp [mul_assoc, ← mul_left_comm (q.val.coeff j), ← pow_add]; ring
 
 theorem first : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 0).val = 1 := by
   rw [gramSchmidt_def, ← Fintype.sum_ite_mem]; simp
@@ -106,9 +109,10 @@ theorem second : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 1).val = X - C 2⁻¹ :
 
 theorem third : (gramSchmidt ℝ (degreeLT.basis ℝ 3) 2).val = X ^ 2 - X + C 6⁻¹ := by
   rw [gramSchmidt_def, ← Fintype.sum_ite_mem]
-  norm_num [Submodule.starProjection_singleton, ← real_inner_self_eq_norm_sq, -inner_self_eq_norm_sq_to_K,
-    Fin.sum_univ_succ, Fin.lt_def, first, second, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul,
-    -Submodule.coe_inner, -ClosedSubmodule.coe_inner, -Submodule.norm_coe]
+  norm_num [Submodule.starProjection_singleton, ← real_inner_self_eq_norm_sq, Fin.sum_univ_succ,
+    Fin.lt_def, first, second, Finset.sum_range_succ, coeff_one, coeff_X, smul_eq_C_mul,
+    -Submodule.coe_inner, -ClosedSubmodule.coe_inner, -Submodule.norm_coe,
+    -inner_self_eq_norm_sq_to_K]
   rw [show C (1 / 6 : ℝ) = C 2⁻¹ - C 3⁻¹ by norm_num [← C_sub]]; ring_nf
 
 end Zad6
@@ -138,8 +142,8 @@ theorem Zad7b : Zad7.X.starProjection !₂[x, y, z] =
   simp [Zad7.basis.starProjection_eq_sum_rankOne, Zad7a, inner, Fin.sum_univ_three,
     PiLp.ext_iff, add_mul, mul_assoc, ← mul_inv]; ring_nf; trivial
 
-theorem Zad8 : !![2024, 1; -1, 0] =
-    ∑ i, ![-2024, 0, -1, 0] i • ![!![-1, 0; 0, 0], !![0, 2; 2, 1], !![0, -1; 1, 0], !![0, 1; -1, 4]] i := by
+theorem Zad8 : !![2024, 1; -1, 0] = ∑ i, ![-2024, 0, -1, 0] i •
+    ![!![-1, 0; 0, 0], !![0, 2; 2, 1], !![0, -1; 1, 0], !![0, 1; -1, 4]] i := by
   simp [Fin.sum_univ_four, -zsmul_eq_mul]
 
 end ALG2.Cwi3
@@ -184,8 +188,8 @@ theorem Matrix.toLinearEquiv_toLinearMap [CommRing R] [AddCommGroup M] [Module R
     toLinearEquiv b A hA = toLin b b A := rfl
 
 @[simp]
-theorem Matrix.toLinearEquiv_symm_toLinearMap [CommRing R] [AddCommGroup M] [Module R M] [Fintype n]
-    [DecidableEq n] (b : Module.Basis n R M) (A : Matrix n n R) (hA : IsUnit A.det) :
+theorem Matrix.toLinearEquiv_symm_toLinearMap [CommRing R] [AddCommGroup M] [Module R M]
+    [Fintype n] [DecidableEq n] (b : Module.Basis n R M) (A : Matrix n n R) (hA : IsUnit A.det) :
     (toLinearEquiv b A hA).symm = toLin b b A⁻¹ := rfl
 
 namespace ALG2.Cwi3.Zad9
@@ -258,7 +262,7 @@ theorem ZadD8 [SeminormedAddCommGroup V] [InnerProductSpace ℝ V] (x y : V) :
 
 alias ZadD9 := Finset.sum_mul_sq_le_sq_mul_sq
 
-open MeasureTheory in
+open ContinuousMap MeasureTheory in
 attribute [local instance] Measure.Subtype.measureSpace in
 theorem ZadD10 {f g : ℝ → ℝ} (hab : a ≤ b) (hf : ContinuousOn f (Set.Icc a b))
     (hg : ContinuousOn g (Set.Icc a b)) :
@@ -268,7 +272,7 @@ theorem ZadD10 {f g : ℝ → ℝ} (hab : a ≤ b) (hf : ContinuousOn f (Set.Icc
   simp_rw [intervalIntegral.integral_of_le hab, ← integral_Icc_eq_integral_Ioc,
     ← integral_subtype measurableSet_Icc, ← Set.domRestrict_apply]
   change (∫ x, f' x * g' x) ^ 2 ≤ (∫ x, f' x ^ 2) * ∫ x, g' x ^ 2
-  convert real_inner_mul_inner_self_le (ContinuousMap.toLp 2 volume ℝ f') (ContinuousMap.toLp 2 volume ℝ g')
+  convert real_inner_mul_inner_self_le (toLp 2 volume ℝ f') (toLp 2 volume ℝ g')
    <;> simp [← sq, ContinuousMap.inner_toLp, -inner_self_eq_norm_sq_to_K, mul_comm]
 
 section variable [Semifield R] [LinearOrder R] [IsStrictOrderedRing R] [ExistsAddOfLE R]
